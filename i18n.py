@@ -1,0 +1,201 @@
+# -*- coding: utf-8 -*-
+"""
+AetherStack - Internationalization (i18n) Module
+Provides translations for Spanish (es) and English (en).
+"""
+
+_CURRENT_LANG = "es"
+
+TRANSLATIONS = {
+    "es": {
+        # Common / Buttons
+        "ok": "OK",
+        "cancel": "Cancelar",
+        "understood": "Entendido",
+        "delete": "Eliminar",
+        "save_changes": "Guardar Cambios",
+        "processing": "Procesando...",
+        "browse": "Examinar...",
+        "change": "Cambiar",
+        "explore": "Explorar",
+        
+        # Top Bar
+        "projects_path_label": "Ruta de Proyectos:",
+        "open_folder": "Abrir carpeta",
+        "btn_start_stack": "INICIAR STACK",
+        "btn_stop_stack": "DETENER STACK",
+        "lang_switch_btn": "🌐 EN",
+        
+        # Dashboard Cards
+        "running_services_title": "Servicios en Ejecución",
+        "nginx_card_title": "Nginx Web Server",
+        "nginx_card_sub": "Puerto 80 • HTTP",
+        "php_card_sub": "Puerto 9000 • FastCGI",
+        "mariadb_card_title": "MariaDB Server",
+        "mariadb_card_sub": "Puerto {port} • MySQL",
+        "status_online": "ONLINE",
+        "status_offline": "OFFLINE",
+        "status_standby": "STANDBY",
+        
+        # Quick Actions
+        "quick_actions_title": "Acceso Rápido & Creación",
+        "action_laravel": "Laravel",
+        "action_wordpress": "WordPress",
+        "action_localhost": "Localhost",
+        "action_folder": "Carpeta",
+        "action_terminal": "Terminal",
+        
+        # Projects Table
+        "projects_table_title": "Mis Proyectos (WordPress & Laravel)",
+        "reload_list": "Recargar lista",
+        "no_projects_found": "No hay proyectos WordPress ni Laravel en la carpeta.",
+        
+        # Right Sidebar
+        "sidebar_title": "Detalles del Stack",
+        "system_memory": "⚡ Memoria del Sistema",
+        "ram_stack_active": "Stack ligero: < 95 MB activos",
+        "ram_stack_stopped": "Servicios detenidos",
+        "db_host_label": "Host:",
+        "db_user_label": "Usuario:",
+        "db_pass_label": "Clave:",
+        "db_no_pass": "(sin contraseña)",
+        "btn_copy_conn": "📋 Copiar Conexión",
+        "projects_folder_card": "📁 Carpeta de Proyectos",
+        "btn_view_logs": "📜 Ver Logs del Stack",
+        
+        # Modals: Create Project
+        "modal_create_laravel_title": "Crear Proyecto Laravel",
+        "modal_create_wp_title": "Crear Sitio WordPress",
+        "modal_create_name_lbl": "Ingresa el nombre del proyecto (ej: mi-web):",
+        "modal_create_placeholder": "ej: mi-web, blog, api-rest",
+        "modal_create_btn": "Crear Proyecto",
+        
+        # Modals: Delete Project
+        "modal_delete_title": "Eliminar Proyecto",
+        "modal_delete_msg": "¿Estás seguro de que deseas eliminar permanentemente '{name}'?\n\nEsta acción borrará la carpeta física y la base de datos asociada '{db_name}'.",
+        "modal_delete_btn": "Eliminar Permanentemente",
+        
+        # Modals: Settings
+        "settings_title": "Configuración General",
+        "settings_folder_lbl": "Carpeta raíz de proyectos (WordPress & Laravel):",
+        "settings_port_lbl": "Puerto de MariaDB (por defecto 3307):",
+        "settings_lang_lbl": "Idioma de la interfaz:",
+        "settings_saved": "Configuración guardada correctamente.",
+        
+        # Alerts & Notifications
+        "alert_services_stopped_title": "Servicios Detenidos",
+        "alert_services_stopped_msg": "No puedes crear proyectos mientras los servicios estén apagados.\n\nInicia el stack pulsando 'INICIAR STACK' para activar Nginx, PHP y MariaDB.",
+        "alert_project_created_title": "¡Proyecto Creado!",
+        "alert_project_created_msg": "¡Proyecto {type} '{name}' creado con éxito!\nBase de datos en puerto {port}.",
+        "alert_create_error_title": "Error al Crear",
+        "alert_delete_error_title": "Error al Eliminar",
+        "alert_conn_copied_title": "Conexión Copiada",
+        "alert_conn_copied_msg": "Datos de conexión MySQL copiados al portapapeles.",
+    },
+    "en": {
+        # Common / Buttons
+        "ok": "OK",
+        "cancel": "Cancel",
+        "understood": "Understood",
+        "delete": "Delete",
+        "save_changes": "Save Changes",
+        "processing": "Processing...",
+        "browse": "Browse...",
+        "change": "Change",
+        "explore": "Explore",
+        
+        # Top Bar
+        "projects_path_label": "Projects Path:",
+        "open_folder": "Open folder",
+        "btn_start_stack": "START STACK",
+        "btn_stop_stack": "STOP STACK",
+        "lang_switch_btn": "🌐 ES",
+        
+        # Dashboard Cards
+        "running_services_title": "Running Services",
+        "nginx_card_title": "Nginx Web Server",
+        "nginx_card_sub": "Port 80 • HTTP",
+        "php_card_sub": "Port 9000 • FastCGI",
+        "mariadb_card_title": "MariaDB Server",
+        "mariadb_card_sub": "Port {port} • MySQL",
+        "status_online": "ONLINE",
+        "status_offline": "OFFLINE",
+        "status_standby": "STANDBY",
+        
+        # Quick Actions
+        "quick_actions_title": "Quick Access & Creation",
+        "action_laravel": "Laravel",
+        "action_wordpress": "WordPress",
+        "action_localhost": "Localhost",
+        "action_folder": "Folder",
+        "action_terminal": "Terminal",
+        
+        # Projects Table
+        "projects_table_title": "My Projects (WordPress & Laravel)",
+        "reload_list": "Reload list",
+        "no_projects_found": "No WordPress or Laravel projects found in folder.",
+        
+        # Right Sidebar
+        "sidebar_title": "Stack Details",
+        "system_memory": "⚡ System Memory",
+        "ram_stack_active": "Lightweight stack: < 95 MB active",
+        "ram_stack_stopped": "Services stopped",
+        "db_host_label": "Host:",
+        "db_user_label": "User:",
+        "db_pass_label": "Password:",
+        "db_no_pass": "(no password)",
+        "btn_copy_conn": "📋 Copy Connection",
+        "projects_folder_card": "📁 Projects Folder",
+        "btn_view_logs": "📜 View Stack Logs",
+        
+        # Modals: Create Project
+        "modal_create_laravel_title": "Create Laravel Project",
+        "modal_create_wp_title": "Create WordPress Site",
+        "modal_create_name_lbl": "Enter project name (e.g. my-web):",
+        "modal_create_placeholder": "e.g. my-web, blog, api-rest",
+        "modal_create_btn": "Create Project",
+        
+        # Modals: Delete Project
+        "modal_delete_title": "Delete Project",
+        "modal_delete_msg": "Are you sure you want to permanently delete '{name}'?\n\nThis will remove the physical folder and the database '{db_name}'.",
+        "modal_delete_btn": "Delete Permanently",
+        
+        # Modals: Settings
+        "settings_title": "General Settings",
+        "settings_folder_lbl": "Root projects directory (WordPress & Laravel):",
+        "settings_port_lbl": "MariaDB Port (default 3307):",
+        "settings_lang_lbl": "Interface Language:",
+        "settings_saved": "Settings saved successfully.",
+        
+        # Alerts & Notifications
+        "alert_services_stopped_title": "Services Stopped",
+        "alert_services_stopped_msg": "You cannot create projects while services are stopped.\n\nStart the stack by clicking 'START STACK' to activate Nginx, PHP and MariaDB.",
+        "alert_project_created_title": "Project Created!",
+        "alert_project_created_msg": "{type} project '{name}' created successfully!\nDatabase on port {port}.",
+        "alert_create_error_title": "Error Creating Project",
+        "alert_delete_error_title": "Error Deleting Project",
+        "alert_conn_copied_title": "Connection Copied",
+        "alert_conn_copied_msg": "MySQL connection details copied to clipboard.",
+    }
+}
+
+def set_lang(lang_code):
+    global _CURRENT_LANG
+    if lang_code in TRANSLATIONS:
+        _CURRENT_LANG = lang_code
+    return _CURRENT_LANG
+
+def get_lang():
+    return _CURRENT_LANG
+
+def t(key, **kwargs):
+    lang_dict = TRANSLATIONS.get(_CURRENT_LANG, TRANSLATIONS["es"])
+    text = lang_dict.get(key)
+    if text is None:
+        text = TRANSLATIONS["es"].get(key, key)
+    if kwargs:
+        try:
+            return text.format(**kwargs)
+        except Exception:
+            return text
+    return text

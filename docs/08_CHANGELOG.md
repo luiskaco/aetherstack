@@ -6,6 +6,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.4] - 2026-11-07
+
+### Añadido
+- Soporte multilingüe completo con módulo de internacionalización (`i18n.py`) para **Español (ES)** e **Inglés (EN)**.
+- Botón toggle de idioma en la barra superior (`🌐 EN` / `🌐 ES`) junto al control maestro del stack, con alternancia instantánea sin reiniciar la aplicación.
+- Persistencia del idioma preferido en `state.json` (`"language": "es"` / `"en"`).
+- Traducción integral de toda la suite: tarjetas de servicios, accesos rápidos, tabla de proyectos, panel de detalles del stack, diálogos de creación, confirmaciones de eliminación, modales de configuración y alertas del sistema.
+
 ## [1.0.3] - 2026-11-07
 
 ### Mejorado

@@ -26,7 +26,8 @@ DEFAULT_CONFIG = {
     "mariadb_port": 3307,
     "php_port": 9000,
     "projects_dir": "D:\\\\LabIA",
-    "theme": "dark"
+    "theme": "dark",
+    "language": "es"
 }
 
 def load_state():
@@ -41,6 +42,16 @@ def load_state():
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
+
+def set_language(lang):
+    state = load_state()
+    state["language"] = lang
+    save_state(state)
+    return lang
+
+def get_language():
+    state = load_state()
+    return state.get("language", "es")
 
 def get_installed_php_versions():
     php_root = os.path.join(BIN_DIR, "php")

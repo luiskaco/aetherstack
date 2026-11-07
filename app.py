@@ -8,6 +8,8 @@ import threading
 import customtkinter as ctk
 from tkinter import filedialog
 import core
+import i18n
+from i18n import t
 
 # Fijar Modo Oscuro estricto a nivel de toolkit para evitar que Windows o callbacks re-rendericen en blanco
 ctk.set_appearance_mode("Dark")
@@ -49,6 +51,7 @@ class AetherDribbbleApp(ctk.CTk):
             self.iconbitmap(icon_path)
 
         self.state_data = core.load_state()
+        i18n.set_lang(self.state_data.get("language", "es"))
         self.php_var = ctk.StringVar(value=self.state_data.get("php_version", "8.4"))
         self.active_tab = "dashboard"
 
@@ -112,9 +115,9 @@ class AetherDribbbleApp(ctk.CTk):
         f_icon = ctk.CTkLabel(path_box, text="📁", font=ctk.CTkFont(size=14))
         f_icon.pack(side="left", padx=(14, 8))
 
-        lbl_prefix = ctk.CTkLabel(path_box, text="Ruta de Proyectos:",
-                                  font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED)
-        lbl_prefix.pack(side="left", padx=(0, 6))
+        self.lbl_prefix = ctk.CTkLabel(path_box, text=t("projects_path_label"),
+                                       font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED)
+        self.lbl_prefix.pack(side="left", padx=(0, 6))
 
         proj_path = self.state_data.get("projects_dir", "D:\\LabIA")
         self.lbl_path_display = ctk.CTkLabel(path_box, text=proj_path,
@@ -122,17 +125,26 @@ class AetherDribbbleApp(ctk.CTk):
                                              text_color=TEXT_DARK)
         self.lbl_path_display.pack(side="left", fill="x", expand=True, padx=4, anchor="w")
 
-        btn_open_folder = ctk.CTkButton(path_box, text="Abrir carpeta", font=ctk.CTkFont(size=11, weight="bold"),
-                                        fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                        width=95, height=26, corner_radius=8,
-                                        command=self.open_projects_dir)
-        btn_open_folder.pack(side="right", padx=(4, 8), pady=7)
+        self.btn_open_folder = ctk.CTkButton(path_box, text=t("open_folder"), font=ctk.CTkFont(size=11, weight="bold"),
+                                             fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                             width=95, height=26, corner_radius=8,
+                                             command=self.open_projects_dir)
+        self.btn_open_folder.pack(side="right", padx=(4, 8), pady=7)
 
         # Botón Maestro Iniciar/Detener
-        self.btn_master = ctk.CTkButton(top_bar, text="INICIAR STACK", font=ctk.CTkFont(size=12, weight="bold"),
+        self.btn_master = ctk.CTkButton(top_bar, text=t("btn_start_stack"), font=ctk.CTkFont(size=12, weight="bold"),
                                         fg_color=GREEN_SUCCESS, hover_color="#059669", text_color="#FFFFFF",
                                         height=40, corner_radius=12, command=self.toggle_services)
-        self.btn_master.pack(side="right", padx=(12, 0))
+        self.btn_master.pack(side="right", padx=(10, 0))
+
+        # Botón Toggle Idioma EN/ES (Barra Superior)
+        cur_lang = i18n.get_lang()
+        btn_lang_txt = "🌐 EN" if cur_lang == "es" else "🌐 ES"
+        self.btn_lang = ctk.CTkButton(top_bar, text=btn_lang_txt, font=ctk.CTkFont(size=11, weight="bold"),
+                                      fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=TEXT_DARK,
+                                      border_width=1, border_color=BORDER, width=64, height=40, corner_radius=12,
+                                      command=self.toggle_language)
+        self.btn_lang.pack(side="right", padx=(10, 0))
 
         self.view_container = ctk.CTkFrame(self.center_content, fg_color="transparent")
         self.view_container.pack(fill="both", expand=True)
@@ -142,9 +154,9 @@ class AetherDribbbleApp(ctk.CTk):
         self.build_projects_table()
 
     def build_dashboard_cards(self):
-        lbl_storage = ctk.CTkLabel(self.view_container, text="Servicios en Ejecución",
-                                   font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
-        lbl_storage.pack(anchor="w", pady=(0, 8))
+        self.lbl_storage = ctk.CTkLabel(self.view_container, text=t("running_services_title"),
+                                        font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
+        self.lbl_storage.pack(anchor="w", pady=(0, 8))
 
         self.cards_row = ctk.CTkFrame(self.view_container, fg_color="transparent")
         self.cards_row.pack(fill="x", pady=(0, 14))
@@ -162,7 +174,7 @@ class AetherDribbbleApp(ctk.CTk):
 
         ctk.CTkLabel(self.card_nginx, text="Nginx Web Server", font=ctk.CTkFont(size=12, weight="bold"),
                      text_color="#FFFFFF").pack(anchor="w", padx=14)
-        self.port_nginx_lbl = ctk.CTkLabel(self.card_nginx, text="Puerto 80 • HTTP", font=ctk.CTkFont(size=10),
+        self.port_nginx_lbl = ctk.CTkLabel(self.card_nginx, text=t("nginx_card_sub"), font=ctk.CTkFont(size=10),
                                           text_color="#CBD5E1")
         self.port_nginx_lbl.pack(anchor="w", padx=14, pady=(0, 10))
 
@@ -189,7 +201,7 @@ class AetherDribbbleApp(ctk.CTk):
                                             font=ctk.CTkFont(size=12, weight="bold"), text_color=TEXT_DARK)
         self.label_php_title.pack(anchor="w", padx=14)
 
-        self.port_php_lbl = ctk.CTkLabel(self.card_php, text="Puerto 9000 • FastCGI", font=ctk.CTkFont(size=10),
+        self.port_php_lbl = ctk.CTkLabel(self.card_php, text=t("php_card_sub"), font=ctk.CTkFont(size=10),
                                         text_color=TEXT_MUTED)
         self.port_php_lbl.pack(anchor="w", padx=14, pady=(0, 10))
 
@@ -207,37 +219,38 @@ class AetherDribbbleApp(ctk.CTk):
 
         ctk.CTkLabel(self.card_db, text="MariaDB Server", font=ctk.CTkFont(size=12, weight="bold"),
                      text_color=TEXT_DARK).pack(anchor="w", padx=14)
-        self.port_db_lbl = ctk.CTkLabel(self.card_db, text="Puerto 3307 • MySQL", font=ctk.CTkFont(size=10),
+        db_p = self.state_data.get("mariadb_port", 3307)
+        self.port_db_lbl = ctk.CTkLabel(self.card_db, text=t("mariadb_card_sub", port=db_p), font=ctk.CTkFont(size=10),
                                        text_color=TEXT_MUTED)
         self.port_db_lbl.pack(anchor="w", padx=14, pady=(0, 10))
 
     def build_quick_actions(self):
-        lbl_quick = ctk.CTkLabel(self.view_container, text="Acceso Rápido & Creación",
-                                 font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
-        lbl_quick.pack(anchor="w", pady=(4, 8))
+        self.lbl_quick = ctk.CTkLabel(self.view_container, text=t("quick_actions_title"),
+                                      font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
+        self.lbl_quick.pack(anchor="w", pady=(4, 8))
 
         q_row = ctk.CTkFrame(self.view_container, fg_color="transparent")
         q_row.pack(fill="x", pady=(0, 14))
 
-        btn_lar = self.create_round_action_btn(q_row, "⚡", "Laravel", "#271E22", "#EF4444",
-                                              lambda: self.prompt_project("laravel"))
-        btn_lar.pack(side="left", padx=(0, 10))
+        box_lar, self.lbl_act_lar = self.create_round_action_btn(q_row, "⚡", t("action_laravel"), "#271E22", "#EF4444",
+                                                                 lambda: self.prompt_project("laravel"))
+        box_lar.pack(side="left", padx=(0, 10))
 
-        btn_wp = self.create_round_action_btn(q_row, "🚀", "WordPress", "#162838", "#38BDF8",
-                                             lambda: self.prompt_project("wordpress"))
-        btn_wp.pack(side="left", padx=10)
+        box_wp, self.lbl_act_wp = self.create_round_action_btn(q_row, "🚀", t("action_wordpress"), "#162838", "#38BDF8",
+                                                              lambda: self.prompt_project("wordpress"))
+        box_wp.pack(side="left", padx=10)
 
-        btn_local = self.create_round_action_btn(q_row, "🌐", "Localhost", "#1E2238", "#818CF8",
-                                                self.open_localhost)
-        btn_local.pack(side="left", padx=10)
+        box_local, self.lbl_act_local = self.create_round_action_btn(q_row, "🌐", t("action_localhost"), "#1E2238", "#818CF8",
+                                                                    self.open_localhost)
+        box_local.pack(side="left", padx=10)
 
-        btn_folder = self.create_round_action_btn(q_row, "📁", "Carpeta", "#2E2619", "#FBBF24",
-                                                 self.open_projects_dir)
-        btn_folder.pack(side="left", padx=10)
+        box_folder, self.lbl_act_folder = self.create_round_action_btn(q_row, "📁", t("action_folder"), "#2E2619", "#FBBF24",
+                                                                      self.open_projects_dir)
+        box_folder.pack(side="left", padx=10)
 
-        btn_cli = self.create_round_action_btn(q_row, "💻", "Terminal", "#162B24", "#34D399",
-                                              self.open_terminal)
-        btn_cli.pack(side="left", padx=10)
+        box_cli, self.lbl_act_terminal = self.create_round_action_btn(q_row, "💻", t("action_terminal"), "#162B24", "#34D399",
+                                                                    self.open_terminal)
+        box_cli.pack(side="left", padx=10)
 
     def create_round_action_btn(self, parent, icon, text, bg_color, fg_color, command):
         box = ctk.CTkFrame(parent, fg_color="transparent")
@@ -251,20 +264,20 @@ class AetherDribbbleApp(ctk.CTk):
         lbl = ctk.CTkLabel(box, text=text, font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED)
         lbl.pack(pady=(4, 0))
 
-        return box
+        return box, lbl
 
     def build_projects_table(self):
         t_head = ctk.CTkFrame(self.view_container, fg_color="transparent")
         t_head.pack(fill="x", pady=(4, 6))
 
-        lbl_files = ctk.CTkLabel(t_head, text="Mis Proyectos (WordPress & Laravel)",
-                                 font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
-        lbl_files.pack(side="left")
+        self.lbl_files = ctk.CTkLabel(t_head, text=t("projects_table_title"),
+                                      font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_DARK)
+        self.lbl_files.pack(side="left")
 
-        btn_reload = ctk.CTkButton(t_head, text="Recargar lista", font=ctk.CTkFont(size=11, weight="bold"),
-                                   fg_color="transparent", text_color=ACCENT_BLUE,
-                                   hover_color="#1E293B", width=90, height=24, command=self.load_projects_list)
-        btn_reload.pack(side="right")
+        self.btn_reload = ctk.CTkButton(t_head, text=t("reload_list"), font=ctk.CTkFont(size=11, weight="bold"),
+                                        fg_color="transparent", text_color=ACCENT_BLUE,
+                                        hover_color="#1E293B", width=90, height=24, command=self.load_projects_list)
+        self.btn_reload.pack(side="right")
 
         self.scroll_table = ctk.CTkScrollableFrame(self.view_container, fg_color=BG_CARD, corner_radius=16,
                                                   border_width=1, border_color=BORDER, height=220)
@@ -280,7 +293,7 @@ class AetherDribbbleApp(ctk.CTk):
         self._last_project_names = [p["name"] for p in projects]
 
         if not projects:
-            empty = ctk.CTkLabel(self.scroll_table, text="No hay proyectos WordPress ni Laravel en la carpeta.",
+            empty = ctk.CTkLabel(self.scroll_table, text=t("no_projects_found"),
                                  font=ctk.CTkFont(size=12), text_color=TEXT_MUTED)
             empty.pack(pady=40)
             return
@@ -357,10 +370,11 @@ class AetherDribbbleApp(ctk.CTk):
         head_box = ctk.CTkFrame(pad_box, fg_color="transparent")
         head_box.pack(fill="x", pady=(0, 12))
 
-        ctk.CTkLabel(head_box, text="Detalles del Stack", font=ctk.CTkFont(size=14, weight="bold"),
-                     text_color=TEXT_DARK).pack(side="left")
+        self.lbl_side_title = ctk.CTkLabel(head_box, text=t("sidebar_title"), font=ctk.CTkFont(size=14, weight="bold"),
+                                          text_color=TEXT_DARK)
+        self.lbl_side_title.pack(side="left")
 
-        self.badge_stack_status = ctk.CTkLabel(head_box, text="STANDBY", font=ctk.CTkFont(size=9, weight="bold"),
+        self.badge_stack_status = ctk.CTkLabel(head_box, text=t("status_standby"), font=ctk.CTkFont(size=9, weight="bold"),
                                               fg_color="#1E293B", text_color="#94A3B8", corner_radius=6, padx=6, pady=2)
         self.badge_stack_status.pack(side="right")
 
@@ -373,8 +387,9 @@ class AetherDribbbleApp(ctk.CTk):
 
         ram_head = ctk.CTkFrame(c_ram_pad, fg_color="transparent")
         ram_head.pack(fill="x")
-        ctk.CTkLabel(ram_head, text="⚡ Memoria del Sistema", font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color=TEXT_DARK).pack(side="left")
+        self.lbl_side_ram_title = ctk.CTkLabel(ram_head, text=t("system_memory"), font=ctk.CTkFont(size=11, weight="bold"),
+                                              text_color=TEXT_DARK)
+        self.lbl_side_ram_title.pack(side="left")
         self.lbl_ram_pct = ctk.CTkLabel(ram_head, text="35%", font=ctk.CTkFont(size=11, weight="bold"),
                                        text_color=ACCENT_BLUE)
         self.lbl_ram_pct.pack(side="right")
@@ -383,7 +398,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.progress_bar.pack(fill="x", pady=(6, 4))
         self.progress_bar.set(0.35)
 
-        self.ram_lbl = ctk.CTkLabel(c_ram_pad, text="Stack ligero: < 95 MB activos", font=ctk.CTkFont(size=10),
+        self.ram_lbl = ctk.CTkLabel(c_ram_pad, text=t("ram_stack_active"), font=ctk.CTkFont(size=10),
                                     text_color=TEXT_MUTED)
         self.ram_lbl.pack(anchor="w")
 
@@ -398,26 +413,36 @@ class AetherDribbbleApp(ctk.CTk):
         db_head.pack(fill="x", pady=(0, 6))
         ctk.CTkLabel(db_head, text="🐬 MariaDB Server", font=ctk.CTkFont(size=11, weight="bold"),
                      text_color=TEXT_DARK).pack(side="left")
-        self.lbl_side_db_port = ctk.CTkLabel(db_head, text=f"Puerto {self.state_data.get('mariadb_port', 3307)}",
+        db_p = self.state_data.get('mariadb_port', 3307)
+        port_db_txt = f"Puerto {db_p}" if i18n.get_lang() == "es" else f"Port {db_p}"
+        self.lbl_side_db_port = ctk.CTkLabel(db_head, text=port_db_txt,
                                              font=ctk.CTkFont(size=9, weight="bold"),
                                              fg_color="#064E3B", text_color="#34D399", corner_radius=6, padx=5, pady=1)
         self.lbl_side_db_port.pack(side="right")
 
-        def make_param_row(parent, label, val):
-            row = ctk.CTkFrame(parent, fg_color="transparent")
-            row.pack(fill="x", pady=1)
-            ctk.CTkLabel(row, text=label, font=ctk.CTkFont(size=10), text_color=TEXT_MUTED).pack(side="left")
-            ctk.CTkLabel(row, text=val, font=ctk.CTkFont(size=10, family="Consolas", weight="bold"), text_color=TEXT_DARK).pack(side="right")
+        r1 = ctk.CTkFrame(c_db_pad, fg_color="transparent")
+        r1.pack(fill="x", pady=1)
+        ctk.CTkLabel(r1, text="Host:", font=ctk.CTkFont(size=10), text_color=TEXT_MUTED).pack(side="left")
+        ctk.CTkLabel(r1, text="127.0.0.1", font=ctk.CTkFont(size=10, family="Consolas", weight="bold"), text_color=TEXT_DARK).pack(side="right")
 
-        make_param_row(c_db_pad, "Host:", "127.0.0.1")
-        make_param_row(c_db_pad, "Usuario:", "root")
-        make_param_row(c_db_pad, "Clave:", "(sin contraseña)")
+        r2 = ctk.CTkFrame(c_db_pad, fg_color="transparent")
+        r2.pack(fill="x", pady=1)
+        self.lbl_db_user_tag = ctk.CTkLabel(r2, text=t("db_user_label"), font=ctk.CTkFont(size=10), text_color=TEXT_MUTED)
+        self.lbl_db_user_tag.pack(side="left")
+        ctk.CTkLabel(r2, text="root", font=ctk.CTkFont(size=10, family="Consolas", weight="bold"), text_color=TEXT_DARK).pack(side="right")
 
-        btn_copy_db = ctk.CTkButton(c_db_pad, text="📋 Copiar Conexión", font=ctk.CTkFont(size=10, weight="bold"),
-                                    fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                    height=24, corner_radius=6, border_width=1, border_color=BORDER,
-                                    command=self.copy_db_connection)
-        btn_copy_db.pack(fill="x", pady=(6, 0))
+        r3 = ctk.CTkFrame(c_db_pad, fg_color="transparent")
+        r3.pack(fill="x", pady=1)
+        self.lbl_db_pass_tag = ctk.CTkLabel(r3, text=t("db_pass_label"), font=ctk.CTkFont(size=10), text_color=TEXT_MUTED)
+        self.lbl_db_pass_tag.pack(side="left")
+        self.lbl_db_pass_val = ctk.CTkLabel(r3, text=t("db_no_pass"), font=ctk.CTkFont(size=10, family="Consolas", weight="bold"), text_color=TEXT_DARK)
+        self.lbl_db_pass_val.pack(side="right")
+
+        self.btn_copy_db = ctk.CTkButton(c_db_pad, text=t("btn_copy_conn"), font=ctk.CTkFont(size=10, weight="bold"),
+                                         fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                         height=24, corner_radius=6, border_width=1, border_color=BORDER,
+                                         command=self.copy_db_connection)
+        self.btn_copy_db.pack(fill="x", pady=(6, 0))
 
         # 4. Tarjeta: Carpeta Activa de Proyectos
         card_dir = ctk.CTkFrame(pad_box, fg_color=BG_CARD, corner_radius=14, border_width=1, border_color=BORDER)
@@ -426,8 +451,9 @@ class AetherDribbbleApp(ctk.CTk):
         c_dir_pad = ctk.CTkFrame(card_dir, fg_color="transparent")
         c_dir_pad.pack(fill="x", padx=12, pady=10)
 
-        ctk.CTkLabel(c_dir_pad, text="📁 Carpeta de Proyectos", font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color=TEXT_DARK).pack(anchor="w", pady=(0, 4))
+        self.lbl_side_dir_title = ctk.CTkLabel(c_dir_pad, text=t("projects_folder_card"), font=ctk.CTkFont(size=11, weight="bold"),
+                                              text_color=TEXT_DARK)
+        self.lbl_side_dir_title.pack(anchor="w", pady=(0, 4))
 
         p_chip = ctk.CTkFrame(c_dir_pad, fg_color=BG_ROW, corner_radius=8, border_width=1, border_color=BORDER)
         p_chip.pack(fill="x", pady=(0, 8))
@@ -439,24 +465,24 @@ class AetherDribbbleApp(ctk.CTk):
         dir_btns = ctk.CTkFrame(c_dir_pad, fg_color="transparent")
         dir_btns.pack(fill="x")
 
-        btn_open_exp = ctk.CTkButton(dir_btns, text="Explorar", font=ctk.CTkFont(size=10, weight="bold"),
-                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                     height=26, corner_radius=8, border_width=1, border_color=BORDER,
-                                     command=self.open_projects_dir)
-        btn_open_exp.pack(side="left", fill="x", expand=True, padx=(0, 3))
+        self.btn_side_explore = ctk.CTkButton(dir_btns, text=t("explore"), font=ctk.CTkFont(size=10, weight="bold"),
+                                              fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                              height=26, corner_radius=8, border_width=1, border_color=BORDER,
+                                              command=self.open_projects_dir)
+        self.btn_side_explore.pack(side="left", fill="x", expand=True, padx=(0, 3))
 
-        btn_change = ctk.CTkButton(dir_btns, text="Cambiar", font=ctk.CTkFont(size=10, weight="bold"),
-                                   fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                   height=26, corner_radius=8, border_width=1, border_color=BORDER,
-                                   command=self.open_settings_modal)
-        btn_change.pack(side="right", fill="x", expand=True, padx=(3, 0))
+        self.btn_side_change = ctk.CTkButton(dir_btns, text=t("change"), font=ctk.CTkFont(size=10, weight="bold"),
+                                             fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                             height=26, corner_radius=8, border_width=1, border_color=BORDER,
+                                             command=self.open_settings_modal)
+        self.btn_side_change.pack(side="right", fill="x", expand=True, padx=(3, 0))
 
         # 5. Botón inferior de Logs
-        btn_logs = ctk.CTkButton(pad_box, text="📜 Ver Logs del Stack", font=ctk.CTkFont(size=11, weight="bold"),
-                                 fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                 border_width=1, border_color=BORDER, height=32, corner_radius=10,
-                                 command=self.open_logs_dir)
-        btn_logs.pack(fill="x", side="bottom", pady=4)
+        self.btn_side_logs = ctk.CTkButton(pad_box, text=t("btn_view_logs"), font=ctk.CTkFont(size=11, weight="bold"),
+                                           fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                           border_width=1, border_color=BORDER, height=32, corner_radius=10,
+                                           command=self.open_logs_dir)
+        self.btn_side_logs.pack(fill="x", side="bottom", pady=4)
 
     def switch_view(self, view_name):
         self.active_tab = view_name
@@ -473,10 +499,10 @@ class AetherDribbbleApp(ctk.CTk):
 
         if status["nginx"]["running"]:
             self.card_nginx.configure(fg_color=BG_CARD_HIGHLIGHT)
-            self.badge_nginx.configure(text="ONLINE", fg_color="#10B981", text_color="#FFFFFF")
+            self.badge_nginx.configure(text=t("status_online"), fg_color="#10B981", text_color="#FFFFFF")
         else:
             self.card_nginx.configure(fg_color="#1E293B")
-            self.badge_nginx.configure(text="OFFLINE", fg_color="#0F172A", text_color="#94A3B8")
+            self.badge_nginx.configure(text=t("status_offline"), fg_color="#0F172A", text_color="#94A3B8")
 
         php_v = status["php"]["version"]
         self.label_php_title.configure(text=f"PHP FastCGI ({php_v})")
@@ -484,22 +510,22 @@ class AetherDribbbleApp(ctk.CTk):
             self.php_var.set(php_v)
 
         if status["mariadb"]["running"]:
-            self.badge_db.configure(text="ONLINE", fg_color="#064E3B", text_color="#34D399")
+            self.badge_db.configure(text=t("status_online"), fg_color="#064E3B", text_color="#34D399")
         else:
-            self.badge_db.configure(text="OFFLINE", fg_color=BG_MAIN, text_color=TEXT_MUTED)
+            self.badge_db.configure(text=t("status_offline"), fg_color=BG_MAIN, text_color=TEXT_MUTED)
 
         if status["all_running"]:
-            self.btn_master.configure(text="DETENER STACK", fg_color=RED_ERROR, hover_color="#DC2626")
+            self.btn_master.configure(text=t("btn_stop_stack"), fg_color=RED_ERROR, hover_color="#DC2626")
             if hasattr(self, "badge_stack_status"):
-                self.badge_stack_status.configure(text="ONLINE", fg_color="#064E3B", text_color="#34D399")
+                self.badge_stack_status.configure(text=t("status_online"), fg_color="#064E3B", text_color="#34D399")
             if hasattr(self, "ram_lbl"):
-                self.ram_lbl.configure(text="Stack ligero: < 95 MB activos")
+                self.ram_lbl.configure(text=t("ram_stack_active"))
         else:
-            self.btn_master.configure(text="INICIAR STACK", fg_color=GREEN_SUCCESS, hover_color="#059669")
+            self.btn_master.configure(text=t("btn_start_stack"), fg_color=GREEN_SUCCESS, hover_color="#059669")
             if hasattr(self, "badge_stack_status"):
-                self.badge_stack_status.configure(text="STANDBY", fg_color="#1E293B", text_color="#94A3B8")
+                self.badge_stack_status.configure(text=t("status_standby"), fg_color="#1E293B", text_color="#94A3B8")
             if hasattr(self, "ram_lbl"):
-                self.ram_lbl.configure(text="Servicios detenidos")
+                self.ram_lbl.configure(text=t("ram_stack_stopped"))
 
         ram_load = self.get_system_ram_load()
         if hasattr(self, "progress_bar"):
@@ -514,7 +540,81 @@ class AetherDribbbleApp(ctk.CTk):
 
         db_port = status["config"].get("mariadb_port", 3307)
         if hasattr(self, "lbl_side_db_port"):
-            self.lbl_side_db_port.configure(text=f"Puerto {db_port}")
+            port_lbl = f"Puerto {db_port}" if i18n.get_lang() == "es" else f"Port {db_port}"
+            self.lbl_side_db_port.configure(text=port_lbl)
+        if hasattr(self, "port_db_lbl"):
+            self.port_db_lbl.configure(text=t("mariadb_card_sub", port=db_port))
+
+    def toggle_language(self):
+        new_lang = "en" if i18n.get_lang() == "es" else "es"
+        i18n.set_lang(new_lang)
+        core.set_language(new_lang)
+        self.state_data["language"] = new_lang
+        self.apply_language()
+
+    def apply_language(self):
+        cur_lang = i18n.get_lang()
+        self.btn_lang.configure(text="🌐 EN" if cur_lang == "es" else "🌐 ES")
+        
+        # 1. Top bar
+        if hasattr(self, "lbl_prefix"):
+            self.lbl_prefix.configure(text=t("projects_path_label"))
+        if hasattr(self, "btn_open_folder"):
+            self.btn_open_folder.configure(text=t("open_folder"))
+
+        # 2. Tarjetas de servicios
+        if hasattr(self, "lbl_storage"):
+            self.lbl_storage.configure(text=t("running_services_title"))
+        if hasattr(self, "port_nginx_lbl"):
+            self.port_nginx_lbl.configure(text=t("nginx_card_sub"))
+        if hasattr(self, "port_php_lbl"):
+            self.port_php_lbl.configure(text=t("php_card_sub"))
+
+        # 3. Acceso rápido
+        if hasattr(self, "lbl_quick"):
+            self.lbl_quick.configure(text=t("quick_actions_title"))
+        if hasattr(self, "lbl_act_lar"):
+            self.lbl_act_lar.configure(text=t("action_laravel"))
+        if hasattr(self, "lbl_act_wp"):
+            self.lbl_act_wp.configure(text=t("action_wordpress"))
+        if hasattr(self, "lbl_act_local"):
+            self.lbl_act_local.configure(text=t("action_localhost"))
+        if hasattr(self, "lbl_act_folder"):
+            self.lbl_act_folder.configure(text=t("action_folder"))
+        if hasattr(self, "lbl_act_terminal"):
+            self.lbl_act_terminal.configure(text=t("action_terminal"))
+
+        # 4. Tabla de proyectos
+        if hasattr(self, "lbl_files"):
+            self.lbl_files.configure(text=t("projects_table_title"))
+        if hasattr(self, "btn_reload"):
+            self.btn_reload.configure(text=t("reload_list"))
+
+        # 5. Right Sidebar
+        if hasattr(self, "lbl_side_title"):
+            self.lbl_side_title.configure(text=t("sidebar_title"))
+        if hasattr(self, "lbl_side_ram_title"):
+            self.lbl_side_ram_title.configure(text=t("system_memory"))
+        if hasattr(self, "lbl_db_user_tag"):
+            self.lbl_db_user_tag.configure(text=t("db_user_label"))
+        if hasattr(self, "lbl_db_pass_tag"):
+            self.lbl_db_pass_tag.configure(text=t("db_pass_label"))
+        if hasattr(self, "lbl_db_pass_val"):
+            self.lbl_db_pass_val.configure(text=t("db_no_pass"))
+        if hasattr(self, "btn_copy_db"):
+            self.btn_copy_db.configure(text=t("btn_copy_conn"))
+        if hasattr(self, "lbl_side_dir_title"):
+            self.lbl_side_dir_title.configure(text=t("projects_folder_card"))
+        if hasattr(self, "btn_side_explore"):
+            self.btn_side_explore.configure(text=t("explore"))
+        if hasattr(self, "btn_side_change"):
+            self.btn_side_change.configure(text=t("change"))
+        if hasattr(self, "btn_side_logs"):
+            self.btn_side_logs.configure(text=t("btn_view_logs"))
+
+        # 6. Refrescar estado y lista de proyectos
+        self.refresh_status()
+        self.load_projects_list()
 
     def auto_refresh_loop(self):
         self.refresh_status()
@@ -533,7 +633,7 @@ class AetherDribbbleApp(ctk.CTk):
 
     def toggle_services(self):
         status = core.get_status()
-        self.btn_master.configure(text="Procesando...", state="disabled")
+        self.btn_master.configure(text=t("processing"), state="disabled")
         self.update()
 
         def run():
@@ -598,7 +698,7 @@ class AetherDribbbleApp(ctk.CTk):
             if callback:
                 callback()
 
-        btn = ctk.CTkButton(pad, text="Entendido", height=32, corner_radius=10,
+        btn = ctk.CTkButton(pad, text=t("understood"), height=32, corner_radius=10,
                             fg_color=ACCENT_BLUE, hover_color="#1D4ED8", text_color="#FFFFFF",
                             font=ctk.CTkFont(size=11, weight="bold"), command=close)
         btn.pack(fill="x")
@@ -646,7 +746,7 @@ class AetherDribbbleApp(ctk.CTk):
             if on_confirm:
                 on_confirm()
 
-        btn_cancel = ctk.CTkButton(btn_row, text="Cancelar", height=32, corner_radius=10,
+        btn_cancel = ctk.CTkButton(btn_row, text=t("cancel"), height=32, corner_radius=10,
                                    fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
                                    border_width=1, border_color=BORDER, command=close)
         btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 6))
@@ -665,15 +765,15 @@ class AetherDribbbleApp(ctk.CTk):
         status = core.get_status()
         if not status["all_running"]:
             self.show_dark_alert(
-                "Servicios Detenidos",
-                "No puedes crear proyectos mientras los servicios estén apagados.\n\nInicia el stack pulsando 'INICIAR STACK' para activar Nginx, PHP y MariaDB.",
+                t("alert_services_stopped_title"),
+                t("alert_services_stopped_msg"),
                 alert_type="warning"
             )
             return
 
         win = ctk.CTkToplevel(self)
         is_lar = ptype.lower() == "laravel"
-        title_txt = "Crear Proyecto Laravel" if is_lar else "Crear Sitio WordPress"
+        title_txt = t("modal_create_laravel_title") if is_lar else t("modal_create_wp_title")
         icon_char = "⚡" if is_lar else "🚀"
 
         win.title(title_txt)
@@ -693,10 +793,10 @@ class AetherDribbbleApp(ctk.CTk):
         ctk.CTkLabel(head, text=title_txt, font=ctk.CTkFont(size=14, weight="bold"),
                      text_color=TEXT_DARK).pack(side="left")
 
-        ctk.CTkLabel(pad, text="Ingresa el nombre del proyecto (ej: mi-web):",
+        ctk.CTkLabel(pad, text=t("modal_create_name_lbl"),
                      font=ctk.CTkFont(size=11), text_color=TEXT_MUTED).pack(anchor="w", pady=(0, 6))
 
-        entry_name = ctk.CTkEntry(pad, placeholder_text="ej: mi-web, blog, api-rest",
+        entry_name = ctk.CTkEntry(pad, placeholder_text=t("modal_create_placeholder"),
                                   fg_color=BG_ROW, border_color=BORDER, text_color=TEXT_DARK,
                                   height=34, corner_radius=10, font=ctk.CTkFont(size=12))
         entry_name.pack(fill="x", pady=(0, 16))
@@ -711,8 +811,8 @@ class AetherDribbbleApp(ctk.CTk):
             if not status["all_running"]:
                 win.destroy()
                 self.show_dark_alert(
-                    "Servicios Detenidos",
-                    "No se pudo crear el proyecto: los servicios del stack no están activos.",
+                    t("alert_services_stopped_title"),
+                    t("alert_services_stopped_msg"),
                     alert_type="warning"
                 )
                 return
@@ -728,13 +828,14 @@ class AetherDribbbleApp(ctk.CTk):
                 self.after(0, self.load_projects_list)
                 self.after(0, self.refresh_status)
                 if success:
+                    db_p = self.state_data.get("mariadb_port", 3307)
                     self.after(50, lambda: self.show_dark_alert(
-                        "¡Proyecto Creado!",
-                        f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.",
+                        t("alert_project_created_title"),
+                        t("alert_project_created_msg", type=ptype.capitalize(), name=name, port=db_p),
                         alert_type="success"
                     ))
                 else:
-                    self.after(50, lambda: self.show_dark_alert("Error al Crear", msg, alert_type="error"))
+                    self.after(50, lambda: self.show_dark_alert(t("alert_create_error_title"), msg, alert_type="error"))
 
             threading.Thread(target=run, daemon=True).start()
 
@@ -747,12 +848,12 @@ class AetherDribbbleApp(ctk.CTk):
         btn_row = ctk.CTkFrame(pad, fg_color="transparent")
         btn_row.pack(fill="x")
 
-        btn_cancel = ctk.CTkButton(btn_row, text="Cancelar", height=32, corner_radius=10,
+        btn_cancel = ctk.CTkButton(btn_row, text=t("cancel"), height=32, corner_radius=10,
                                    fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
                                    border_width=1, border_color=BORDER, command=on_cancel)
         btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
-        btn_ok = ctk.CTkButton(btn_row, text="Crear Proyecto", height=32, corner_radius=10,
+        btn_ok = ctk.CTkButton(btn_row, text=t("modal_create_btn"), height=32, corner_radius=10,
                                fg_color=ACCENT_BLUE, hover_color="#1D4ED8", text_color="#FFFFFF",
                                font=ctk.CTkFont(size=11, weight="bold"), command=on_confirm)
         btn_ok.pack(side="right", fill="x", expand=True, padx=(6, 0))
@@ -765,32 +866,33 @@ class AetherDribbbleApp(ctk.CTk):
             self.after(0, self.load_projects_list)
             self.after(0, self.refresh_status)
             if not success:
-                self.after(50, lambda: self.show_dark_alert("Error al Eliminar", msg, alert_type="error"))
+                self.after(50, lambda: self.show_dark_alert(t("alert_delete_error_title"), msg, alert_type="error"))
 
+        db_name = f"{name.lower().replace('-', '_')}_db"
         self.show_dark_confirm(
-            "Eliminar Proyecto",
-            f"¿Estás seguro de eliminar '{name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada de forma irreversible.",
-            confirm_text="Eliminar Proyecto",
+            t("modal_delete_title"),
+            t("modal_delete_msg", name=name, db_name=db_name),
+            confirm_text=t("modal_delete_btn"),
             on_confirm=do_delete
         )
 
     def open_settings_modal(self):
         win = ctk.CTkToplevel(self)
-        win.title("Configuración")
+        win.title(t("settings_title"))
         win.resizable(False, False)
         win.configure(fg_color=BG_CARD)
         win.attributes('-topmost', True)
         win.transient(self)
         self.center_modal(win, 450, 330)
 
-        ctk.CTkLabel(win, text="Configuración Global", font=ctk.CTkFont(size=16, weight="bold"),
+        ctk.CTkLabel(win, text=t("settings_title"), font=ctk.CTkFont(size=16, weight="bold"),
                      text_color=TEXT_DARK).pack(anchor="w", padx=22, pady=(18, 4))
-        ctk.CTkLabel(win, text="Personaliza la ubicación de tus proyectos y puertos locales.",
+        ctk.CTkLabel(win, text="Personaliza la ubicación de tus proyectos y puertos locales." if i18n.get_lang() == "es" else "Customize your projects folder and local service ports.",
                      font=ctk.CTkFont(size=11), text_color=TEXT_MUTED).pack(anchor="w", padx=22, pady=(0, 14))
 
         f_box = ctk.CTkFrame(win, fg_color="transparent")
         f_box.pack(fill="x", padx=22, pady=4)
-        ctk.CTkLabel(f_box, text="Carpeta de Proyectos", font=ctk.CTkFont(size=11, weight="bold"),
+        ctk.CTkLabel(f_box, text=t("settings_folder_lbl"), font=ctk.CTkFont(size=11, weight="bold"),
                      text_color=TEXT_DARK).pack(anchor="w")
 
         dir_row = ctk.CTkFrame(f_box, fg_color="transparent")
@@ -802,12 +904,12 @@ class AetherDribbbleApp(ctk.CTk):
         entry_dir.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
         def browse():
-            f = filedialog.askdirectory(title="Seleccionar carpeta de proyectos")
+            f = filedialog.askdirectory(title=t("settings_folder_lbl"))
             if f:
                 entry_dir.delete(0, "end")
                 entry_dir.insert(0, f)
 
-        ctk.CTkButton(dir_row, text="Examinar", width=80, fg_color=BTN_SEC_BG,
+        ctk.CTkButton(dir_row, text=t("browse"), width=80, fg_color=BTN_SEC_BG,
                       hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT, corner_radius=10,
                       border_width=1, border_color=BORDER, command=browse).pack(side="right")
 
@@ -816,14 +918,14 @@ class AetherDribbbleApp(ctk.CTk):
 
         c1 = ctk.CTkFrame(p_row, fg_color="transparent")
         c1.pack(side="left", fill="x", expand=True, padx=(0, 6))
-        ctk.CTkLabel(c1, text="Puerto Nginx", font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_DARK).pack(anchor="w")
+        ctk.CTkLabel(c1, text="Puerto Nginx" if i18n.get_lang() == "es" else "Nginx Port", font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_DARK).pack(anchor="w")
         entry_nginx = ctk.CTkEntry(c1, fg_color=BG_ROW, text_color=TEXT_DARK, border_color=BORDER, corner_radius=10)
         entry_nginx.insert(0, str(self.state_data.get("nginx_port", 80)))
         entry_nginx.pack(fill="x", pady=4)
 
         c2 = ctk.CTkFrame(p_row, fg_color="transparent")
         c2.pack(side="right", fill="x", expand=True, padx=(6, 0))
-        ctk.CTkLabel(c2, text="Puerto MariaDB", font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_DARK).pack(anchor="w")
+        ctk.CTkLabel(c2, text=t("settings_port_lbl"), font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_DARK).pack(anchor="w")
         entry_db = ctk.CTkEntry(c2, fg_color=BG_ROW, text_color=TEXT_DARK, border_color=BORDER, corner_radius=10)
         entry_db.insert(0, str(self.state_data.get("mariadb_port", 3307)))
         entry_db.pack(fill="x", pady=4)
@@ -838,9 +940,9 @@ class AetherDribbbleApp(ctk.CTk):
             self.state_data = core.load_state()
             self.refresh_status()
             win.destroy()
-            self.show_dark_alert("Configuración", "Configuración guardada correctamente.", alert_type="success")
+            self.show_dark_alert(t("settings_title"), t("settings_saved"), alert_type="success")
 
-        ctk.CTkButton(win, text="Guardar Cambios", fg_color=ACCENT_BLUE, hover_color="#1D4ED8",
+        ctk.CTkButton(win, text=t("save_changes"), fg_color=ACCENT_BLUE, hover_color="#1D4ED8",
                       text_color="#FFFFFF", height=38, corner_radius=12,
                       command=save).pack(fill="x", padx=22, pady=(16, 0))
 
@@ -859,7 +961,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.clipboard_clear()
         self.clipboard_append(conn_str)
         self.update()
-        self.show_dark_alert("MariaDB Server", f"Comando de conexión copiado al portapapeles:\n\n{conn_str}", alert_type="info")
+        self.show_dark_alert("MariaDB Server", f"{t('alert_conn_copied_msg')}\n\n{conn_str}", alert_type="info")
 
     def open_logs_dir(self):
         logs_dir = os.path.join(core.BASE_DIR, "logs")
