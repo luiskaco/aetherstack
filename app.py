@@ -1,176 +1,430 @@
 """
-AetherStack - App Runner Standalone
-Lanza un servidor local HTTP ligero para la interfaz y abre una ventana de aplicación Edge limpia.
-0% dependencias frágiles de WebView2 .NET, 100% estable y ultra rápida.
+AetherStack - Minimalist Local Dev Suite
+Construido sobre CustomTkinter (Nativo de escritorio, esquinas redondeadas, sin cuelgues ni servidores).
 """
 import os
 import sys
-import json
 import threading
-import subprocess
-import time
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-import urllib.parse
-import tkinter as tk
-from tkinter import filedialog
+import customtkinter as ctk
+from tkinter import messagebox, filedialog
 import core
 
-PORT = 5055
-server_instance = None
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("blue")
 
-class AetherHandler(SimpleHTTPRequestHandler):
-    def log_message(self, format, *args):
-        pass  # Silenciar logs en consola
+class AetherApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-    def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        
-        if parsed.path == "/" or parsed.path == "/index.html":
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.end_headers()
-            html_file = os.path.join(os.path.dirname(__file__), "ui", "web", "dashboard.html")
-            with open(html_file, "rb") as f:
-                self.wfile.write(f.read())
+        self.title("AetherStack")
+        self.geometry("540x680")
+        self.resizable(False, False)
+        self.configure(fg_color="#090D16")
+
+        # Cargar icono
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.ico")
+        if os.path.exists(icon_path):
+            self.iconbitmap(icon_path)
+
+        self.state_data = core.load_state()
+        self.php_var = ctk.StringVar(value=self.state_data.get("php_version", "8.4"))
+
+        self.build_ui()
+        self.refresh_status()
+        self.auto_refresh_loop()
+
+    def build_ui(self):
+        # 1. Header
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", padx=24, pady=(20, 12))
+
+        top_bar = ctk.CTkFrame(header, fg_color="transparent")
+        top_bar.pack(fill="x")
+
+        title_lbl = ctk.CTkLabel(top_bar, text="AetherStack", font=ctk.CTkFont(size=22, weight="bold"), text_color="#F8FAFC")
+        title_lbl.pack(side="left")
+
+        badge = ctk.CTkLabel(top_bar, text=" PORTABLE v1.0 ", font=ctk.CTkFont(size=10, weight="bold"),
+                             fg_color="#082F49", text_color="#38BDF8", corner_radius=6)
+        badge.pack(side="left", padx=(10, 0), pady=(4, 0))
+
+        settings_btn = ctk.CTkButton(top_bar, text="⚙", width=36, height=36, corner_radius=10,
+                                     fg_color="#1E293B", hover_color="#334155", font=ctk.CTkFont(size=16),
+                                     command=self.open_settings_modal)
+        settings_btn.pack(side="right")
+
+        sub_lbl = ctk.CTkLabel(header, text="PHP 8.4/8.5 • Nginx • MariaDB • Fast & Lightweight",
+                               font=ctk.CTkFont(size=12), text_color="#94A3B8")
+        sub_lbl.pack(anchor="w", pady=(2, 0))
+
+        # 2. Segmented Tabs
+        self.tab_ctrl = ctk.CTkSegmentedButton(self, values=["Panel de Control", "Mis Proyectos"],
+                                              command=self.on_tab_changed,
+                                              fg_color="#1E293B", selected_color="#0284C7",
+                                              selected_hover_color="#0369A1", text_color="#F8FAFC",
+                                              corner_radius=10)
+        self.tab_ctrl.set("Panel de Control")
+        self.tab_ctrl.pack(fill="x", padx=24, pady=(6, 12))
+
+        # 3. Tab Containers
+        self.dash_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.dash_frame.pack(fill="both", expand=True, padx=24)
+
+        self.proj_frame = ctk.CTkFrame(self, fg_color="transparent")
+        # Proj frame packed when tab active
+
+        self.build_dashboard_tab()
+        self.build_projects_tab()
+
+        # 4. Footer
+        footer = ctk.CTkFrame(self, fg_color="#0D1322", height=32, corner_radius=0)
+        footer.pack(fill="x", side="bottom")
+
+        self.status_lbl = ctk.CTkLabel(footer, text="● Servicios en reposo", font=ctk.CTkFont(size=11), text_color="#64748B")
+        self.status_lbl.pack(side="left", padx=16, pady=4)
+
+        free_lbl = ctk.CTkLabel(footer, text="100% Free & Open", font=ctk.CTkFont(size=10), text_color="#475569")
+        free_lbl.pack(side="right", padx=16, pady=4)
+
+    def build_dashboard_tab(self):
+        # Card de Servicios
+        card = ctk.CTkFrame(self.dash_frame, fg_color="#131B2E", corner_radius=14, border_width=1, border_color="#1E293B")
+        card.pack(fill="x", pady=6)
+
+        c_head = ctk.CTkFrame(card, fg_color="transparent")
+        c_head.pack(fill="x", padx=16, pady=(12, 6))
+
+        c_title = ctk.CTkLabel(c_head, text="ESTADO DE SERVICIOS", font=ctk.CTkFont(size=10, weight="bold"), text_color="#64748B")
+        c_title.pack(side="left")
+
+        # Switch PHP en el header del card
+        php_switch = ctk.CTkSegmentedButton(c_head, values=["8.4", "8.5"], variable=self.php_var,
+                                           command=self.on_switch_php,
+                                           width=100, height=24, corner_radius=8,
+                                           fg_color="#0F172A", selected_color="#0284C7")
+        php_switch.pack(side="right")
+
+        php_tag = ctk.CTkLabel(c_head, text="Versión PHP:", font=ctk.CTkFont(size=11), text_color="#94A3B8")
+        php_tag.pack(side="right", padx=(0, 6))
+
+        # Filas de Servicios
+        self.row_nginx = self.create_service_row(card, "Nginx Web Server", "Puerto 80")
+        self.row_php = self.create_service_row(card, "PHP FastCGI", "Puerto 9000")
+        self.row_mariadb = self.create_service_row(card, "MariaDB Server", "Puerto 3307", is_last=True)
+
+        # Botón Maestro Moderno con esquinas redondeadas elegantes
+        self.btn_master = ctk.CTkButton(self.dash_frame, text="⚡ INICIAR TODOS LOS SERVICIOS",
+                                        font=ctk.CTkFont(size=13, weight="bold"),
+                                        fg_color="#10B981", hover_color="#059669", text_color="#FFFFFF",
+                                        height=44, corner_radius=12,
+                                        command=self.toggle_services)
+        self.btn_master.pack(fill="x", pady=12)
+
+        # Card Creación Rápida
+        qcard = ctk.CTkFrame(self.dash_frame, fg_color="#131B2E", corner_radius=14, border_width=1, border_color="#1E293B")
+        qcard.pack(fill="x", pady=6)
+
+        q_head = ctk.CTkFrame(qcard, fg_color="transparent")
+        q_head.pack(fill="x", padx=16, pady=(12, 6))
+
+        q_title = ctk.CTkLabel(q_head, text="CREAR PROYECTO RÁPIDO", font=ctk.CTkFont(size=10, weight="bold"), text_color="#64748B")
+        q_title.pack(side="left")
+
+        self.path_lbl = ctk.CTkLabel(q_head, text=self.state_data.get("projects_dir", "D:\\LabIA"),
+                                     font=ctk.CTkFont(size=10, family="Consolas"), text_color="#475569")
+        self.path_lbl.pack(side="right")
+
+        q_btn_row = ctk.CTkFrame(qcard, fg_color="transparent")
+        q_btn_row.pack(fill="x", padx=16, pady=(6, 14))
+
+        btn_lar = ctk.CTkButton(q_btn_row, text="⚡ Nuevo Laravel", font=ctk.CTkFont(size=12, weight="bold"),
+                                fg_color="#DC2626", hover_color="#B91C1C", text_color="#FFFFFF",
+                                height=36, corner_radius=10,
+                                command=lambda: self.prompt_project("laravel"))
+        btn_lar.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        btn_wp = ctk.CTkButton(q_btn_row, text="🚀 Nuevo WordPress", font=ctk.CTkFont(size=12, weight="bold"),
+                               fg_color="#0284C7", hover_color="#0369A1", text_color="#FFFFFF",
+                               height=36, corner_radius=10,
+                               command=lambda: self.prompt_project("wordpress"))
+        btn_wp.pack(side="right", fill="x", expand=True, padx=(6, 0))
+
+        # Accesos Rápidos (Shortcuts)
+        s_row = ctk.CTkFrame(self.dash_frame, fg_color="transparent")
+        s_row.pack(fill="x", pady=8)
+
+        btn_host = ctk.CTkButton(s_row, text="🌐 Localhost", fg_color="#1E293B", hover_color="#334155",
+                                 text_color="#E2E8F0", height=34, corner_radius=10,
+                                 command=self.open_localhost)
+        btn_host.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+        btn_folder = ctk.CTkButton(s_row, text="📁 Carpeta", fg_color="#1E293B", hover_color="#334155",
+                                   text_color="#E2E8F0", height=34, corner_radius=10,
+                                   command=self.open_projects_dir)
+        btn_folder.pack(side="left", fill="x", expand=True, padx=4)
+
+        btn_term = ctk.CTkButton(s_row, text="💻 Terminal", fg_color="#1E293B", hover_color="#334155",
+                                 text_color="#E2E8F0", height=34, corner_radius=10,
+                                 command=self.open_terminal)
+        btn_term.pack(side="right", fill="x", expand=True, padx=(4, 0))
+
+    def create_service_row(self, parent, name, port_text, is_last=False):
+        row = ctk.CTkFrame(parent, fg_color="transparent")
+        row.pack(fill="x", padx=16, pady=4)
+
+        dot = ctk.CTkLabel(row, text="●", font=ctk.CTkFont(size=14), text_color="#475569")
+        dot.pack(side="left")
+
+        title = ctk.CTkLabel(row, text=f" {name}", font=ctk.CTkFont(size=12), text_color="#E2E8F0")
+        title.pack(side="left")
+
+        port = ctk.CTkLabel(row, text=port_text, font=ctk.CTkFont(size=11, family="Consolas"), text_color="#64748B")
+        port.pack(side="right")
+
+        if not is_last:
+            sep = ctk.CTkFrame(parent, fg_color="#1E293B", height=1)
+            sep.pack(fill="x", padx=16, pady=2)
+
+        return {"dot": dot, "title": title, "port": port}
+
+    def build_projects_tab(self):
+        p_top = ctk.CTkFrame(self.proj_frame, fg_color="transparent")
+        p_top.pack(fill="x", pady=(4, 8))
+
+        lbl = ctk.CTkLabel(p_top, text="Aplicaciones en la carpeta de trabajo", font=ctk.CTkFont(size=12, weight="bold"), text_color="#94A3B8")
+        lbl.pack(side="left")
+
+        btn_reload = ctk.CTkButton(p_top, text="🔄 Recargar", width=80, height=26, corner_radius=8,
+                                   fg_color="#1E293B", hover_color="#334155", font=ctk.CTkFont(size=11),
+                                   command=self.load_projects_list)
+        btn_reload.pack(side="right")
+
+        self.scroll_proj = ctk.CTkScrollableFrame(self.proj_frame, fg_color="#131B2E", corner_radius=14,
+                                                 border_width=1, border_color="#1E293B", height=420)
+        self.scroll_proj.pack(fill="both", expand=True)
+
+    def on_tab_changed(self, value):
+        if value == "Panel de Control":
+            self.proj_frame.pack_forget()
+            self.dash_frame.pack(fill="both", expand=True, padx=24)
+        else:
+            self.dash_frame.pack_forget()
+            self.proj_frame.pack(fill="both", expand=True, padx=24)
+            self.load_projects_list()
+
+    def load_projects_list(self):
+        for widget in self.scroll_proj.winfo_children():
+            widget.destroy()
+
+        projects = core.list_projects()
+        if not projects:
+            empty_lbl = ctk.CTkLabel(self.scroll_proj, text="No se encontraron proyectos en la carpeta.",
+                                     font=ctk.CTkFont(size=12), text_color="#64748B")
+            empty_lbl.pack(pady=40)
             return
 
-        if parsed.path == "/api/status":
-            self.send_json(core.get_status())
+        for p in projects:
+            item = ctk.CTkFrame(self.scroll_proj, fg_color="#0F172A", corner_radius=10, height=48)
+            item.pack(fill="x", padx=8, pady=4)
+
+            # Badge tipo
+            color = "#DC2626" if p["type"] == "Laravel" else ("#0284C7" if p["type"] == "WordPress" else "#475569")
+            t_badge = ctk.CTkLabel(item, text=f" {p['type']} ", font=ctk.CTkFont(size=9, weight="bold"),
+                                   fg_color=color, text_color="#FFFFFF", corner_radius=6)
+            t_badge.pack(side="left", padx=10, pady=8)
+
+            # Nombre y host
+            info_frame = ctk.CTkFrame(item, fg_color="transparent")
+            info_frame.pack(side="left", fill="both", expand=True, pady=4)
+
+            p_name = ctk.CTkLabel(info_frame, text=p["name"], font=ctk.CTkFont(size=12, weight="bold"),
+                                  text_color="#F8FAFC", anchor="w")
+            p_name.pack(fill="x")
+
+            p_host = ctk.CTkLabel(info_frame, text=p["vhost"], font=ctk.CTkFont(size=10, family="Consolas"),
+                                  text_color="#64748B", anchor="w")
+            p_host.pack(fill="x")
+
+            # Botones de Acción
+            btn_web = ctk.CTkButton(item, text="🌐", width=30, height=30, corner_radius=8,
+                                    fg_color="#1E293B", hover_color="#334155",
+                                    command=lambda url=p["url"]: os.system(f"start {url}"))
+            btn_web.pack(side="right", padx=(2, 8), pady=8)
+
+            btn_dir = ctk.CTkButton(item, text="📁", width=30, height=30, corner_radius=8,
+                                    fg_color="#1E293B", hover_color="#334155",
+                                    command=lambda path=p["path"]: os.system(f'explorer "{path}"'))
+            btn_dir.pack(side="right", padx=2, pady=8)
+
+            btn_del = ctk.CTkButton(item, text="🗑", width=30, height=30, corner_radius=8,
+                                    fg_color="#331A1E", hover_color="#DC2626", text_color="#F87171",
+                                    command=lambda name=p["name"]: self.delete_project_modal(name))
+            btn_del.pack(side="right", padx=2, pady=8)
+
+    def delete_project_modal(self, name):
+        if messagebox.askyesno("Eliminar Proyecto", f"¿Estás seguro de que deseas ELIMINAR '{name}'?\n\nEsta acción borrará los archivos en disco y la base de datos asociada."):
+            self.status_lbl.configure(text=f"● Eliminando {name}...", text_color="#F59E0B")
+            self.update()
+            success, msg = core.delete_project(name, delete_db=True)
+            messagebox.showinfo("AetherStack", msg)
+            self.load_projects_list()
+            self.refresh_status()
+
+    def refresh_status(self):
+        status = core.get_status()
+
+        # Nginx
+        self.row_nginx["dot"].configure(text_color="#10B981" if status["nginx"]["running"] else "#475569")
+        # PHP
+        self.row_php["dot"].configure(text_color="#10B981" if status["php"]["running"] else "#475569")
+        self.row_php["title"].configure(text=f" PHP FastCGI (v{status['php']['version']})")
+        # MariaDB
+        self.row_mariadb["dot"].configure(text_color="#10B981" if status["mariadb"]["running"] else "#475569")
+
+        if status["all_running"]:
+            self.btn_master.configure(text="🛑 DETENER TODOS LOS SERVICIOS", fg_color="#EF4444", hover_color="#DC2626")
+            self.status_lbl.configure(text="● Servicios activos y listos para trabajar", text_color="#10B981")
+        else:
+            self.btn_master.configure(text="⚡ INICIAR TODOS LOS SERVICIOS", fg_color="#10B981", hover_color="#059669")
+            self.status_lbl.configure(text="● Servicios en reposo", text_color="#64748B")
+
+        self.path_lbl.configure(text=status["config"].get("projects_dir", "D:\\LabIA"))
+
+    def auto_refresh_loop(self):
+        self.refresh_status()
+        self.after(3000, self.auto_refresh_loop)
+
+    def toggle_services(self):
+        status = core.get_status()
+        self.btn_master.configure(text="Procesando...", state="disabled")
+        self.update()
+
+        def run():
+            if status["all_running"]:
+                core.stop_services()
+            else:
+                core.start_services(self.php_var.get())
+            self.after(100, lambda: [self.btn_master.configure(state="normal"), self.refresh_status()])
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def on_switch_php(self, ver):
+        self.status_lbl.configure(text=f"● Cambiando a PHP {ver}...", text_color="#38BDF8")
+        self.update()
+
+        def run():
+            core.switch_php(ver)
+            self.after(100, self.refresh_status)
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def prompt_project(self, ptype):
+        dialog = ctk.CTkInputDialog(text=f"Nombre de la carpeta para {ptype.capitalize()} (ej: mi-web):",
+                                    title=f"Nuevo Proyecto {ptype.capitalize()}")
+        name = dialog.get_input()
+        if not name or not name.strip():
             return
+        name = name.strip()
 
-        if parsed.path == "/api/projects":
-            self.send_json(core.list_projects())
-            return
+        self.status_lbl.configure(text=f"● Creando {ptype} '{name}'... Esto puede tardar 1 minuto", text_color="#38BDF8")
+        self.update()
 
-        if parsed.path == "/api/choose-folder":
-            root = tk.Tk()
-            root.withdraw()
-            root.attributes('-topmost', True)
-            folder = filedialog.askdirectory(title="Seleccionar carpeta de proyectos")
-            root.destroy()
-            self.send_json({"folder": folder if folder else ""})
-            return
-
-        if parsed.path == "/api/open-localhost":
-            state = core.load_state()
-            port = state.get("nginx_port", 80)
-            url = f"http://localhost:{port}" if port != 80 else "http://localhost"
-            os.system(f"start {url}")
-            self.send_json({"ok": True})
-            return
-
-        if parsed.path == "/api/open-projects-dir":
-            state = core.load_state()
-            p_dir = state.get("projects_dir", "D:\\LabIA")
-            os.system(f'explorer "{p_dir}"')
-            self.send_json({"ok": True})
-            return
-
-        if parsed.path == "/api/open-terminal":
-            state = core.load_state()
-            ver = state.get("php_version", "8.4")
-            p_dir = state.get("projects_dir", "D:\\LabIA")
-            php_dir = os.path.join(core.BIN_DIR, "php", f"php-{ver}")
-            mariadb_bin = os.path.join(core.BIN_DIR, "mariadb")
-            composer_dir = os.path.join(core.BIN_DIR, "composer")
-            env_cmd = f'set "PATH={php_dir};{composer_dir};{mariadb_bin};%PATH%" & cd /d "{p_dir}" & start cmd.exe /k "echo AetherStack Dev Shell (PHP {ver}) & echo."'
-            os.system(env_cmd)
-            self.send_json({"ok": True})
-            return
-
-        super().do_GET()
-
-    def do_POST(self):
-        parsed = urllib.parse.urlparse(self.path)
-        content_len = int(self.headers.get('Content-Length', 0))
-        post_body = self.rfile.read(content_len).decode('utf-8')
-        data = json.loads(post_body) if post_body else {}
-
-        if parsed.path == "/api/start":
-            res = core.start_services()
-            self.send_json(res)
-            return
-
-        if parsed.path == "/api/stop":
-            res = core.stop_services()
-            self.send_json(res)
-            return
-
-        if parsed.path == "/api/switch-php":
-            ver = data.get("version", "8.4")
-            res = core.switch_php(ver)
-            self.send_json(res)
-            return
-
-        if parsed.path == "/api/config":
-            res = core.update_global_config(data)
-            self.send_json(res)
-            return
-
-        if parsed.path == "/api/create-project":
-            ptype = data.get("type", "laravel")
-            name = data.get("name", "")
+        def run():
             if ptype == "laravel":
                 success, msg = core.create_project_laravel(name)
             else:
                 success, msg = core.create_project_wordpress(name)
-            self.send_json({"success": success, "message": msg})
-            return
+            
+            if success:
+                messagebox.showinfo("AetherStack", f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos asociada configurada.")
+            else:
+                messagebox.showerror("Error", msg)
+            self.after(100, self.refresh_status)
 
-        if parsed.path == "/api/delete-project":
-            name = data.get("name", "")
-            success, msg = core.delete_project(name, delete_db=True)
-            self.send_json({"success": success, "message": msg})
-            return
+        threading.Thread(target=run, daemon=True).start()
 
-        if parsed.path == "/api/open-url":
-            url = data.get("url", "http://localhost")
-            os.system(f'start {url}')
-            self.send_json({"ok": True})
-            return
+    def open_settings_modal(self):
+        win = ctk.CTkToplevel(self)
+        win.title("Configuración Global")
+        win.geometry("440x320")
+        win.resizable(False, False)
+        win.configure(fg_color="#090D16")
+        win.attributes('-topmost', True)
 
-        if parsed.path == "/api/open-folder":
-            folder = data.get("folder", "D:\\LabIA")
-            os.system(f'explorer "{folder}"')
-            self.send_json({"ok": True})
-            return
+        ctk.CTkLabel(win, text="Configuración Global", font=ctk.CTkFont(size=16, weight="bold"), text_color="#F8FAFC").pack(anchor="w", padx=20, pady=(16, 4))
+        ctk.CTkLabel(win, text="Personaliza la carpeta de proyectos y puertos de servicios.", font=ctk.CTkFont(size=11), text_color="#94A3B8").pack(anchor="w", padx=20, pady=(0, 12))
 
-    def send_json(self, data):
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode('utf-8'))
+        # Carpeta
+        f_box = ctk.CTkFrame(win, fg_color="transparent")
+        f_box.pack(fill="x", padx=20, pady=4)
+        ctk.CTkLabel(f_box, text="Carpeta de Proyectos:", font=ctk.CTkFont(size=11, weight="bold"), text_color="#E2E8F0").pack(anchor="w")
 
-def run_server():
-    global server_instance
-    try:
-        server_instance = HTTPServer(('127.0.0.1', PORT), AetherHandler)
-        server_instance.serve_forever()
-    except Exception as e:
-        print("Error en server:", e)
+        dir_row = ctk.CTkFrame(f_box, fg_color="transparent")
+        dir_row.pack(fill="x", pady=4)
 
-def main():
-    # Iniciar servidor en hilo separado
-    t = threading.Thread(target=run_server, daemon=True)
-    t.start()
-    time.sleep(0.5)
+        entry_dir = ctk.CTkEntry(dir_row, fg_color="#1E293B", text_color="#F8FAFC", border_color="#334155")
+        entry_dir.insert(0, self.state_data.get("projects_dir", "D:\\LabIA"))
+        entry_dir.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
-    app_url = f"http://127.0.0.1:{PORT}"
-    edge_exe = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-    user_data = r"D:\LabIA\aetherstack\data\edge_profile"
+        def browse():
+            f = filedialog.askdirectory(title="Seleccionar carpeta de proyectos")
+            if f:
+                entry_dir.delete(0, "end")
+                entry_dir.insert(0, f)
 
-    # Lanzar Edge en modo App de escritorio aislado
-    cmd = [
-        edge_exe,
-        f"--app={app_url}",
-        f"--user-data-dir={user_data}",
-        "--window-size=520,720",
-        "--disable-extensions",
-        "--disable-plugins"
-    ]
-    p = subprocess.Popen(cmd)
-    p.wait()
+        ctk.CTkButton(dir_row, text="Examinar", width=80, fg_color="#334155", hover_color="#475569", command=browse).pack(side="right")
+
+        # Puertos
+        p_row = ctk.CTkFrame(win, fg_color="transparent")
+        p_row.pack(fill="x", padx=20, pady=6)
+
+        c1 = ctk.CTkFrame(p_row, fg_color="transparent")
+        c1.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        ctk.CTkLabel(c1, text="Puerto Nginx (Web):", font=ctk.CTkFont(size=11, weight="bold"), text_color="#E2E8F0").pack(anchor="w")
+        entry_nginx = ctk.CTkEntry(c1, fg_color="#1E293B", text_color="#F8FAFC", border_color="#334155")
+        entry_nginx.insert(0, str(self.state_data.get("nginx_port", 80)))
+        entry_nginx.pack(fill="x", pady=4)
+
+        c2 = ctk.CTkFrame(p_row, fg_color="transparent")
+        c2.pack(side="right", fill="x", expand=True, padx=(6, 0))
+        ctk.CTkLabel(c2, text="Puerto MariaDB:", font=ctk.CTkFont(size=11, weight="bold"), text_color="#E2E8F0").pack(anchor="w")
+        entry_db = ctk.CTkEntry(c2, fg_color="#1E293B", text_color="#F8FAFC", border_color="#334155")
+        entry_db.insert(0, str(self.state_data.get("mariadb_port", 3307)))
+        entry_db.pack(fill="x", pady=4)
+
+        def save():
+            new_conf = {
+                "projects_dir": entry_dir.get().strip(),
+                "nginx_port": int(entry_nginx.get()),
+                "mariadb_port": int(entry_db.get())
+            }
+            core.update_global_config(new_conf)
+            self.state_data = core.load_state()
+            self.refresh_status()
+            win.destroy()
+            messagebox.showinfo("AetherStack", "Configuración guardada correctamente.")
+
+        ctk.CTkButton(win, text="Guardar Cambios", fg_color="#0284C7", hover_color="#0369A1",
+                      height=36, corner_radius=10, command=save).pack(fill="x", padx=20, pady=(16, 0))
+
+    def open_localhost(self):
+        port = self.state_data.get("nginx_port", 80)
+        url = f"http://localhost:{port}" if port != 80 else "http://localhost"
+        os.system(f"start {url}")
+
+    def open_projects_dir(self):
+        p_dir = self.state_data.get("projects_dir", "D:\\LabIA")
+        os.system(f'explorer "{p_dir}"')
+
+    def open_terminal(self):
+        ver = self.php_var.get()
+        p_dir = self.state_data.get("projects_dir", "D:\\LabIA")
+        php_dir = os.path.join(core.BIN_DIR, "php", f"php-{ver}")
+        mariadb_bin = os.path.join(core.BIN_DIR, "mariadb")
+        composer_dir = os.path.join(core.BIN_DIR, "composer")
+        env_cmd = f'set "PATH={php_dir};{composer_dir};{mariadb_bin};%PATH%" & cd /d "{p_dir}" & start cmd.exe /k "echo AetherStack Dev Shell (PHP {ver}) & echo."'
+        os.system(env_cmd)
 
 if __name__ == "__main__":
-    main()
+    app = AetherApp()
+    app.mainloop()
