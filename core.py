@@ -443,6 +443,10 @@ def delete_project(project_name, delete_db=True):
         return False, f"No se pudo eliminar completamente la carpeta '{project_name}' (bloqueo en Windows)."
 
 def create_project_laravel(project_name, progress_cb=None):
+    status = get_status()
+    if not status["all_running"]:
+        return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
+
     state = load_state()
     proj_root = state.get("projects_dir", "D:\\LabIA")
     php_ver = state.get("php_version", "8.4")
@@ -479,6 +483,10 @@ def create_project_laravel(project_name, progress_cb=None):
     return True, f"Proyecto Laravel '{project_name}' listo en {target_dir}."
 
 def create_project_wordpress(project_name, progress_cb=None):
+    status = get_status()
+    if not status["all_running"]:
+        return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
+
     state = load_state()
     proj_root = state.get("projects_dir", "D:\\LabIA")
     target_dir = os.path.join(proj_root, project_name)

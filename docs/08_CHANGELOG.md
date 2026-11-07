@@ -9,6 +9,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [1.0.3] - 2026-11-07
 
 ### Mejorado
+- Condición preventiva en creación de proyectos: bloqueo en UI y validación en `core.py` si el stack de servicios no está activo, evitando proyectos incompletos o fallos de base de datos en MariaDB.
 - Centrado dinámico de modales de creación de proyecto y configuración en relación a la ventana principal de la aplicación.
 - Modales nativos de confirmación y alertas con diseño dark premium integrado (`CTkLabel`, `CTkButton`), eliminando los diálogos estándar Win32.
 - Documentación 100% portable: reemplazo de rutas absolutas por rutas relativas en todos los documentos técnicos y `README.md`.

@@ -8,6 +8,7 @@
 ---
 
 ## Tareas Completadas
+- [x] Condición preventiva de creación: bloqueo estricto en UI y lógica core para impedir crear proyectos si el stack de servicios (Nginx, PHP, MariaDB) no está activo.
 - [x] Descarga e integración de Nginx 1.28 portable.
 - [x] Soporte para múltiples versiones de PHP: 8.1, 8.2, 8.3, 8.4 y 8.5 con selector dinámico tipo dropdown en caliente.
 - [x] Descarga y configuración de MariaDB 11.8 (puerto 3307).

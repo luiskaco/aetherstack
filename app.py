@@ -579,9 +579,9 @@ class AetherDribbbleApp(ctk.CTk):
         head = ctk.CTkFrame(pad, fg_color="transparent")
         head.pack(fill="x", pady=(0, 8))
 
-        icon_char = "✓" if alert_type == "success" else ("✕" if alert_type == "error" else "ℹ")
-        icon_bg = "#064E3B" if alert_type == "success" else ("#451A1A" if alert_type == "error" else "#1E293B")
-        icon_fg = "#10B981" if alert_type == "success" else ("#EF4444" if alert_type == "error" else "#38BDF8")
+        icon_char = "✓" if alert_type == "success" else ("✕" if alert_type == "error" else ("⚠" if alert_type == "warning" else "ℹ"))
+        icon_bg = "#064E3B" if alert_type == "success" else ("#451A1A" if alert_type == "error" else ("#453210" if alert_type == "warning" else "#1E293B"))
+        icon_fg = "#10B981" if alert_type == "success" else ("#EF4444" if alert_type == "error" else ("#F59E0B" if alert_type == "warning" else "#38BDF8"))
 
         badge = ctk.CTkLabel(head, text=icon_char, width=32, height=32, corner_radius=16,
                              fg_color=icon_bg, text_color=icon_fg, font=ctk.CTkFont(size=16, weight="bold"))
@@ -662,6 +662,15 @@ class AetherDribbbleApp(ctk.CTk):
         return win
 
     def prompt_project(self, ptype):
+        status = core.get_status()
+        if not status["all_running"]:
+            self.show_dark_alert(
+                "Servicios Detenidos",
+                "No puedes crear proyectos mientras los servicios estén apagados.\n\nInicia el stack pulsando 'INICIAR STACK' para activar Nginx, PHP y MariaDB.",
+                alert_type="warning"
+            )
+            return
+
         win = ctk.CTkToplevel(self)
         is_lar = ptype.lower() == "laravel"
         title_txt = "Crear Proyecto Laravel" if is_lar else "Crear Sitio WordPress"
@@ -697,6 +706,17 @@ class AetherDribbbleApp(ctk.CTk):
             name = entry_name.get().strip()
             if not name:
                 return
+
+            status = core.get_status()
+            if not status["all_running"]:
+                win.destroy()
+                self.show_dark_alert(
+                    "Servicios Detenidos",
+                    "No se pudo crear el proyecto: los servicios del stack no están activos.",
+                    alert_type="warning"
+                )
+                return
+
             win.destroy()
 
             def run():
