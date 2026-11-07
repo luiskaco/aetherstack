@@ -20,7 +20,7 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 6px;
+      width: 5px;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.15);
@@ -28,7 +28,7 @@
     }
   </style>
 </head>
-<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col justify-between p-6">
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col justify-between p-5 text-sm">
 
   <!-- Modal Configuración Global -->
   <div id="modal-settings" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -50,7 +50,7 @@
             <input type="text" id="cfg-projects-dir" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-sky-400">
             <button onclick="browseProjectsFolder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 transition">Examinar</button>
           </div>
-          <p class="text-[11px] text-slate-500 mt-1">Donde se crearán y servirán Laravel, WordPress y tus sitios PHP.</p>
+          <p class="text-[11px] text-slate-500 mt-1">Donde se alojan y crean tus proyectos.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -73,115 +73,135 @@
   </div>
 
   <!-- Header -->
-  <header class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+  <header class="flex items-center justify-between pb-3 border-b border-slate-800/80">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
       </div>
       <div>
-        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
           AetherStack
-          <span class="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">Portable v1.0</span>
+          <span class="text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">v1.0</span>
         </h1>
-        <p class="text-xs text-slate-400 font-medium">Local dev environment sin límites</p>
+        <p class="text-[11px] text-slate-400 font-medium">PHP 8.4/8.5 • Nginx • MariaDB</p>
       </div>
     </div>
-    <button onclick="toggleSettingsModal(true)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition shadow-sm" title="Configuración Global">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-    </button>
+    <div class="flex items-center gap-1.5">
+      <button onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition shadow-sm" title="Configuración Global">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
   </header>
 
-  <!-- Tarjeta de Estado y Servicios -->
-  <main class="space-y-4 my-auto py-4">
-    <div class="glass-card rounded-2xl p-5 shadow-xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Servicios del Stack</span>
-        <div class="flex items-center gap-2 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800 text-xs font-medium">
-          <span class="text-slate-400">PHP:</span>
+  <!-- Pestañas de Navegación -->
+  <div class="flex items-center gap-2 mt-3 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
+    <button onclick="switchTab('dashboard')" id="tab-btn-dash" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-white shadow-sm">Panel de Control</button>
+    <button onclick="switchTab('projects')" id="tab-btn-proj" class="flex-1 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">Mis Proyectos (<span id="proj-count">0</span>)</button>
+  </div>
+
+  <!-- Vista 1: Dashboard y Servicios -->
+  <div id="view-dashboard" class="space-y-3.5 my-3">
+    <!-- Tarjeta de Estado y Servicios -->
+    <div class="glass-card rounded-2xl p-4 shadow-xl">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-800/80">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Servicios Activos</span>
+        <div class="flex items-center gap-1.5 bg-slate-900/80 px-2 py-0.5 rounded-lg border border-slate-800 text-xs">
+          <span class="text-slate-400 text-[11px]">PHP:</span>
           <button onclick="setPHP('8.4')" id="btn-php-84" class="px-2 py-0.5 rounded transition font-semibold text-slate-400 hover:text-white">8.4</button>
           <button onclick="setPHP('8.5')" id="btn-php-85" class="px-2 py-0.5 rounded transition font-semibold text-slate-400 hover:text-white">8.5</button>
         </div>
       </div>
 
-      <div class="divide-y divide-slate-800/50 text-sm font-medium">
-        <!-- Nginx -->
-        <div class="flex items-center justify-between py-3">
-          <div class="flex items-center gap-3">
-            <span id="dot-nginx" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+      <div class="divide-y divide-slate-800/50 text-xs font-medium">
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-2.5">
+            <span id="dot-nginx" class="w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
             <span class="text-slate-200">Nginx Web Server</span>
           </div>
-          <span id="port-nginx" class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 80</span>
+          <span id="port-nginx" class="font-mono text-[11px] text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 80</span>
         </div>
 
-        <!-- PHP FastCGI -->
-        <div class="flex items-center justify-between py-3">
-          <div class="flex items-center gap-3">
-            <span id="dot-php" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-2.5">
+            <span id="dot-php" class="w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
             <span class="text-slate-200" id="label-php">PHP FastCGI (8.4)</span>
           </div>
-          <span class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 9000</span>
+          <span class="font-mono text-[11px] text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 9000</span>
         </div>
 
-        <!-- MariaDB -->
-        <div class="flex items-center justify-between py-3">
-          <div class="flex items-center gap-3">
-            <span id="dot-mariadb" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-2.5">
+            <span id="dot-mariadb" class="w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
             <span class="text-slate-200">MariaDB Server</span>
           </div>
-          <span id="port-mariadb" class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 3307</span>
+          <span id="port-mariadb" class="font-mono text-[11px] text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 3307</span>
         </div>
       </div>
     </div>
 
     <!-- Botón Maestro Moderno -->
-    <button id="btn-master" onclick="toggleAllServices()" class="w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]">
+    <button id="btn-master" onclick="toggleAllServices()" class="w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       <span>INICIAR SERVICIOS</span>
     </button>
 
-    <!-- Creación Rápida de Proyectos -->
-    <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2.5">
+    <!-- Creación Rápida -->
+    <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2">
       <div class="flex items-center justify-between">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Crear Proyecto Rápido</span>
-        <span id="active-path" class="text-[11px] font-mono text-slate-500 truncate max-w-[200px]">D:\LabIA</span>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Crear Proyecto Rápido</span>
+        <span id="active-path" class="text-[10px] font-mono text-slate-500 truncate max-w-[180px]">D:\LabIA</span>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="promptProject('laravel')" class="group p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-red-500/30 transition text-left flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">L</div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="promptProject('laravel')" class="group p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-red-500/30 transition text-left flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">L</div>
           <div>
             <div class="text-xs font-bold text-white group-hover:text-red-400 transition">Laravel</div>
-            <div class="text-[11px] text-slate-400">Composer + DB</div>
+            <div class="text-[10px] text-slate-400">Composer + DB</div>
           </div>
         </button>
 
-        <button onclick="promptProject('wordpress')" class="group p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-sky-500/30 transition text-left flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">W</div>
+        <button onclick="promptProject('wordpress')" class="group p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-sky-500/30 transition text-left flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">W</div>
           <div>
             <div class="text-xs font-bold text-white group-hover:text-sky-400 transition">WordPress</div>
-            <div class="text-[11px] text-slate-400">Auto wp-config</div>
+            <div class="text-[10px] text-slate-400">Auto wp-config</div>
           </div>
         </button>
       </div>
     </div>
 
-    <!-- Barra de Accesos Rápidos -->
+    <!-- Accesos Rápidos -->
     <div class="grid grid-cols-3 gap-2 text-center text-xs font-medium">
-      <button onclick="openLocalhost()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="openLocalhost()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
         Localhost
       </button>
 
-      <button onclick="openProjectsDir()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="openProjectsDir()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
         Proyectos
       </button>
 
-      <button onclick="openTerminal()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="openTerminal()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         Terminal
       </button>
     </div>
-  </main>
+  </div>
+
+  <!-- Vista 2: Gestión de Proyectos -->
+  <div id="view-projects" class="space-y-3 my-3 hidden flex-1 flex flex-col">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-bold text-slate-300">Aplicaciones encontradas en la carpeta</span>
+      <button onclick="loadProjectsList()" class="text-[11px] text-sky-400 hover:underline flex items-center gap-1">
+        <span>🔄 Recargar</span>
+      </button>
+    </div>
+
+    <div id="projects-container" class="custom-scroll space-y-2 overflow-y-auto max-h-[360px] pr-1">
+      <!-- Se inyecta con JS -->
+    </div>
+  </div>
 
   <!-- Footer Status Bar -->
   <footer class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
@@ -202,32 +222,97 @@
       }
     }
 
+    function switchTab(tab) {
+      const isDash = tab === 'dashboard';
+      document.getElementById('view-dashboard').classList.toggle('hidden', !isDash);
+      document.getElementById('view-projects').classList.toggle('hidden', isDash);
+
+      document.getElementById('tab-btn-dash').className = isDash 
+        ? "flex-1 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-white shadow-sm"
+        : "flex-1 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition";
+
+      document.getElementById('tab-btn-proj').className = !isDash 
+        ? "flex-1 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-white shadow-sm"
+        : "flex-1 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition";
+
+      if (!isDash) {
+        loadProjectsList();
+      }
+    }
+
+    async function loadProjectsList() {
+      const container = document.getElementById('projects-container');
+      container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Escaneando proyectos...</div>`;
+      
+      const list = await window.pywebview.api.list_projects();
+      document.getElementById('proj-count').innerText = list.length;
+
+      if (!list || list.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-8">No se encontraron proyectos en la carpeta seleccionada.</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(p => `
+        <div class="glass-card rounded-xl p-3 flex items-center justify-between hover:border-slate-600 transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              p.type === 'Laravel' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+              p.type === 'WordPress' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 
+              'bg-slate-700 text-slate-300'
+            }">
+              ${p.type}
+            </span>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white truncate">${p.name}</div>
+              <div class="text-[10px] text-slate-400 font-mono truncate">${p.vhost}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="window.pywebview.api.open_url('${p.url}')" title="Abrir en el Navegador" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-sky-400 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </button>
+            <button onclick="window.pywebview.api.open_folder('${p.path.replace(/\\/g, '\\\\')}')" title="Abrir Carpeta" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+            </button>
+            <button onclick="confirmDeleteProject('${p.name}')" title="Eliminar Proyecto" class="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function confirmDeleteProject(name) {
+      if (confirm(`¿Estás seguro de que deseas ELIMINAR el proyecto '${name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada.`)) {
+        document.getElementById('footer-msg').innerText = `Eliminando ${name}...`;
+        const res = await window.pywebview.api.delete_project(name, true);
+        alert(res.message);
+        loadProjectsList();
+      }
+    }
+
     function updateUI(status) {
       currentStatus = status;
       const isAllRunning = status.all_running;
 
-      // Nginx
       const dotNginx = document.getElementById("dot-nginx");
       dotNginx.className = status.nginx.running 
         ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
         : "w-2.5 h-2.5 rounded-full bg-slate-600";
       document.getElementById("port-nginx").innerText = "Puerto " + status.nginx.port;
 
-      // PHP
       const dotPHP = document.getElementById("dot-php");
       dotPHP.className = status.php.running 
         ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
         : "w-2.5 h-2.5 rounded-full bg-slate-600";
       document.getElementById("label-php").innerText = `PHP FastCGI (${status.php.version})`;
 
-      // MariaDB
       const dotDB = document.getElementById("dot-mariadb");
       dotDB.className = status.mariadb.running 
         ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
         : "w-2.5 h-2.5 rounded-full bg-slate-600";
       document.getElementById("port-mariadb").innerText = "Puerto " + status.mariadb.port;
 
-      // PHP Version buttons
       const btn84 = document.getElementById("btn-php-84");
       const btn85 = document.getElementById("btn-php-85");
       if (status.php.version === "8.4") {
@@ -238,21 +323,19 @@
         btn85.className = "px-2 py-0.5 rounded bg-sky-500 text-white font-bold text-xs";
       }
 
-      // Master Button
       const btnMaster = document.getElementById("btn-master");
       if (isAllRunning) {
-        btnMaster.className = "w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20 active:scale-[0.99]";
+        btnMaster.className = "w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20 active:scale-[0.99]";
         btnMaster.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span>DETENER TODOS LOS SERVICIOS</span>`;
         document.getElementById("footer-msg").innerText = "Servicios activos y respondiendo";
         document.getElementById("pulse-dot").className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
       } else {
-        btnMaster.className = "w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]";
+        btnMaster.className = "w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]";
         btnMaster.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span>INICIAR TODOS LOS SERVICIOS</span>`;
         document.getElementById("footer-msg").innerText = "Servicios en reposo";
         document.getElementById("pulse-dot").className = "w-1.5 h-1.5 rounded-full bg-slate-500";
       }
 
-      // Proj dir
       if (status.config && status.config.projects_dir) {
         document.getElementById("active-path").innerText = status.config.projects_dir;
       }
@@ -279,14 +362,16 @@
     }
 
     async function promptProject(type) {
-      const title = type === 'laravel' ? 'Nuevo Proyecto Laravel' : 'Nuevo Proyecto WordPress';
-      const name = prompt(`Introduce el nombre para el proyecto ${type.toUpperCase()} (ej: mi-web):`);
+      const name = prompt(`Introduce el nombre para el proyecto ${type.toUpperCase()} (ej: mi-tienda):`);
       if (!name || !name.trim()) return;
 
       document.getElementById("footer-msg").innerText = `Creando ${type} '${name.trim()}'...`;
       const res = await window.pywebview.api.create_project(type, name.trim());
       alert(res.message);
       fetchStatus();
+      if (!document.getElementById('view-projects').classList.contains('hidden')) {
+        loadProjectsList();
+      }
     }
 
     function openLocalhost() { window.pywebview.api.open_localhost(); }
@@ -319,12 +404,15 @@
       const res = await window.pywebview.api.update_config(newConfig);
       updateUI(res);
       toggleSettingsModal(false);
-      alert("Configuración actualizada correctamente.");
+      alert("Configuración actualizada.");
     }
 
     window.addEventListener('pywebviewready', () => {
       fetchStatus();
       setInterval(fetchStatus, 3000);
+      window.pywebview.api.list_projects().then(l => {
+        document.getElementById('proj-count').innerText = l ? l.length : 0;
+      });
     });
   </script>
 </body>

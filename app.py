@@ -1,6 +1,6 @@
 """
 AetherStack - Desktop Runner con PyWebView
-Interfaz nativa ultra moderna con motor Edge Chromium.
+Interfaz nativa ultra moderna con gestión y eliminación de proyectos.
 """
 import os
 import sys
@@ -36,12 +36,25 @@ class AetherBridge:
         root.destroy()
         return folder if folder else ""
 
+    def list_projects(self):
+        return core.list_projects()
+
+    def delete_project(self, project_name, delete_db=True):
+        success, msg = core.delete_project(project_name, delete_db)
+        return {"success": success, "message": msg}
+
     def create_project(self, project_type, name):
         if project_type == "laravel":
             success, msg = core.create_project_laravel(name)
         else:
             success, msg = core.create_project_wordpress(name)
         return {"success": success, "message": msg}
+
+    def open_url(self, url):
+        os.system(f'start {url}')
+
+    def open_folder(self, folder_path):
+        os.system(f'explorer "{folder_path}"')
 
     def open_localhost(self):
         state = core.load_state()
@@ -73,8 +86,8 @@ def main():
         title="AetherStack",
         url=f"file:///{html_path.replace(os.sep, '/')}",
         js_api=bridge,
-        width=480,
-        height=620,
+        width=540,
+        height=720,
         resizable=False,
         easy_drag=True
     )

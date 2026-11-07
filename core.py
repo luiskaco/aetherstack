@@ -1,6 +1,6 @@
 """
 AetherStack - Minimalist Local Dev Core Engine
-Soporte para configuración global y cambio dinámico de carpeta de proyectos.
+Soporte para gestión y eliminación completa de proyectos (archivos, DB y vhost).
 """
 import os
 import sys
@@ -161,7 +161,6 @@ def update_global_config(new_config):
     save_state(state)
     update_nginx_config()
     
-    # Si Nginx está activo, recargar
     if is_process_running("nginx.exe"):
         nginx_dir = os.path.join(BIN_DIR, "nginx")
         nginx_exe = os.path.join(nginx_dir, "nginx.exe")
@@ -259,6 +258,23 @@ def create_database(db_name):
     except Exception as e:
         return False, str(e)
 
+def drop_database(db_name):
+    state = load_state()
+    mariadb_dir = os.path.join(BIN_DIR, "mariadb")
+    mariadb_cli = os.path.join(mariadb_dir, "mariadb.exe")
+    cmd = f'DROP DATABASE IF EXISTS `{db_name}`;'
+    try:
+        res = subprocess.run(
+            [mariadb_cli, "-h", "127.0.0.1", "-P", str(state["mariadb_port"]), "-u", "root", "-e", cmd],
+            cwd=mariadb_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return res.returncode == 0
+    except Exception:
+        return False
+
 def create_virtual_host(project_name, is_laravel=False):
     state = load_state()
     proj_dir = state.get("projects_dir", "D:\\LabIA").replace("\\", "/")
@@ -300,6 +316,68 @@ server {{
         nginx_dir = os.path.join(BIN_DIR, "nginx")
         nginx_exe = os.path.join(nginx_dir, "nginx.exe")
         subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def list_projects():
+    state = load_state()
+    proj_root = state.get("projects_dir", "D:\\LabIA")
+    port = state.get("nginx_port", 80)
+    port_str = f":{port}" if port != 80 else ""
+
+    projects = []
+    if not os.path.exists(proj_root):
+        return projects
+
+    for entry in os.scandir(proj_root):
+        if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
+            folder_path = entry.path
+            is_laravel = os.path.exists(os.path.join(folder_path, "artisan")) or os.path.exists(os.path.join(folder_path, "public", "index.php"))
+            is_wp = os.path.exists(os.path.join(folder_path, "wp-config.php")) or os.path.exists(os.path.join(folder_path, "wp-settings.php"))
+            
+            p_type = "Laravel" if is_laravel else ("WordPress" if is_wp else "PHP / Web")
+            url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
+            url_vhost = f"http://{entry.name}.local{port_str}"
+
+            projects.append({
+                "name": entry.name,
+                "type": p_type,
+                "path": folder_path,
+                "url": url_sub,
+                "vhost": url_vhost,
+                "db_name": f"{entry.name.lower().replace('-', '_')}_db"
+            })
+    return projects
+
+def delete_project(project_name, delete_db=True):
+    state = load_state()
+    proj_root = state.get("projects_dir", "D:\\LabIA")
+    target_dir = os.path.join(proj_root, project_name)
+
+    if not os.path.exists(target_dir):
+        return False, f"La carpeta '{project_name}' no existe."
+
+    # 1. Eliminar base de datos si se solicitó
+    if delete_db:
+        db_name = f"{project_name.lower().replace('-', '_')}_db"
+        drop_database(db_name)
+
+    # 2. Eliminar Virtual Host
+    vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
+    if os.path.exists(vhost_file):
+        try:
+            os.remove(vhost_file)
+            if is_process_running("nginx.exe"):
+                nginx_dir = os.path.join(BIN_DIR, "nginx")
+                nginx_exe = os.path.join(nginx_dir, "nginx.exe")
+                subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+
+    # 3. Eliminar directorio de archivos
+    try:
+        shutil.rmtree(target_dir)
+        return True, f"Proyecto '{project_name}' eliminado completamente."
+    except Exception as e:
+        return False, f"No se pudo eliminar la carpeta: {e}"
 
 def create_project_laravel(project_name, progress_cb=None):
     state = load_state()
