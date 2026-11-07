@@ -3,175 +3,329 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AetherStack - Local Dev Environment</title>
+  <title>AetherStack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #090d16;
-      --card-bg: rgba(255, 255, 255, 0.03);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.2);
-      --success: #10b981;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .container {
-      width: 100%;
-      max-width: 820px;
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
     }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 999px;
-      font-size: 13px;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-    .badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-    }
-    h1 {
-      font-size: 42px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 16px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-    }
-    .card-title {
-      font-size: 14px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
-    }
-    .card-value {
-      font-size: 20px;
-      font-weight: 600;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #041019;
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
-    .btn-primary:hover {
-      background: #7dd3fc;
-      transform: translateY(-1px);
-    }
-    .btn-secondary {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-    }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .footer {
-      margin-top: 48px;
-      text-align: center;
-      font-size: 13px;
-      color: #475569;
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="badge">
-        <span class="badge-dot"></span> Entorno Local Activo
-      </div>
-      <h1>AetherStack</h1>
-      <p class="subtitle">Stack ultra ligero para desarrollo en PHP, Laravel y WordPress</p>
-    </div>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col justify-between p-6">
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-title">Servidor Web</div>
-        <div class="card-value">Nginx 1.28 <span style="font-size: 13px; color: var(--success);">(Puerto 80)</span></div>
+  <!-- Modal Configuración Global -->
+  <div id="modal-settings" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Configuración Global
+        </h3>
+        <button onclick="toggleSettingsModal(false)" class="text-slate-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
-      <div class="card">
-        <div class="card-title">Runtime PHP</div>
-        <div class="card-value">PHP 8.4 / 8.5 <span style="font-size: 13px; color: var(--accent);">(FastCGI 9000)</span></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Base de Datos</div>
-        <div class="card-value">MariaDB 11.8 <span style="font-size: 13px; color: var(--success);">(Puerto 3306)</span></div>
-      </div>
-    </div>
 
-    <div class="actions">
-      <a href="http://localhost" class="btn btn-primary" onclick="alert('Explora tus proyectos accediendo a http://localhost/nombre-del-proyecto'); return false;">Explorar Proyectos</a>
-      <a href="https://github.com/luiskaco/aetherstack" target="_blank" class="btn btn-secondary">Repositorio GitHub</a>
-    </div>
+      <div class="py-4 space-y-4 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Carpeta Raíz de Proyectos</label>
+          <div class="flex gap-2">
+            <input type="text" id="cfg-projects-dir" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-sky-400">
+            <button onclick="browseProjectsFolder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 transition">Examinar</button>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Donde se crearán y servirán Laravel, WordPress y tus sitios PHP.</p>
+        </div>
 
-    <div class="footer">
-      AetherStack &bull; Licencia MIT &bull; 100% Libre y sin licencias molestas
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Puerto Nginx (Web)</label>
+            <input type="number" id="cfg-nginx-port" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-sky-400">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Puerto MariaDB</label>
+            <input type="number" id="cfg-mariadb-port" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-sky-400">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+        <button onclick="toggleSettingsModal(false)" class="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">Cancelar</button>
+        <button onclick="saveSettings()" class="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-4 py-2 rounded-lg text-xs transition shadow-lg shadow-sky-500/20">Guardar Cambios</button>
+      </div>
     </div>
   </div>
+
+  <!-- Header -->
+  <header class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          AetherStack
+          <span class="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">Portable v1.0</span>
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">Local dev environment sin límites</p>
+      </div>
+    </div>
+    <button onclick="toggleSettingsModal(true)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition shadow-sm" title="Configuración Global">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
+  </header>
+
+  <!-- Tarjeta de Estado y Servicios -->
+  <main class="space-y-4 my-auto py-4">
+    <div class="glass-card rounded-2xl p-5 shadow-xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Servicios del Stack</span>
+        <div class="flex items-center gap-2 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800 text-xs font-medium">
+          <span class="text-slate-400">PHP:</span>
+          <button onclick="setPHP('8.4')" id="btn-php-84" class="px-2 py-0.5 rounded transition font-semibold text-slate-400 hover:text-white">8.4</button>
+          <button onclick="setPHP('8.5')" id="btn-php-85" class="px-2 py-0.5 rounded transition font-semibold text-slate-400 hover:text-white">8.5</button>
+        </div>
+      </div>
+
+      <div class="divide-y divide-slate-800/50 text-sm font-medium">
+        <!-- Nginx -->
+        <div class="flex items-center justify-between py-3">
+          <div class="flex items-center gap-3">
+            <span id="dot-nginx" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+            <span class="text-slate-200">Nginx Web Server</span>
+          </div>
+          <span id="port-nginx" class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 80</span>
+        </div>
+
+        <!-- PHP FastCGI -->
+        <div class="flex items-center justify-between py-3">
+          <div class="flex items-center gap-3">
+            <span id="dot-php" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+            <span class="text-slate-200" id="label-php">PHP FastCGI (8.4)</span>
+          </div>
+          <span class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 9000</span>
+        </div>
+
+        <!-- MariaDB -->
+        <div class="flex items-center justify-between py-3">
+          <div class="flex items-center gap-3">
+            <span id="dot-mariadb" class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm transition-colors duration-300"></span>
+            <span class="text-slate-200">MariaDB Server</span>
+          </div>
+          <span id="port-mariadb" class="text-xs font-mono text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">Puerto 3307</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Maestro Moderno -->
+    <button id="btn-master" onclick="toggleAllServices()" class="w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span>INICIAR SERVICIOS</span>
+    </button>
+
+    <!-- Creación Rápida de Proyectos -->
+    <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Crear Proyecto Rápido</span>
+        <span id="active-path" class="text-[11px] font-mono text-slate-500 truncate max-w-[200px]">D:\LabIA</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="promptProject('laravel')" class="group p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-red-500/30 transition text-left flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">L</div>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-red-400 transition">Laravel</div>
+            <div class="text-[11px] text-slate-400">Composer + DB</div>
+          </div>
+        </button>
+
+        <button onclick="promptProject('wordpress')" class="group p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-sky-500/30 transition text-left flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-xs group-hover:scale-105 transition">W</div>
+          <div>
+            <div class="text-xs font-bold text-white group-hover:text-sky-400 transition">WordPress</div>
+            <div class="text-[11px] text-slate-400">Auto wp-config</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Accesos Rápidos -->
+    <div class="grid grid-cols-3 gap-2 text-center text-xs font-medium">
+      <button onclick="openLocalhost()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        Localhost
+      </button>
+
+      <button onclick="openProjectsDir()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        Proyectos
+      </button>
+
+      <button onclick="openTerminal()" class="py-2.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Terminal
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer Status Bar -->
+  <footer class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="pulse-dot"></span>
+      <span id="footer-msg">Cargando estado...</span>
+    </div>
+    <span class="text-slate-600 font-mono">100% Free & Open</span>
+  </footer>
+
+  <script>
+    let currentStatus = null;
+
+    async function fetchStatus() {
+      if (window.pywebview) {
+        const res = await window.pywebview.api.get_status();
+        updateUI(res);
+      }
+    }
+
+    function updateUI(status) {
+      currentStatus = status;
+      const isAllRunning = status.all_running;
+
+      // Nginx
+      const dotNginx = document.getElementById("dot-nginx");
+      dotNginx.className = status.nginx.running 
+        ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
+        : "w-2.5 h-2.5 rounded-full bg-slate-600";
+      document.getElementById("port-nginx").innerText = "Puerto " + status.nginx.port;
+
+      // PHP
+      const dotPHP = document.getElementById("dot-php");
+      dotPHP.className = status.php.running 
+        ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
+        : "w-2.5 h-2.5 rounded-full bg-slate-600";
+      document.getElementById("label-php").innerText = `PHP FastCGI (${status.php.version})`;
+
+      // MariaDB
+      const dotDB = document.getElementById("dot-mariadb");
+      dotDB.className = status.mariadb.running 
+        ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50" 
+        : "w-2.5 h-2.5 rounded-full bg-slate-600";
+      document.getElementById("port-mariadb").innerText = "Puerto " + status.mariadb.port;
+
+      // PHP Version buttons
+      const btn84 = document.getElementById("btn-php-84");
+      const btn85 = document.getElementById("btn-php-85");
+      if (status.php.version === "8.4") {
+        btn84.className = "px-2 py-0.5 rounded bg-sky-500 text-white font-bold text-xs";
+        btn85.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-semibold text-xs";
+      } else {
+        btn84.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-semibold text-xs";
+        btn85.className = "px-2 py-0.5 rounded bg-sky-500 text-white font-bold text-xs";
+      }
+
+      // Master Button
+      const btnMaster = document.getElementById("btn-master");
+      if (isAllRunning) {
+        btnMaster.className = "w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20 active:scale-[0.99]";
+        btnMaster.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span>DETENER TODOS LOS SERVICIOS</span>`;
+        document.getElementById("footer-msg").innerText = "Servicios activos y respondiendo";
+        document.getElementById("pulse-dot").className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+      } else {
+        btnMaster.className = "w-full py-3.5 px-4 rounded-xl font-bold text-sm tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]";
+        btnMaster.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span>INICIAR TODOS LOS SERVICIOS</span>`;
+        document.getElementById("footer-msg").innerText = "Servicios en reposo";
+        document.getElementById("pulse-dot").className = "w-1.5 h-1.5 rounded-full bg-slate-500";
+      }
+
+      // Proj dir
+      if (status.config && status.config.projects_dir) {
+        document.getElementById("active-path").innerText = status.config.projects_dir;
+      }
+    }
+
+    async function toggleAllServices() {
+      const btn = document.getElementById("btn-master");
+      btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Procesando...`;
+      btn.disabled = true;
+      if (currentStatus && currentStatus.all_running) {
+        const res = await window.pywebview.api.stop_services();
+        updateUI(res);
+      } else {
+        const res = await window.pywebview.api.start_services();
+        updateUI(res);
+      }
+      btn.disabled = false;
+    }
+
+    async function setPHP(version) {
+      document.getElementById("footer-msg").innerText = `Cambiando a PHP ${version}...`;
+      const res = await window.pywebview.api.switch_php(version);
+      updateUI(res);
+    }
+
+    async function promptProject(type) {
+      const title = type === 'laravel' ? 'Nuevo Proyecto Laravel' : 'Nuevo Proyecto WordPress';
+      const name = prompt(`Introduce el nombre para el proyecto ${type.toUpperCase()} (ej: mi-web):`);
+      if (!name || !name.trim()) return;
+
+      document.getElementById("footer-msg").innerText = `Creando ${type} '${name.trim()}'...`;
+      const res = await window.pywebview.api.create_project(type, name.trim());
+      alert(res.message);
+      fetchStatus();
+    }
+
+    function openLocalhost() { window.pywebview.api.open_localhost(); }
+    function openProjectsDir() { window.pywebview.api.open_projects_dir(); }
+    function openTerminal() { window.pywebview.api.open_terminal(); }
+
+    function toggleSettingsModal(show) {
+      const modal = document.getElementById("modal-settings");
+      if (show && currentStatus && currentStatus.config) {
+        document.getElementById("cfg-projects-dir").value = currentStatus.config.projects_dir;
+        document.getElementById("cfg-nginx-port").value = currentStatus.config.nginx_port;
+        document.getElementById("cfg-mariadb-port").value = currentStatus.config.mariadb_port;
+      }
+      modal.classList.toggle("hidden", !show);
+    }
+
+    async function browseProjectsFolder() {
+      const selected = await window.pywebview.api.choose_folder();
+      if (selected) {
+        document.getElementById("cfg-projects-dir").value = selected;
+      }
+    }
+
+    async function saveSettings() {
+      const newConfig = {
+        projects_dir: document.getElementById("cfg-projects-dir").value.trim(),
+        nginx_port: parseInt(document.getElementById("cfg-nginx-port").value),
+        mariadb_port: parseInt(document.getElementById("cfg-mariadb-port").value)
+      };
+      const res = await window.pywebview.api.update_config(newConfig);
+      updateUI(res);
+      toggleSettingsModal(false);
+      alert("Configuración actualizada correctamente.");
+    }
+
+    window.addEventListener('pywebviewready', () => {
+      fetchStatus();
+      setInterval(fetchStatus, 3000);
+    });
+  </script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 """
 AetherStack - Minimalist Local Dev Core Engine
-Servicios: Nginx, PHP FastCGI (8.4/8.5), MariaDB
-Diseño 100% portable y desacoplado de la terminal.
+Soporte para configuración global y cambio dinámico de carpeta de proyectos.
 """
 import os
 import sys
@@ -18,7 +17,6 @@ BIN_DIR = os.path.join(BASE_DIR, "bin")
 CONF_DIR = os.path.join(BASE_DIR, "conf")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
-PROJECTS_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 STATE_FILE = os.path.join(CONF_DIR, "state.json")
 
 DEFAULT_CONFIG = {
@@ -26,7 +24,7 @@ DEFAULT_CONFIG = {
     "nginx_port": 80,
     "mariadb_port": 3307,
     "php_port": 9000,
-    "projects_dir": PROJECTS_ROOT
+    "projects_dir": "D:\\LabIA"
 }
 
 def load_state():
@@ -44,7 +42,7 @@ def save_state(state):
 
 def is_port_in_use(port, host='127.0.0.1'):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(0.4)
+        s.settimeout(0.3)
         return s.connect_ex((host, port)) == 0
 
 def is_process_running(process_name):
@@ -61,7 +59,6 @@ def get_status():
     state = load_state()
     php_ver = state.get("php_version", "8.4")
     
-    # Comprobar tanto puerto como proceso para máxima precisión
     nginx_running = is_process_running("nginx.exe") and is_port_in_use(state["nginx_port"])
     php_running = is_process_running("php-cgi.exe") and is_port_in_use(state["php_port"])
     mariadb_running = (is_process_running("mariadbd.exe") or is_process_running("mysqld.exe")) and is_port_in_use(state["mariadb_port"])
@@ -80,14 +77,105 @@ def get_status():
             "running": mariadb_running,
             "port": state["mariadb_port"]
         },
-        "all_running": nginx_running and php_running and mariadb_running
+        "all_running": nginx_running and php_running and mariadb_running,
+        "config": state
     }
+
+def update_nginx_config():
+    state = load_state()
+    proj_dir = state.get("projects_dir", "D:\\LabIA").replace("\\", "/")
+    
+    nginx_conf_content = f"""# AetherStack - Nginx Master Configuration
+worker_processes  auto;
+
+error_log  "D:/LabIA/aetherstack/logs/nginx_error.log" warn;
+pid        "D:/LabIA/aetherstack/logs/nginx.pid";
+
+events {{
+    worker_connections  1024;
+}}
+
+http {{
+    include       "D:/LabIA/aetherstack/bin/nginx/conf/mime.types";
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  "D:/LabIA/aetherstack/logs/nginx_access.log"  main;
+
+    sendfile        on;
+    tcp_nopush     on;
+    tcp_nodelay    on;
+    keepalive_timeout  65;
+    types_hash_max_size 2048;
+
+    client_max_body_size 128M;
+
+    gzip  on;
+    gzip_disable "msie6";
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    upstream php_cgi {{
+        server 127.0.0.1:{state['php_port']};
+        keepalive 16;
+    }}
+
+    server {{
+        listen       {state['nginx_port']};
+        server_name  localhost;
+
+        root   "{proj_dir}";
+        index  index.php index.html index.htm;
+
+        location / {{
+            autoindex on;
+            try_files $uri $uri/ /index.php?$query_string;
+        }}
+
+        location ~ \\.php$ {{
+            try_files $uri =404;
+            fastcgi_split_path_info ^(.+\\.php)(/.+)$;
+            fastcgi_pass   php_cgi;
+            fastcgi_index  index.php;
+            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            include        "D:/LabIA/aetherstack/bin/nginx/conf/fastcgi_params";
+            fastcgi_read_timeout 300;
+        }}
+
+        location ~ /\\. {{
+            deny all;
+        }}
+    }}
+
+    include "D:/LabIA/aetherstack/conf/vhosts/*.conf";
+}}
+"""
+    with open(os.path.join(CONF_DIR, "nginx.conf"), "w", encoding="utf-8") as f:
+        f.write(nginx_conf_content)
+
+def update_global_config(new_config):
+    state = load_state()
+    state.update(new_config)
+    save_state(state)
+    update_nginx_config()
+    
+    # Si Nginx está activo, recargar
+    if is_process_running("nginx.exe"):
+        nginx_dir = os.path.join(BIN_DIR, "nginx")
+        nginx_exe = os.path.join(nginx_dir, "nginx.exe")
+        subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+    return get_status()
 
 def start_services(php_version=None):
     state = load_state()
     if php_version:
         state["php_version"] = php_version
         save_state(state)
+
+    update_nginx_config()
 
     php_ver = state.get("php_version", "8.4")
     nginx_dir = os.path.join(BIN_DIR, "nginx")
@@ -124,13 +212,7 @@ def stop_services():
     nginx_dir = os.path.join(BIN_DIR, "nginx")
     nginx_exe = os.path.join(nginx_dir, "nginx.exe")
     try:
-        subprocess.run(
-            [nginx_exe, "-s", "stop", "-p", nginx_dir],
-            cwd=nginx_dir,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=2
-        )
+        subprocess.run([nginx_exe, "-s", "stop", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2)
     except Exception:
         pass
 
@@ -161,12 +243,13 @@ def switch_php(version):
     return get_status()
 
 def create_database(db_name):
+    state = load_state()
     mariadb_dir = os.path.join(BIN_DIR, "mariadb")
     mariadb_cli = os.path.join(mariadb_dir, "mariadb.exe")
     cmd = f'CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
     try:
         res = subprocess.run(
-            [mariadb_cli, "-h", "127.0.0.1", "-P", "3307", "-u", "root", "-e", cmd],
+            [mariadb_cli, "-h", "127.0.0.1", "-P", str(state["mariadb_port"]), "-u", "root", "-e", cmd],
             cwd=mariadb_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -177,12 +260,14 @@ def create_database(db_name):
         return False, str(e)
 
 def create_virtual_host(project_name, is_laravel=False):
+    state = load_state()
+    proj_dir = state.get("projects_dir", "D:\\LabIA").replace("\\", "/")
     vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
-    doc_root = f"D:/LabIA/{project_name}/public" if is_laravel else f"D:/LabIA/{project_name}"
+    doc_root = f"{proj_dir}/{project_name}/public" if is_laravel else f"{proj_dir}/{project_name}"
     
     raw_template = """# Virtual host para {name}
 server {{
-    listen 80;
+    listen {port};
     server_name {name}.local;
 
     root "{root}";
@@ -207,29 +292,25 @@ server {{
     }}
 }}
 """
-    content = raw_template.format(name=project_name, root=doc_root)
+    content = raw_template.format(name=project_name, root=doc_root, port=state["nginx_port"])
     with open(vhost_file, "w", encoding="utf-8") as f:
         f.write(content)
         
     if is_process_running("nginx.exe"):
         nginx_dir = os.path.join(BIN_DIR, "nginx")
         nginx_exe = os.path.join(nginx_dir, "nginx.exe")
-        subprocess.run(
-            [nginx_exe, "-s", "reload", "-p", nginx_dir],
-            cwd=nginx_dir,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def create_project_laravel(project_name, progress_cb=None):
     state = load_state()
+    proj_root = state.get("projects_dir", "D:\\LabIA")
     php_ver = state.get("php_version", "8.4")
     php_exe = os.path.join(BIN_DIR, "php", f"php-{php_ver}", "php.exe")
     composer_phar = os.path.join(BIN_DIR, "composer", "composer.phar")
-    target_dir = os.path.join(PROJECTS_ROOT, project_name)
+    target_dir = os.path.join(proj_root, project_name)
 
     if os.path.exists(target_dir):
-        return False, f"La carpeta '{project_name}' ya existe en D:\\LabIA."
+        return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
 
     if progress_cb: progress_cb("Descargando e instalando Laravel con Composer...")
     cmd = [php_exe, composer_phar, "create-project", "laravel/laravel", target_dir, "--prefer-dist", "--no-interaction"]
@@ -245,8 +326,8 @@ def create_project_laravel(project_name, progress_cb=None):
     if os.path.exists(env_file):
         with open(env_file, "r", encoding="utf-8") as f:
             env_content = f.read()
-        env_content = env_content.replace("DB_HOST=127.0.0.1", "DB_HOST=127.0.0.1\nDB_PORT=3307")
-        env_content = env_content.replace("DB_PORT=3306", "DB_PORT=3307")
+        env_content = env_content.replace("DB_HOST=127.0.0.1", f"DB_HOST=127.0.0.1\nDB_PORT={state['mariadb_port']}")
+        env_content = env_content.replace("DB_PORT=3306", f"DB_PORT={state['mariadb_port']}")
         env_content = env_content.replace("DB_DATABASE=laravel", f"DB_DATABASE={db_name}")
         env_content = env_content.replace("DB_USERNAME=root", "DB_USERNAME=root")
         env_content = env_content.replace("DB_PASSWORD=", "DB_PASSWORD=")
@@ -254,12 +335,14 @@ def create_project_laravel(project_name, progress_cb=None):
             f.write(env_content)
 
     create_virtual_host(project_name, is_laravel=True)
-    return True, f"Proyecto Laravel '{project_name}' listo en D:\\LabIA\\{project_name}."
+    return True, f"Proyecto Laravel '{project_name}' listo en {target_dir}."
 
 def create_project_wordpress(project_name, progress_cb=None):
-    target_dir = os.path.join(PROJECTS_ROOT, project_name)
+    state = load_state()
+    proj_root = state.get("projects_dir", "D:\\LabIA")
+    target_dir = os.path.join(proj_root, project_name)
     if os.path.exists(target_dir):
-        return False, f"La carpeta '{project_name}' ya existe en D:\\LabIA."
+        return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
 
     wp_zip = os.path.join(BASE_DIR, "downloads", "wordpress-latest.zip")
     if not os.path.exists(wp_zip):
@@ -286,26 +369,9 @@ def create_project_wordpress(project_name, progress_cb=None):
         cfg = cfg.replace("database_name_here", db_name)
         cfg = cfg.replace("username_here", "root")
         cfg = cfg.replace("password_here", "")
-        cfg = cfg.replace("localhost", "127.0.0.1:3307")
+        cfg = cfg.replace("localhost", f"127.0.0.1:{state['mariadb_port']}")
         with open(wp_config, "w", encoding="utf-8") as f:
             f.write(cfg)
 
     create_virtual_host(project_name, is_laravel=False)
     return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        action = sys.argv[1]
-        if action == "status":
-            print(json.dumps(get_status(), indent=2))
-        elif action == "start":
-            ver = sys.argv[2] if len(sys.argv) > 2 else None
-            print(json.dumps(start_services(ver), indent=2))
-        elif action == "stop":
-            print(json.dumps(stop_services(), indent=2))
-        elif action == "switch-php":
-            print(json.dumps(switch_php(sys.argv[2]), indent=2))
-        elif action == "create-laravel":
-            print(create_project_laravel(sys.argv[2]))
-        elif action == "create-wp":
-            print(create_project_wordpress(sys.argv[2]))
