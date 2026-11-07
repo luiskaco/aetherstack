@@ -1,0 +1,17 @@
+# Binaries and archives
+/bin/
+/downloads/
+/data/
+/logs/
+*.zip
+*.phar
+*.exe
+*.dll
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+Desktop.ini
