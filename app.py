@@ -80,7 +80,7 @@ class AetherDribbbleApp(ctk.CTk):
 
         self.btn_rail_proj = ctk.CTkButton(self.left_rail, text="📁", width=44, height=44, corner_radius=12,
                                           fg_color="transparent", text_color=RAIL_ICON_MUTED, font=ctk.CTkFont(size=18),
-                                          hover_color="#334155", command=lambda: self.switch_view("projects"))
+                                          hover_color="#334155", command=self.open_projects_dir)
         self.btn_rail_proj.pack(pady=4)
 
         # Configuración abajo en el rail
@@ -97,18 +97,28 @@ class AetherDribbbleApp(ctk.CTk):
         top_bar = ctk.CTkFrame(self.center_content, fg_color="transparent", height=44)
         top_bar.pack(fill="x", pady=(0, 16))
 
-        search_box = ctk.CTkFrame(top_bar, fg_color=SEARCH_BG, corner_radius=12, height=40,
-                                 border_width=1, border_color=BORDER)
-        search_box.pack(side="left", fill="x", expand=True)
+        path_box = ctk.CTkFrame(top_bar, fg_color=SEARCH_BG, corner_radius=12, height=40,
+                                border_width=1, border_color=BORDER)
+        path_box.pack(side="left", fill="x", expand=True)
 
-        s_icon = ctk.CTkLabel(search_box, text="🔍", font=ctk.CTkFont(size=13), text_color=TEXT_MUTED)
-        s_icon.pack(side="left", padx=(12, 6))
+        f_icon = ctk.CTkLabel(path_box, text="📁", font=ctk.CTkFont(size=14))
+        f_icon.pack(side="left", padx=(14, 8))
 
-        self.search_entry = ctk.CTkEntry(search_box, placeholder_text="Buscar en D:\\LabIA...",
-                                         fg_color="transparent", border_width=0, text_color=TEXT_DARK,
-                                         font=ctk.CTkFont(size=12))
-        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
-        self.search_entry.bind("<KeyRelease>", lambda e: self.load_projects_list())
+        lbl_prefix = ctk.CTkLabel(path_box, text="Ruta de Proyectos:",
+                                  font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED)
+        lbl_prefix.pack(side="left", padx=(0, 6))
+
+        proj_path = self.state_data.get("projects_dir", "D:\\LabIA")
+        self.lbl_path_display = ctk.CTkLabel(path_box, text=proj_path,
+                                             font=ctk.CTkFont(size=11, family="Consolas", weight="bold"),
+                                             text_color=TEXT_DARK)
+        self.lbl_path_display.pack(side="left", fill="x", expand=True, padx=4, anchor="w")
+
+        btn_open_folder = ctk.CTkButton(path_box, text="Abrir carpeta", font=ctk.CTkFont(size=11, weight="bold"),
+                                        fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                        width=95, height=26, corner_radius=8,
+                                        command=self.open_projects_dir)
+        btn_open_folder.pack(side="right", padx=(4, 8), pady=7)
 
         # Botón Maestro Iniciar/Detener
         self.btn_master = ctk.CTkButton(top_bar, text="INICIAR STACK", font=ctk.CTkFont(size=12, weight="bold"),
@@ -266,19 +276,8 @@ class AetherDribbbleApp(ctk.CTk):
         projects = core.list_projects()
         self._last_project_names = [p["name"] for p in projects]
 
-        query = ""
-        if hasattr(self, "search_entry"):
-            try:
-                query = self.search_entry.get().strip().lower()
-            except Exception:
-                pass
-
-        if query:
-            projects = [p for p in projects if query in p["name"].lower() or query in p["type"].lower()]
-
         if not projects:
-            msg_txt = "No se encontraron proyectos con ese criterio." if query else "No hay proyectos WordPress ni Laravel en la carpeta."
-            empty = ctk.CTkLabel(self.scroll_table, text=msg_txt,
+            empty = ctk.CTkLabel(self.scroll_table, text="No hay proyectos WordPress ni Laravel en la carpeta.",
                                  font=ctk.CTkFont(size=12), text_color=TEXT_MUTED)
             empty.pack(pady=40)
             return
@@ -404,7 +403,10 @@ class AetherDribbbleApp(ctk.CTk):
             self.btn_master.configure(text="INICIAR STACK", fg_color=GREEN_SUCCESS, hover_color="#059669")
             self.progress_bar.set(0.10)
 
-        self.lbl_active_folder.configure(text=status["config"].get("projects_dir", "D:\\LabIA"))
+        cur_dir = status["config"].get("projects_dir", "D:\\LabIA")
+        self.lbl_active_folder.configure(text=cur_dir)
+        if hasattr(self, "lbl_path_display"):
+            self.lbl_path_display.configure(text=cur_dir)
 
     def auto_refresh_loop(self):
         self.refresh_status()
