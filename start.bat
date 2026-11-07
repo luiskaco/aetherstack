@@ -1,5 +1,6 @@
 @echo off
-set "BASE=D:\LabIA\aetherstack"
+set "BASE=%~dp0"
+if "%BASE:~-1%"=="\" set "BASE=%BASE:~0,-1%"
 set "BIN=%BASE%\bin"
 set "CONF=%BASE%\conf"
 

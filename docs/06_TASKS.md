@@ -8,6 +8,7 @@
 ---
 
 ## Tareas Completadas
+- [x] Portabilidad total y plug-and-play: resolución dinámica de rutas relativas a `BASE_DIR` en scripts batch (`%~dp0`), `nginx.conf`, `my.ini` (MariaDB) y `php.ini`, permitiendo mover la suite a cualquier PC o pendrive sin fallos de configuración.
 - [x] Internacionalización (i18n): soporte completo para Español (ES) e Inglés (EN) con botón de alternancia en la barra superior (`🌐 EN` / `🌐 ES`) y persistencia en configuración.
 - [x] Condición preventiva de creación: bloqueo estricto en UI y lógica core para impedir crear proyectos si el stack de servicios (Nginx, PHP, MariaDB) no está activo.
 - [x] Descarga e integración de Nginx 1.28 portable.

@@ -46,9 +46,9 @@ class AetherDribbbleApp(ctk.CTk):
         self.minsize(980, 620)
         self.configure(fg_color=BG_MAIN)
 
-        icon_path = os.path.join(os.path.dirname(__file__), "icon.ico")
-        if os.path.exists(icon_path):
-            self.iconbitmap(icon_path)
+        self.icon_path = os.path.join(os.path.dirname(__file__), "icon.ico")
+        if os.path.exists(self.icon_path):
+            self.iconbitmap(self.icon_path)
 
         self.state_data = core.load_state()
         i18n.set_lang(self.state_data.get("language", "es"))
@@ -119,7 +119,7 @@ class AetherDribbbleApp(ctk.CTk):
                                        font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED)
         self.lbl_prefix.pack(side="left", padx=(0, 6))
 
-        proj_path = self.state_data.get("projects_dir", "D:\\LabIA")
+        proj_path = core.get_projects_root()
         self.lbl_path_display = ctk.CTkLabel(path_box, text=proj_path,
                                              font=ctk.CTkFont(size=11, family="Consolas", weight="bold"),
                                              text_color=TEXT_DARK)
@@ -457,7 +457,7 @@ class AetherDribbbleApp(ctk.CTk):
 
         p_chip = ctk.CTkFrame(c_dir_pad, fg_color=BG_ROW, corner_radius=8, border_width=1, border_color=BORDER)
         p_chip.pack(fill="x", pady=(0, 8))
-        self.lbl_active_folder = ctk.CTkLabel(p_chip, text=self.state_data.get("projects_dir", "D:\\LabIA"),
+        self.lbl_active_folder = ctk.CTkLabel(p_chip, text=core.get_projects_root(),
                                               font=ctk.CTkFont(size=10, family="Consolas", weight="bold"),
                                               text_color=ACCENT_BLUE, padx=8, pady=4, wraplength=210, justify="left")
         self.lbl_active_folder.pack(fill="x")
@@ -533,7 +533,7 @@ class AetherDribbbleApp(ctk.CTk):
         if hasattr(self, "lbl_ram_pct"):
             self.lbl_ram_pct.configure(text=f"{ram_load}%")
 
-        cur_dir = status["config"].get("projects_dir", "D:\\LabIA")
+        cur_dir = core.get_projects_root()
         self.lbl_active_folder.configure(text=cur_dir)
         if hasattr(self, "lbl_path_display"):
             self.lbl_path_display.configure(text=cur_dir)
@@ -662,6 +662,14 @@ class AetherDribbbleApp(ctk.CTk):
         x = max(0, p_x + (p_w - width) // 2)
         y = max(0, p_y + (p_h - height) // 2)
         modal.geometry(f"{width}x{height}+{x}+{y}")
+        self._apply_window_icon(modal)
+
+    def _apply_window_icon(self, win):
+        if hasattr(self, "icon_path") and self.icon_path and os.path.exists(self.icon_path):
+            try:
+                win.after(80, lambda: win.iconbitmap(self.icon_path) if win.winfo_exists() else None)
+            except Exception:
+                pass
 
     def show_dark_alert(self, title, message, alert_type="info", callback=None):
         win = ctk.CTkToplevel(self)
@@ -900,7 +908,7 @@ class AetherDribbbleApp(ctk.CTk):
 
         entry_dir = ctk.CTkEntry(dir_row, fg_color=BG_ROW, text_color=TEXT_DARK,
                                  border_color=BORDER, corner_radius=10)
-        entry_dir.insert(0, self.state_data.get("projects_dir", "D:\\LabIA"))
+        entry_dir.insert(0, core.get_projects_root())
         entry_dir.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
         def browse():
@@ -952,7 +960,7 @@ class AetherDribbbleApp(ctk.CTk):
         os.system(f"start {url}")
 
     def open_projects_dir(self):
-        p_dir = self.state_data.get("projects_dir", "D:\\LabIA")
+        p_dir = core.get_projects_root()
         os.system(f'explorer "{p_dir}"')
 
     def copy_db_connection(self):

@@ -19,6 +19,20 @@ CONF_DIR = os.path.join(BASE_DIR, "conf")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
 STATE_FILE = os.path.join(CONF_DIR, "state.json")
+BASE_DIR_SLASH = BASE_DIR.replace("\\", "/")
+
+def get_projects_root():
+    state = load_state()
+    p_dir = state.get("projects_dir")
+    if p_dir and os.path.exists(p_dir):
+        return p_dir
+    local_proj = os.path.join(BASE_DIR, "projects")
+    if os.path.exists(local_proj):
+        return local_proj
+    parent_dir = os.path.abspath(os.path.join(BASE_DIR, ".."))
+    if os.path.exists(parent_dir):
+        return parent_dir
+    return BASE_DIR
 
 DEFAULT_CONFIG = {
     "php_version": "8.4",
@@ -31,13 +45,17 @@ DEFAULT_CONFIG = {
 }
 
 def load_state():
+    conf = DEFAULT_CONFIG.copy()
+    if not os.path.exists("D:\\LabIA"):
+        conf["projects_dir"] = os.path.abspath(os.path.join(BASE_DIR, ".."))
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
-                return {**DEFAULT_CONFIG, **json.load(f)}
+                loaded = json.load(f)
+                conf.update(loaded)
         except Exception:
             pass
-    return DEFAULT_CONFIG.copy()
+    return conf
 
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
@@ -104,29 +122,103 @@ def get_status():
         "config": state
     }
 
+def update_mariadb_config():
+    state = load_state()
+    port = state.get("mariadb_port", 3307)
+    
+    my_ini_content = f"""[client]
+port = {port}
+socket = mysql.sock
+default-character-set = utf8mb4
+
+[mysqld]
+port = {port}
+bind-address = 127.0.0.1
+socket = mysql.sock
+basedir = "{BASE_DIR_SLASH}/bin/mariadb"
+datadir = "{BASE_DIR_SLASH}/data/mariadb"
+pid-file = "{BASE_DIR_SLASH}/data/mariadb/mysql.pid"
+log-error = "{BASE_DIR_SLASH}/logs/mariadb_error.log"
+
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+default_storage_engine = InnoDB
+max_connections = 100
+max_allowed_packet = 64M
+innodb_buffer_pool_size = 128M
+innodb_file_per_table = 1
+"""
+    my_ini_file = os.path.join(CONF_DIR, "my.ini")
+    with open(my_ini_file, "w", encoding="utf-8") as f:
+        f.write(my_ini_content)
+
+    data_my_ini = os.path.join(DATA_DIR, "mariadb", "my.ini")
+    if os.path.exists(os.path.dirname(data_my_ini)):
+        try:
+            with open(data_my_ini, "w", encoding="utf-8") as f:
+                f.write(f"[mysqld]\ndatadir={BASE_DIR_SLASH}/data/mariadb\n")
+        except Exception:
+            pass
+
+def update_php_configs():
+    log_path = f"{BASE_DIR_SLASH}/logs/php_error.log"
+    php_root = os.path.join(BIN_DIR, "php")
+    if os.path.exists(php_root):
+        import re
+        for entry in os.scandir(php_root):
+            if entry.is_dir() and entry.name.startswith("php-"):
+                ini_file = os.path.join(entry.path, "php.ini")
+                if os.path.exists(ini_file):
+                    try:
+                        with open(ini_file, "r", encoding="utf-8", errors="ignore") as f:
+                            content = f.read()
+                        new_content = re.sub(r'error_log\s*=\s*".*?"', f'error_log = "{log_path}"', content)
+                        with open(ini_file, "w", encoding="utf-8") as f:
+                            f.write(new_content)
+                    except Exception:
+                        pass
+
+def sync_vhosts_paths():
+    fastcgi_target = f'include "{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params";'
+    vhosts_dir = os.path.join(CONF_DIR, "vhosts")
+    if os.path.exists(vhosts_dir):
+        import re
+        for entry in os.scandir(vhosts_dir):
+            if entry.is_file() and entry.name.endswith(".conf"):
+                try:
+                    with open(entry.path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                    new_content = re.sub(r'include\s+"[^"]*fastcgi_params";', fastcgi_target, content)
+                    if new_content != content:
+                        with open(entry.path, "w", encoding="utf-8") as f:
+                            f.write(new_content)
+                except Exception:
+                    pass
+
 def update_nginx_config():
     state = load_state()
-    proj_dir = state.get("projects_dir", "D:\\LabIA").replace("\\", "/")
+    proj_dir = get_projects_root().replace("\\", "/")
     
     nginx_conf_content = f"""# AetherStack - Nginx Master Configuration
 worker_processes  auto;
 
-error_log  "D:/LabIA/aetherstack/logs/nginx_error.log" warn;
-pid        "D:/LabIA/aetherstack/logs/nginx.pid";
+error_log  "{BASE_DIR_SLASH}/logs/nginx_error.log" warn;
+pid        "{BASE_DIR_SLASH}/logs/nginx.pid";
 
 events {{
     worker_connections  1024;
 }}
 
 http {{
-    include       "D:/LabIA/aetherstack/bin/nginx/conf/mime.types";
+    include       "{BASE_DIR_SLASH}/bin/nginx/conf/mime.types";
     default_type  application/octet-stream;
 
     log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                       '$status $body_bytes_sent "$http_referer" '
                       '"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  "D:/LabIA/aetherstack/logs/nginx_access.log"  main;
+    access_log  "{BASE_DIR_SLASH}/logs/nginx_access.log"  main;
 
     sendfile        on;
     tcp_nopush     on;
@@ -163,7 +255,7 @@ http {{
             fastcgi_pass   php_cgi;
             fastcgi_index  index.php;
             fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-            include        "D:/LabIA/aetherstack/bin/nginx/conf/fastcgi_params";
+            include        "{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params";
             fastcgi_read_timeout 300;
         }}
 
@@ -172,17 +264,27 @@ http {{
         }}
     }}
 
-    include "D:/LabIA/aetherstack/conf/vhosts/*.conf";
+    include "{BASE_DIR_SLASH}/conf/vhosts/*.conf";
 }}
 """
     with open(os.path.join(CONF_DIR, "nginx.conf"), "w", encoding="utf-8") as f:
         f.write(nginx_conf_content)
 
+    nginx_dest = os.path.join(BIN_DIR, "nginx", "conf", "nginx.conf")
+    try:
+        with open(nginx_dest, "w", encoding="utf-8") as f:
+            f.write(nginx_conf_content)
+    except Exception:
+        pass
+
 def update_global_config(new_config):
     state = load_state()
     state.update(new_config)
     save_state(state)
+    update_mariadb_config()
     update_nginx_config()
+    update_php_configs()
+    sync_vhosts_paths()
     
     if is_process_running("nginx.exe"):
         nginx_dir = os.path.join(BIN_DIR, "nginx")
@@ -197,7 +299,10 @@ def start_services(php_version=None):
         state["php_version"] = php_version
         save_state(state)
 
+    update_mariadb_config()
     update_nginx_config()
+    update_php_configs()
+    sync_vhosts_paths()
 
     php_ver = state.get("php_version", "8.4")
     nginx_dir = os.path.join(BIN_DIR, "nginx")
@@ -300,9 +405,10 @@ def drop_database(db_name):
 
 def create_virtual_host(project_name, is_laravel=False):
     state = load_state()
-    proj_dir = state.get("projects_dir", "D:\\LabIA").replace("\\", "/")
+    proj_dir = get_projects_root().replace("\\", "/")
     vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
     doc_root = f"{proj_dir}/{project_name}/public" if is_laravel else f"{proj_dir}/{project_name}"
+    fastcgi_params = f"{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params"
     
     raw_template = """# Virtual host para {name}
 server {{
@@ -322,7 +428,7 @@ server {{
         fastcgi_pass php_cgi;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include "D:/LabIA/aetherstack/bin/nginx/conf/fastcgi_params";
+        include "{fastcgi_params}";
         fastcgi_read_timeout 300;
     }}
 
@@ -331,7 +437,7 @@ server {{
     }}
 }}
 """
-    content = raw_template.format(name=project_name, root=doc_root, port=state["nginx_port"])
+    content = raw_template.format(name=project_name, root=doc_root, port=state["nginx_port"], fastcgi_params=fastcgi_params)
     with open(vhost_file, "w", encoding="utf-8") as f:
         f.write(content)
         
@@ -342,7 +448,7 @@ server {{
 
 def list_projects():
     state = load_state()
-    proj_root = state.get("projects_dir", "D:\\LabIA")
+    proj_root = get_projects_root()
     port = state.get("nginx_port", 80)
     port_str = f":{port}" if port != 80 else ""
 
@@ -405,7 +511,7 @@ def list_projects():
 
 def delete_project(project_name, delete_db=True):
     state = load_state()
-    proj_root = state.get("projects_dir", "D:\\LabIA")
+    proj_root = get_projects_root()
     target_dir = os.path.join(proj_root, project_name)
 
     if not os.path.exists(target_dir):
@@ -459,7 +565,7 @@ def create_project_laravel(project_name, progress_cb=None):
         return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
 
     state = load_state()
-    proj_root = state.get("projects_dir", "D:\\LabIA")
+    proj_root = get_projects_root()
     php_ver = state.get("php_version", "8.4")
     php_exe = os.path.join(BIN_DIR, "php", f"php-{php_ver}", "php.exe")
     composer_phar = os.path.join(BIN_DIR, "composer", "composer.phar")
@@ -499,7 +605,7 @@ def create_project_wordpress(project_name, progress_cb=None):
         return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
 
     state = load_state()
-    proj_root = state.get("projects_dir", "D:\\LabIA")
+    proj_root = get_projects_root()
     target_dir = os.path.join(proj_root, project_name)
     if os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
@@ -535,5 +641,14 @@ def create_project_wordpress(project_name, progress_cb=None):
 
     create_virtual_host(project_name, is_laravel=False)
     return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
+
+# Sincronización automática de rutas portables en cada carga de módulo
+try:
+    update_mariadb_config()
+    update_nginx_config()
+    update_php_configs()
+    sync_vhosts_paths()
+except Exception:
+    pass
 
 

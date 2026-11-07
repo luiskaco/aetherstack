@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.5] - 2026-11-07
+
+### Añadido
+- Formato de icono nativo DIB (BMP) en `icon.ico` para compatibilidad completa con Windows Shell, evitando la degradación al icono genérico de Python en el Escritorio.
+- Notificación automática al Shell de Windows (`SHChangeNotify`) al crear o actualizar accesos directos, refrescando de inmediato la caché de iconos del explorador.
+- Icono oficial integrado en todas las ventanas modales secundarias (creación de proyectos, confirmaciones y alertas).
+
+### Mejorado
+- Portabilidad física plug-and-play total: bases de datos (`data/mariadb/`), configuraciones de Nginx (`nginx.conf`, vhosts), PHP (`php.ini`) y MariaDB (`my.ini`) resueltas dinámicamente con rutas relativas a la carpeta del proyecto, permitiendo transferir la suite a otra PC o unidad USB manteniendo todas las bases de datos intactas.
+
 ## [1.0.4] - 2026-11-07
 
 ### Añadido
