@@ -6,7 +6,7 @@ import os
 import sys
 import threading
 import customtkinter as ctk
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
 import core
 
 # Fijar Modo Oscuro estricto a nivel de toolkit para evitar que Windows o callbacks re-rendericen en blanco
@@ -563,6 +563,104 @@ class AetherDribbbleApp(ctk.CTk):
         y = max(0, p_y + (p_h - height) // 2)
         modal.geometry(f"{width}x{height}+{x}+{y}")
 
+    def show_dark_alert(self, title, message, alert_type="info", callback=None):
+        win = ctk.CTkToplevel(self)
+        win.title("AetherStack")
+        win.resizable(False, False)
+        win.configure(fg_color=BG_CARD)
+        win.attributes("-topmost", True)
+        win.transient(self)
+
+        self.center_modal(win, 440, 210)
+
+        pad = ctk.CTkFrame(win, fg_color="transparent")
+        pad.pack(fill="both", expand=True, padx=22, pady=18)
+
+        head = ctk.CTkFrame(pad, fg_color="transparent")
+        head.pack(fill="x", pady=(0, 8))
+
+        icon_char = "✓" if alert_type == "success" else ("✕" if alert_type == "error" else "ℹ")
+        icon_bg = "#064E3B" if alert_type == "success" else ("#451A1A" if alert_type == "error" else "#1E293B")
+        icon_fg = "#10B981" if alert_type == "success" else ("#EF4444" if alert_type == "error" else "#38BDF8")
+
+        badge = ctk.CTkLabel(head, text=icon_char, width=32, height=32, corner_radius=16,
+                             fg_color=icon_bg, text_color=icon_fg, font=ctk.CTkFont(size=16, weight="bold"))
+        badge.pack(side="left", padx=(0, 10))
+
+        ctk.CTkLabel(head, text=title, font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left", anchor="w")
+
+        ctk.CTkLabel(pad, text=message, font=ctk.CTkFont(size=11), text_color=TEXT_MUTED,
+                     wraplength=380, justify="left").pack(anchor="w", pady=(0, 16))
+
+        def close():
+            win.destroy()
+            if callback:
+                callback()
+
+        btn = ctk.CTkButton(pad, text="Entendido", height=32, corner_radius=10,
+                            fg_color=ACCENT_BLUE, hover_color="#1D4ED8", text_color="#FFFFFF",
+                            font=ctk.CTkFont(size=11, weight="bold"), command=close)
+        btn.pack(fill="x")
+
+        win.bind("<Return>", lambda e: close())
+        win.bind("<Escape>", lambda e: close())
+        win.grab_set()
+        win.after(80, btn.focus)
+        return win
+
+    def show_dark_confirm(self, title, message, confirm_text="Eliminar", on_confirm=None):
+        win = ctk.CTkToplevel(self)
+        win.title("AetherStack")
+        win.resizable(False, False)
+        win.configure(fg_color=BG_CARD)
+        win.attributes("-topmost", True)
+        win.transient(self)
+
+        self.center_modal(win, 440, 210)
+
+        pad = ctk.CTkFrame(win, fg_color="transparent")
+        pad.pack(fill="both", expand=True, padx=22, pady=18)
+
+        head = ctk.CTkFrame(pad, fg_color="transparent")
+        head.pack(fill="x", pady=(0, 8))
+
+        badge = ctk.CTkLabel(head, text="🗑", width=32, height=32, corner_radius=16,
+                             fg_color="#451A1A", text_color="#EF4444", font=ctk.CTkFont(size=16))
+        badge.pack(side="left", padx=(0, 10))
+
+        ctk.CTkLabel(head, text=title, font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left", anchor="w")
+
+        ctk.CTkLabel(pad, text=message, font=ctk.CTkFont(size=11), text_color=TEXT_MUTED,
+                     wraplength=380, justify="left").pack(anchor="w", pady=(0, 16))
+
+        btn_row = ctk.CTkFrame(pad, fg_color="transparent")
+        btn_row.pack(fill="x")
+
+        def close():
+            win.destroy()
+
+        def confirm():
+            win.destroy()
+            if on_confirm:
+                on_confirm()
+
+        btn_cancel = ctk.CTkButton(btn_row, text="Cancelar", height=32, corner_radius=10,
+                                   fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                   border_width=1, border_color=BORDER, command=close)
+        btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        btn_del = ctk.CTkButton(btn_row, text=confirm_text, height=32, corner_radius=10,
+                                fg_color="#DC2626", hover_color="#B91C1C", text_color="#FFFFFF",
+                                font=ctk.CTkFont(size=11, weight="bold"), command=confirm)
+        btn_del.pack(side="right", fill="x", expand=True, padx=(6, 0))
+
+        win.bind("<Escape>", lambda e: close())
+        win.grab_set()
+        win.after(80, btn_cancel.focus)
+        return win
+
     def prompt_project(self, ptype):
         win = ctk.CTkToplevel(self)
         is_lar = ptype.lower() == "laravel"
@@ -610,9 +708,13 @@ class AetherDribbbleApp(ctk.CTk):
                 self.after(0, self.load_projects_list)
                 self.after(0, self.refresh_status)
                 if success:
-                    messagebox.showinfo("AetherStack", f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.")
+                    self.after(50, lambda: self.show_dark_alert(
+                        "¡Proyecto Creado!",
+                        f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.",
+                        alert_type="success"
+                    ))
                 else:
-                    messagebox.showerror("Error", msg)
+                    self.after(50, lambda: self.show_dark_alert("Error al Crear", msg, alert_type="error"))
 
             threading.Thread(target=run, daemon=True).start()
 
@@ -638,16 +740,19 @@ class AetherDribbbleApp(ctk.CTk):
         win.grab_set()
 
     def delete_project_modal(self, name):
-        if messagebox.askyesno("Eliminar Proyecto", f"¿Eliminar '{name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada."):
-            def do_delete():
-                success, msg = core.delete_project(name, delete_db=True)
-                # Recargar de inmediato la lista de proyectos en la interfaz
-                self.after(0, self.load_projects_list)
-                self.after(0, self.refresh_status)
-                if not success:
-                    self.after(50, lambda: messagebox.showerror("Error al eliminar", msg))
+        def do_delete():
+            success, msg = core.delete_project(name, delete_db=True)
+            self.after(0, self.load_projects_list)
+            self.after(0, self.refresh_status)
+            if not success:
+                self.after(50, lambda: self.show_dark_alert("Error al Eliminar", msg, alert_type="error"))
 
-            threading.Thread(target=do_delete, daemon=True).start()
+        self.show_dark_confirm(
+            "Eliminar Proyecto",
+            f"¿Estás seguro de eliminar '{name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada de forma irreversible.",
+            confirm_text="Eliminar Proyecto",
+            on_confirm=do_delete
+        )
 
     def open_settings_modal(self):
         win = ctk.CTkToplevel(self)
@@ -713,7 +818,7 @@ class AetherDribbbleApp(ctk.CTk):
             self.state_data = core.load_state()
             self.refresh_status()
             win.destroy()
-            messagebox.showinfo("AetherStack", "Configuración guardada correctamente.")
+            self.show_dark_alert("Configuración", "Configuración guardada correctamente.", alert_type="success")
 
         ctk.CTkButton(win, text="Guardar Cambios", fg_color=ACCENT_BLUE, hover_color="#1D4ED8",
                       text_color="#FFFFFF", height=38, corner_radius=12,
@@ -734,7 +839,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.clipboard_clear()
         self.clipboard_append(conn_str)
         self.update()
-        messagebox.showinfo("MariaDB", f"Comando copiado al portapapeles:\n\n{conn_str}")
+        self.show_dark_alert("MariaDB Server", f"Comando de conexión copiado al portapapeles:\n\n{conn_str}", alert_type="info")
 
     def open_logs_dir(self):
         logs_dir = os.path.join(core.BASE_DIR, "logs")
