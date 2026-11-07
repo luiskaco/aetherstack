@@ -330,6 +330,39 @@ def list_projects():
     for entry in os.scandir(proj_root):
         if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
             folder_path = entry.path
+            
+            # Detección estricta de Laravel (presencia de artisan o composer con laravel)
+            is_laravel = os.path.exists(os.path.join(folder_path, "artisan"))
+            
+            # Detección estricta de WordPress (archivos de núcleo WP)
+            is_wp = (
+                os.path.exists(os.path.join(folder_path, "wp-config.php")) or
+                os.path.exists(os.path.join(folder_path, "wp-config-sample.php")) or
+                os.path.exists(os.path.join(folder_path, "wp-settings.php")) or
+                os.path.exists(os.path.join(folder_path, "wp-load.php"))
+            )
+            
+            # Solo incluir si es estrictamente Laravel o WordPress
+            if not (is_laravel or is_wp):
+                continue
+                
+            p_type = "Laravel" if is_laravel else "WordPress"
+            url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
+            url_vhost = f"http://{entry.name}.local{port_str}"
+
+            projects.append({
+                "name": entry.name,
+                "type": p_type,
+                "path": folder_path,
+                "url": url_sub,
+                "vhost": url_vhost,
+                "db_name": f"{entry.name.lower().replace('-', '_')}_db"
+            })
+    return projects
+
+    for entry in os.scandir(proj_root):
+        if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
+            folder_path = entry.path
             is_laravel = os.path.exists(os.path.join(folder_path, "artisan")) or os.path.exists(os.path.join(folder_path, "public", "index.php"))
             is_wp = os.path.exists(os.path.join(folder_path, "wp-config.php")) or os.path.exists(os.path.join(folder_path, "wp-settings.php"))
             
@@ -453,3 +486,4 @@ def create_project_wordpress(project_name, progress_cb=None):
 
     create_virtual_host(project_name, is_laravel=False)
     return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
+
