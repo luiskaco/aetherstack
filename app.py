@@ -40,8 +40,8 @@ class AetherDribbbleApp(ctk.CTk):
         super().__init__()
 
         self.title("AetherStack - Local Dev Suite")
-        self.geometry("980x640")
-        self.minsize(940, 600)
+        self.geometry("1020x660")
+        self.minsize(980, 620)
         self.configure(fg_color=BG_MAIN)
 
         icon_path = os.path.join(os.path.dirname(__file__), "icon.ico")
@@ -89,9 +89,17 @@ class AetherDribbbleApp(ctk.CTk):
                                      hover_color="#334155", command=self.open_settings_modal)
         btn_rail_cfg.pack(side="bottom", pady=16)
 
-        # ----------------- 2. MAIN CENTER CONTENT -----------------
+        # ----------------- 2. RIGHT PANEL (Packeado primero a la derecha para no ser recortado) -----------------
+        self.right_panel = ctk.CTkFrame(self.root_frame, width=265, fg_color=BG_SIDEBAR, corner_radius=18,
+                                        border_width=1, border_color=BORDER)
+        self.right_panel.pack(side="right", fill="y", padx=(0, 16), pady=16)
+        self.right_panel.pack_propagate(False)
+
+        self.build_right_sidebar()
+
+        # ----------------- 3. MAIN CENTER CONTENT -----------------
         self.center_content = ctk.CTkFrame(self.root_frame, fg_color=BG_MAIN, corner_radius=0)
-        self.center_content.pack(side="left", fill="both", expand=True, padx=20, pady=16)
+        self.center_content.pack(side="left", fill="both", expand=True, padx=(16, 16), pady=16)
 
         # Top Bar
         top_bar = ctk.CTkFrame(self.center_content, fg_color="transparent", height=44)
@@ -132,14 +140,6 @@ class AetherDribbbleApp(ctk.CTk):
         self.build_dashboard_cards()
         self.build_quick_actions()
         self.build_projects_table()
-
-        # ----------------- 3. RIGHT PANEL -----------------
-        self.right_panel = ctk.CTkFrame(self.root_frame, width=240, fg_color=BG_SIDEBAR, corner_radius=18,
-                                        border_width=1, border_color=BORDER)
-        self.right_panel.pack(side="right", fill="y", padx=(0, 16), pady=16)
-        self.right_panel.pack_propagate(False)
-
-        self.build_right_sidebar()
 
     def build_dashboard_cards(self):
         lbl_storage = ctk.CTkLabel(self.view_container, text="Servicios en Ejecución",
@@ -327,50 +327,136 @@ class AetherDribbbleApp(ctk.CTk):
                                     command=lambda name=p["name"]: self.delete_project_modal(name))
             btn_del.pack(side="right", padx=2, pady=6)
 
+    def get_system_ram_load(self):
+        try:
+            import ctypes
+            class MEMORYSTATUSEX(ctypes.Structure):
+                _fields_ = [
+                    ('dwLength', ctypes.c_ulong),
+                    ('dwMemoryLoad', ctypes.c_ulong),
+                    ('ullTotalPhys', ctypes.c_ulonglong),
+                    ('ullAvailPhys', ctypes.c_ulonglong),
+                    ('ullTotalPageFile', ctypes.c_ulonglong),
+                    ('ullAvailPageFile', ctypes.c_ulonglong),
+                    ('ullTotalVirtual', ctypes.c_ulonglong),
+                    ('ullAvailVirtual', ctypes.c_ulonglong),
+                    ('sullAvailExtendedVirtual', ctypes.c_ulonglong),
+                ]
+            stat = MEMORYSTATUSEX()
+            stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+            ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+            return stat.dwMemoryLoad
+        except Exception:
+            return 30
+
     def build_right_sidebar(self):
         pad_box = ctk.CTkFrame(self.right_panel, fg_color="transparent")
-        pad_box.pack(fill="both", expand=True, padx=16, pady=16)
+        pad_box.pack(fill="both", expand=True, padx=14, pady=16)
 
-        ctk.CTkLabel(pad_box, text="Detalles del Stack", font=ctk.CTkFont(size=14, weight="bold"),
-                     text_color=TEXT_DARK).pack(anchor="w", pady=(0, 12))
+        # 1. Cabecera con título e indicador
+        head_box = ctk.CTkFrame(pad_box, fg_color="transparent")
+        head_box.pack(fill="x", pady=(0, 12))
 
-        status_box = ctk.CTkFrame(pad_box, fg_color=BG_ROW, corner_radius=14, border_width=1, border_color=BORDER)
-        status_box.pack(fill="x", pady=(0, 14))
+        ctk.CTkLabel(head_box, text="Detalles del Stack", font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left")
 
-        sb_pad = ctk.CTkFrame(status_box, fg_color="transparent")
-        sb_pad.pack(fill="x", padx=12, pady=10)
+        self.badge_stack_status = ctk.CTkLabel(head_box, text="STANDBY", font=ctk.CTkFont(size=9, weight="bold"),
+                                              fg_color="#1E293B", text_color="#94A3B8", corner_radius=6, padx=6, pady=2)
+        self.badge_stack_status.pack(side="right")
 
-        ctk.CTkLabel(sb_pad, text="Rendimiento del Sistema", font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color=TEXT_DARK).pack(anchor="w")
+        # 2. Tarjeta: Rendimiento del Sistema (RAM)
+        card_ram = ctk.CTkFrame(pad_box, fg_color=BG_CARD, corner_radius=14, border_width=1, border_color=BORDER)
+        card_ram.pack(fill="x", pady=(0, 10))
 
-        self.ram_lbl = ctk.CTkLabel(sb_pad, text="Consumo: < 95 MB RAM", font=ctk.CTkFont(size=10),
+        c_ram_pad = ctk.CTkFrame(card_ram, fg_color="transparent")
+        c_ram_pad.pack(fill="x", padx=12, pady=10)
+
+        ram_head = ctk.CTkFrame(c_ram_pad, fg_color="transparent")
+        ram_head.pack(fill="x")
+        ctk.CTkLabel(ram_head, text="⚡ Memoria del Sistema", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left")
+        self.lbl_ram_pct = ctk.CTkLabel(ram_head, text="35%", font=ctk.CTkFont(size=11, weight="bold"),
+                                       text_color=ACCENT_BLUE)
+        self.lbl_ram_pct.pack(side="right")
+
+        self.progress_bar = ctk.CTkProgressBar(c_ram_pad, height=6, corner_radius=3, fg_color=PROGRESS_BG, progress_color=ACCENT_BLUE)
+        self.progress_bar.pack(fill="x", pady=(6, 4))
+        self.progress_bar.set(0.35)
+
+        self.ram_lbl = ctk.CTkLabel(c_ram_pad, text="Stack ligero: < 95 MB activos", font=ctk.CTkFont(size=10),
                                     text_color=TEXT_MUTED)
         self.ram_lbl.pack(anchor="w")
 
-        self.progress_bar = ctk.CTkProgressBar(sb_pad, height=6, corner_radius=3, fg_color=PROGRESS_BG, progress_color=ACCENT_BLUE)
-        self.progress_bar.pack(fill="x", pady=(6, 2))
-        self.progress_bar.set(0.15)
+        # 3. Tarjeta: Base de Datos MariaDB
+        card_db = ctk.CTkFrame(pad_box, fg_color=BG_CARD, corner_radius=14, border_width=1, border_color=BORDER)
+        card_db.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(pad_box, text="CARPETA ACTIVA", font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color=TEXT_MUTED).pack(anchor="w", pady=(8, 2))
+        c_db_pad = ctk.CTkFrame(card_db, fg_color="transparent")
+        c_db_pad.pack(fill="x", padx=12, pady=10)
 
-        self.lbl_active_folder = ctk.CTkLabel(pad_box, text=self.state_data.get("projects_dir", "D:\\LabIA"),
-                                              font=ctk.CTkFont(size=10, family="Consolas"), text_color=TEXT_DARK,
-                                              wraplength=200, justify="left")
-        self.lbl_active_folder.pack(anchor="w", pady=(0, 8))
+        db_head = ctk.CTkFrame(c_db_pad, fg_color="transparent")
+        db_head.pack(fill="x", pady=(0, 6))
+        ctk.CTkLabel(db_head, text="🐬 MariaDB Server", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left")
+        self.lbl_side_db_port = ctk.CTkLabel(db_head, text=f"Puerto {self.state_data.get('mariadb_port', 3307)}",
+                                             font=ctk.CTkFont(size=9, weight="bold"),
+                                             fg_color="#064E3B", text_color="#34D399", corner_radius=6, padx=5, pady=1)
+        self.lbl_side_db_port.pack(side="right")
 
-        ctk.CTkLabel(pad_box, text="BASE DE DATOS", font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color=TEXT_MUTED).pack(anchor="w", pady=(8, 2))
+        def make_param_row(parent, label, val):
+            row = ctk.CTkFrame(parent, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+            ctk.CTkLabel(row, text=label, font=ctk.CTkFont(size=10), text_color=TEXT_MUTED).pack(side="left")
+            ctk.CTkLabel(row, text=val, font=ctk.CTkFont(size=10, family="Consolas", weight="bold"), text_color=TEXT_DARK).pack(side="right")
 
-        db_txt = "Host: 127.0.0.1\nPuerto: 3307\nUser: root\nPass: (ninguna)"
-        ctk.CTkLabel(pad_box, text=db_txt, font=ctk.CTkFont(size=10, family="Consolas"), text_color=TEXT_DARK,
-                     justify="left").pack(anchor="w")
+        make_param_row(c_db_pad, "Host:", "127.0.0.1")
+        make_param_row(c_db_pad, "Usuario:", "root")
+        make_param_row(c_db_pad, "Clave:", "(sin contraseña)")
 
-        btn_change_dir = ctk.CTkButton(pad_box, text="Cambiar Carpeta", font=ctk.CTkFont(size=11, weight="bold"),
-                                       fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
-                                       border_width=1, border_color=BORDER, height=32, corner_radius=10,
-                                       command=self.open_settings_modal)
-        btn_change_dir.pack(fill="x", side="bottom", pady=4)
+        btn_copy_db = ctk.CTkButton(c_db_pad, text="📋 Copiar Conexión", font=ctk.CTkFont(size=10, weight="bold"),
+                                    fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                    height=24, corner_radius=6, border_width=1, border_color=BORDER,
+                                    command=self.copy_db_connection)
+        btn_copy_db.pack(fill="x", pady=(6, 0))
+
+        # 4. Tarjeta: Carpeta Activa de Proyectos
+        card_dir = ctk.CTkFrame(pad_box, fg_color=BG_CARD, corner_radius=14, border_width=1, border_color=BORDER)
+        card_dir.pack(fill="x", pady=(0, 10))
+
+        c_dir_pad = ctk.CTkFrame(card_dir, fg_color="transparent")
+        c_dir_pad.pack(fill="x", padx=12, pady=10)
+
+        ctk.CTkLabel(c_dir_pad, text="📁 Carpeta de Proyectos", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=TEXT_DARK).pack(anchor="w", pady=(0, 4))
+
+        p_chip = ctk.CTkFrame(c_dir_pad, fg_color=BG_ROW, corner_radius=8, border_width=1, border_color=BORDER)
+        p_chip.pack(fill="x", pady=(0, 8))
+        self.lbl_active_folder = ctk.CTkLabel(p_chip, text=self.state_data.get("projects_dir", "D:\\LabIA"),
+                                              font=ctk.CTkFont(size=10, family="Consolas", weight="bold"),
+                                              text_color=ACCENT_BLUE, padx=8, pady=4, wraplength=210, justify="left")
+        self.lbl_active_folder.pack(fill="x")
+
+        dir_btns = ctk.CTkFrame(c_dir_pad, fg_color="transparent")
+        dir_btns.pack(fill="x")
+
+        btn_open_exp = ctk.CTkButton(dir_btns, text="Explorar", font=ctk.CTkFont(size=10, weight="bold"),
+                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                     height=26, corner_radius=8, border_width=1, border_color=BORDER,
+                                     command=self.open_projects_dir)
+        btn_open_exp.pack(side="left", fill="x", expand=True, padx=(0, 3))
+
+        btn_change = ctk.CTkButton(dir_btns, text="Cambiar", font=ctk.CTkFont(size=10, weight="bold"),
+                                   fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                   height=26, corner_radius=8, border_width=1, border_color=BORDER,
+                                   command=self.open_settings_modal)
+        btn_change.pack(side="right", fill="x", expand=True, padx=(3, 0))
+
+        # 5. Botón inferior de Logs
+        btn_logs = ctk.CTkButton(pad_box, text="📜 Ver Logs del Stack", font=ctk.CTkFont(size=11, weight="bold"),
+                                 fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                 border_width=1, border_color=BORDER, height=32, corner_radius=10,
+                                 command=self.open_logs_dir)
+        btn_logs.pack(fill="x", side="bottom", pady=4)
 
     def switch_view(self, view_name):
         self.active_tab = view_name
@@ -404,15 +490,31 @@ class AetherDribbbleApp(ctk.CTk):
 
         if status["all_running"]:
             self.btn_master.configure(text="DETENER STACK", fg_color=RED_ERROR, hover_color="#DC2626")
-            self.progress_bar.set(0.65)
+            if hasattr(self, "badge_stack_status"):
+                self.badge_stack_status.configure(text="ONLINE", fg_color="#064E3B", text_color="#34D399")
+            if hasattr(self, "ram_lbl"):
+                self.ram_lbl.configure(text="Stack ligero: < 95 MB activos")
         else:
             self.btn_master.configure(text="INICIAR STACK", fg_color=GREEN_SUCCESS, hover_color="#059669")
-            self.progress_bar.set(0.10)
+            if hasattr(self, "badge_stack_status"):
+                self.badge_stack_status.configure(text="STANDBY", fg_color="#1E293B", text_color="#94A3B8")
+            if hasattr(self, "ram_lbl"):
+                self.ram_lbl.configure(text="Servicios detenidos")
+
+        ram_load = self.get_system_ram_load()
+        if hasattr(self, "progress_bar"):
+            self.progress_bar.set(ram_load / 100.0)
+        if hasattr(self, "lbl_ram_pct"):
+            self.lbl_ram_pct.configure(text=f"{ram_load}%")
 
         cur_dir = status["config"].get("projects_dir", "D:\\LabIA")
         self.lbl_active_folder.configure(text=cur_dir)
         if hasattr(self, "lbl_path_display"):
             self.lbl_path_display.configure(text=cur_dir)
+
+        db_port = status["config"].get("mariadb_port", 3307)
+        if hasattr(self, "lbl_side_db_port"):
+            self.lbl_side_db_port.configure(text=f"Puerto {db_port}")
 
     def auto_refresh_loop(self):
         self.refresh_status()
@@ -563,6 +665,19 @@ class AetherDribbbleApp(ctk.CTk):
     def open_projects_dir(self):
         p_dir = self.state_data.get("projects_dir", "D:\\LabIA")
         os.system(f'explorer "{p_dir}"')
+
+    def copy_db_connection(self):
+        port = self.state_data.get("mariadb_port", 3307)
+        conn_str = f"mysql -h 127.0.0.1 -P {port} -u root"
+        self.clipboard_clear()
+        self.clipboard_append(conn_str)
+        self.update()
+        messagebox.showinfo("MariaDB", f"Comando copiado al portapapeles:\n\n{conn_str}")
+
+    def open_logs_dir(self):
+        logs_dir = os.path.join(core.BASE_DIR, "logs")
+        os.makedirs(logs_dir, exist_ok=True)
+        os.system(f'explorer "{logs_dir}"')
 
     def open_terminal(self):
         ver = self.php_var.get()
