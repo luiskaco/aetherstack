@@ -24,7 +24,8 @@ DEFAULT_CONFIG = {
     "nginx_port": 80,
     "mariadb_port": 3307,
     "php_port": 9000,
-    "projects_dir": "D:\\LabIA"
+    "projects_dir": "D:\\\\LabIA",
+    "theme": "dark"
 }
 
 def load_state():
@@ -486,4 +487,5 @@ def create_project_wordpress(project_name, progress_cb=None):
 
     create_virtual_host(project_name, is_laravel=False)
     return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
+
 
