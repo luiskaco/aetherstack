@@ -22,7 +22,7 @@ AetherStack sigue una arquitectura desacoplada y orientada a procesos portables 
         │                   │                    │
         ▼                   ▼                    ▼
 ┌───────────────────────────────────────────────────────┐
-│     Carpeta de Proyectos Local (ej. D:\LabIA)        │
+│   Carpeta de Proyectos Local (configurable)          │
 │          [Laravel Apps / WordPress Sites]             │
 └───────────────────────────────────────────────────────┘
 ```

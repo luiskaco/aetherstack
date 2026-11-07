@@ -11,6 +11,10 @@
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
 
+<br/>
+
+<img src="docs/images/preview.png" alt="AetherStack Dashboard Console" width="880" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);" />
+
 </div>
 
 ---
@@ -34,7 +38,7 @@
 
 **AetherStack** nace como una alternativa moderna, minimalista y de alto rendimiento a herramientas tradicionales como Laragon, XAMPP y Docker Desktop. Diseñado específicamente para desarrolladores que trabajan con **Laravel**, **WordPress** y aplicaciones PHP contemporáneas sobre Windows, ofrece una experiencia libre de anuncios, donaciones intrusivas, instaladores pesados y dependencias externas.
 
-Todo el stack es **100% portable y autocontenido**, sin escribir en el Registro de Windows ni ensuciar las variables de entorno del sistema operativo.
+Todo el stack es **100% portable y autocontenido**, sin escribir en el Registro de Windows ni ensuciar las variables de entorno globales del sistema operativo.
 
 ---
 
@@ -73,7 +77,7 @@ Permite alternar entre **PHP 8.1, 8.2, 8.3, 8.4 y 8.5** con un solo clic desde e
 - **WordPress:** Descarga el núcleo oficial en español, crea la base de datos en MariaDB, genera el archivo `wp-config.php` preconfigurado con claves únicas y registra el Virtual Host correspondiente.
 
 ### 3. Filtro Estricto y Detección Reactiva de Proyectos
-La sección "Mis Proyectos" escanea periódicamente el directorio raíz (`D:\LabIA`) y lista de forma exclusiva proyectos válidos de **WordPress** (presencia de `wp-config.php` o estructura WP) y **Laravel** (presencia del ejecutable `artisan`). 
+La sección "Mis Proyectos" escanea periódicamente el directorio raíz configurado y lista de forma exclusiva proyectos válidos de **WordPress** (presencia de `wp-config.php` o estructura WP) y **Laravel** (presencia del ejecutable `artisan`). 
 Cualquier carpeta creada, eliminada o renombrada directamente desde el Explorador de Windows o la consola se sincroniza en pantalla en menos de 3 segundos sin recarga manual.
 
 ### 4. Eliminación Completa y Asíncrona
@@ -84,14 +88,14 @@ Al eliminar un proyecto desde la interfaz:
 - La fila desaparece de inmediato en segundo plano sin congelar la interfaz ni mostrar alertas modales intrusivas.
 
 ### 5. Barra de Navegación de Directorio
-La barra superior muestra permanentemente la ruta activa de proyectos (`📁 Ruta de Proyectos: D:\LabIA`) con un botón de acceso directo para abrir el Explorador de Windows al instante.
+La barra superior muestra permanentemente la ruta activa de proyectos con un botón de acceso directo para abrir el Explorador de Windows al instante.
 
 ---
 
 ## 📂 Estructura del Proyecto
 
 ```text
-D:\LabIA\aetherstack\
+aetherstack/
 ├── bin/                       # Binarios portables del ecosistema
 │   ├── composer/              # Composer PHAR y script de ejecución
 │   ├── mariadb/               # Motor y utilitarios cliente de MariaDB 11.8
@@ -122,25 +126,25 @@ D:\LabIA\aetherstack\
 ## 🛠️ Guía de Inicio Rápido
 
 ### Acceso Directo de Escritorio
-Al instalar AetherStack se genera un acceso directo oficial en el Escritorio de Windows con icono propio:
+Al iniciar AetherStack se genera un acceso directo oficial en el Escritorio de Windows con icono propio:
 - **Nombre:** `AetherStack`
 - **Destino:** Ejecuta `AetherStack.bat` en segundo plano sin dejar consolas CMD residuales.
 
 ### Control por Línea de Comandos
-Si preferís operar el stack sin interfaz gráfica:
+Si preferís operar el stack sin interfaz gráfica, podés ejecutar directamente desde la carpeta del proyecto:
 ```cmd
 :: Iniciar todos los servicios (Nginx, PHP FastCGI, MariaDB)
-D:\LabIA\aetherstack\start.bat
+start.bat
 
 :: Detener todos los procesos de forma limpia
-D:\LabIA\aetherstack\stop.bat
+stop.bat
 ```
 
 ---
 
 ## 🌐 Gestión de Proyectos
 
-Todos los proyectos se ubican en la carpeta raíz configurada (por defecto `D:\LabIA`).
+Todos los proyectos se ubican en la carpeta raíz configurada (modificable en cualquier momento desde el botón de configuración de la app).
 
 Cada proyecto cuenta con dos métodos de acceso HTTP inmediato:
 1. **Acceso directo por subdirectorio:**
@@ -174,7 +178,7 @@ Podés conectarte desde cualquier cliente visual estándar (HeidiSQL, DBeaver, T
 ## 💻 Terminal de Desarrollo Integrada
 
 Al pulsar el botón **Terminal** dentro de los accesos rápidos de la interfaz, se despliega una consola de comandos `cmd.exe` con el entorno completamente configurado:
-- El directorio de trabajo inicia directamente en `D:\LabIA`.
+- El directorio de trabajo inicia directamente en tu carpeta de proyectos activa.
 - La variable `PATH` se precarga con los binarios de la versión activa de PHP, Composer y el cliente CLI de MariaDB.
 - Podés ejecutar directamente comandos globales como:
   ```bash
@@ -188,20 +192,20 @@ Al pulsar el botón **Terminal** dentro de los accesos rápidos de la interfaz, 
 
 ## 📚 Documentación Técnica Oficial
 
-El proyecto cuenta con una especificación técnica formal y auditada dentro del directorio [`docs/`](file:///D:/LabIA/aetherstack/docs/):
+El proyecto cuenta con una especificación técnica formal y auditada dentro del directorio [`docs/`](docs/):
 
 | Documento | Título | Descripción |
 | :--- | :--- | :--- |
-| [`01_PROJECT_PRD.md`](file:///D:/LabIA/aetherstack/docs/01_PROJECT_PRD.md) | Requisitos del Producto | Especificación de requisitos funcionales y no funcionales. |
-| [`02_SDD.md`](file:///D:/LabIA/aetherstack/docs/02_SDD.md) | Diseño del Sistema | Arquitectura de componentes, topología de puertos y ciclo de vida. |
-| [`03_SYSTEM_SPEC.md`](file:///D:/LabIA/aetherstack/docs/03_SYSTEM_SPEC.md) | Especificaciones Técnicas | Parámetros de runtime, binarios, flags y directivas de configuración. |
-| [`04_DATA_MODEL.md`](file:///D:/LabIA/aetherstack/docs/04_DATA_MODEL.md) | Modelo de Datos | Esquema de persistencia interna (`state.json`, vhosts, tablas del sistema). |
-| [`05_ARCHITECTURE.md`](file:///D:/LabIA/aetherstack/docs/05_ARCHITECTURE.md) | Decisiones de Arquitectura | Fundamentos arquitectónicos (FastCGI, puerto 3307, UI nativa). |
-| [`06_TASKS.md`](file:///D:/LabIA/aetherstack/docs/06_TASKS.md) | Backlog Activo | Registro de hitos completados y estado de traspaso del proyecto. |
-| [`07_DECISIONS.md`](file:///D:/LabIA/aetherstack/docs/07_DECISIONS.md) | ADRs (Architecture Records) | Registro histórico de decisiones técnicas y trade-offs evaluados. |
-| [`08_CHANGELOG.md`](file:///D:/LabIA/aetherstack/docs/08_CHANGELOG.md) | Registro de Cambios | Historial de versiones bajo el estándar Keep a Changelog. |
-| [`09_TESTING.md`](file:///D:/LabIA/aetherstack/docs/09_TESTING.md) | Estrategia de Pruebas | Suite de verificación de puertos, procesos, FastCGI y scaffolders. |
-| [`10_RUNBOOK.md`](file:///D:/LabIA/aetherstack/docs/10_RUNBOOK.md) | Manual de Operaciones | Procedimientos de mantenimiento, solución de problemas y respaldos. |
+| [`01_PROJECT_PRD.md`](docs/01_PROJECT_PRD.md) | Requisitos del Producto | Especificación de requisitos funcionales y no funcionales. |
+| [`02_SDD.md`](docs/02_SDD.md) | Diseño del Sistema | Arquitectura de componentes, topología de puertos y ciclo de vida. |
+| [`03_SYSTEM_SPEC.md`](docs/03_SYSTEM_SPEC.md) | Especificaciones Técnicas | Parámetros de runtime, binarios, flags y directivas de configuración. |
+| [`04_DATA_MODEL.md`](docs/04_DATA_MODEL.md) | Modelo de Datos | Esquema de persistencia interna (`state.json`, vhosts, tablas del sistema). |
+| [`05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md) | Decisiones de Arquitectura | Fundamentos arquitectónicos (FastCGI, puerto 3307, UI nativa). |
+| [`06_TASKS.md`](docs/06_TASKS.md) | Backlog Activo | Registro de hitos completados y estado de traspaso del proyecto. |
+| [`07_DECISIONS.md`](docs/07_DECISIONS.md) | ADRs (Architecture Records) | Registro histórico de decisiones técnicas y trade-offs evaluados. |
+| [`08_CHANGELOG.md`](docs/08_CHANGELOG.md) | Registro de Cambios | Historial de versiones bajo el estándar Keep a Changelog. |
+| [`09_TESTING.md`](docs/09_TESTING.md) | Estrategia de Pruebas | Suite de verificación de puertos, procesos, FastCGI y scaffolders. |
+| [`10_RUNBOOK.md`](docs/10_RUNBOOK.md) | Manual de Operaciones | Procedimientos de mantenimiento, solución de problemas y respaldos. |
 
 ---
 

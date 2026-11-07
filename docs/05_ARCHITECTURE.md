@@ -15,6 +15,6 @@
 ---
 
 ## ADR-003: Filtro Estricto de Proyectos
-- **Contexto:** En la carpeta `D:\LabIA` conviven bots de Python, repositorios de n8n y utilidades.
+- **Contexto:** En la carpeta de desarrollo conviven bots de Python, repositorios de n8n y utilidades.
 - **Decisión:** La pestaña "Mis Proyectos" inspecciona las carpetas y solo lista aquellas que contienen `artisan` (Laravel) o archivos del núcleo de WordPress.
 - **Consecuencias:** Una vista despejada, limpia y enfocada solo en proyectos web.

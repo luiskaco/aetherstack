@@ -4,20 +4,18 @@
 
 ### Iniciar la Suite
 - Haz doble clic en el acceso directo de tu Escritorio: **AetherStack**.
-- O ejecuta:
-  ```bash
-  D:\LabIA\aetherstack\AetherStack.bat
+- O ejecuta desde la carpeta del proyecto:
+  ```cmd
+  AetherStack.bat
   ```
 
 ### Iniciar por Consola (Headless / sin ventana)
-```bash
-cd D:\LabIA\aetherstack
+```cmd
 start.bat
 ```
 
 ### Detener Todos los Servicios
-```bash
-cd D:\LabIA\aetherstack
+```cmd
 stop.bat
 ```
 
@@ -25,7 +23,7 @@ stop.bat
 
 ## 2. Diagnóstico y Logs
 
-Si algún servicio no responde, revisa los logs en `D:\LabIA\aetherstack\logs\`:
+Si algún servicio no responde, revisa los registros en la carpeta `logs/`:
 - **Nginx:** `logs/nginx_error.log`
 - **PHP:** `logs/php_error.log`
 - **MariaDB:** `logs/mariadb_error.log`
@@ -34,6 +32,6 @@ Si algún servicio no responde, revisa los logs en `D:\LabIA\aetherstack\logs\`:
 
 ## 3. Respaldo y Migración
 Para mover AetherStack a otra máquina o disco:
-1. Copia la carpeta completa `D:\LabIA\aetherstack`.
+1. Copia la carpeta completa `aetherstack/`.
 2. Las bases de datos se encuentran intactas en `data/mariadb/`.
 3. Todo es 100% portable y no requiere instalación en el registro de Windows.

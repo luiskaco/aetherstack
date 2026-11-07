@@ -6,6 +6,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.3] - 2026-11-07
+
+### Mejorado
+- Centrado dinámico de modales de creación de proyecto y configuración en relación a la ventana principal de la aplicación.
+- Modales nativos de confirmación y alertas con diseño dark premium integrado (`CTkLabel`, `CTkButton`), eliminando los diálogos estándar Win32.
+- Documentación 100% portable: reemplazo de rutas absolutas por rutas relativas en todos los documentos técnicos y `README.md`.
+- Incorporación de vista previa gráfica (`preview.png`) de la consola en el `README.md`.
+
 ## [1.0.2] - 2026-11-07
 
 ### Añadido

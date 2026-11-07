@@ -3,7 +3,7 @@
 ## Estado de Traspaso (Handover State)
 - **Estado Actual:** Sistema operativo, estable y funcional.
 - **Acceso:** Disponible en el Escritorio con icono propio (`AetherStack.lnk`).
-- **Ruta del código:** `D:\LabIA\aetherstack\`
+- **Tipo:** Aplicación desktop portable para Windows 10/11 x64.
 
 ---
 
@@ -20,6 +20,9 @@
 - [x] Recarga automática inmediata de la lista de proyectos al eliminar o crear un proyecto.
 - [x] Detección reactiva de cambios en disco en segundo plano y buscador en tiempo real.
 - [x] Rediseño a **Material Design 3 (M3 Dark Theme)**.
+- [x] Centrado dinámico de ventanas modales respecto a la ventana principal.
+- [x] Modales oscuros integrados para confirmaciones y alertas (reemplazo de MessageBox Win32).
+- [x] Portabilidad completa de documentación técnica y `README.md` con rutas relativas y captura de interfaz.
 - [x] Documentación oficial en `/docs`.
 
 ---
