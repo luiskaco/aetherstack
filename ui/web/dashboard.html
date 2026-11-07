@@ -101,7 +101,6 @@
 
   <!-- Vista 1: Dashboard y Servicios -->
   <div id="view-dashboard" class="space-y-3.5 my-3">
-    <!-- Tarjeta de Estado y Servicios -->
     <div class="glass-card rounded-2xl p-4 shadow-xl">
       <div class="flex items-center justify-between pb-2.5 border-b border-slate-800/80">
         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Servicios Activos</span>
@@ -139,13 +138,11 @@
       </div>
     </div>
 
-    <!-- Botón Maestro Moderno -->
     <button id="btn-master" onclick="toggleAllServices()" class="w-full py-3 px-4 rounded-xl font-bold text-xs tracking-wide transition duration-200 flex items-center justify-center gap-2 shadow-lg bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20 active:scale-[0.99]">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       <span>INICIAR SERVICIOS</span>
     </button>
 
-    <!-- Creación Rápida -->
     <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2">
       <div class="flex items-center justify-between">
         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Crear Proyecto Rápido</span>
@@ -170,19 +167,18 @@
       </div>
     </div>
 
-    <!-- Accesos Rápidos -->
     <div class="grid grid-cols-3 gap-2 text-center text-xs font-medium">
-      <button onclick="openLocalhost()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="apiCall('/api/open-localhost')" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
         Localhost
       </button>
 
-      <button onclick="openProjectsDir()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="apiCall('/api/open-projects-dir')" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
         Proyectos
       </button>
 
-      <button onclick="openTerminal()" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
+      <button onclick="apiCall('/api/open-terminal')" class="py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5">
         <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         Terminal
       </button>
@@ -199,7 +195,6 @@
     </div>
 
     <div id="projects-container" class="custom-scroll space-y-2 overflow-y-auto max-h-[360px] pr-1">
-      <!-- Se inyecta con JS -->
     </div>
   </div>
 
@@ -207,7 +202,7 @@
   <footer class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
     <div class="flex items-center gap-2">
       <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="pulse-dot"></span>
-      <span id="footer-msg">Cargando estado...</span>
+      <span id="footer-msg">Conectado a AetherStack</span>
     </div>
     <span class="text-slate-600 font-mono">100% Free & Open</span>
   </footer>
@@ -215,11 +210,24 @@
   <script>
     let currentStatus = null;
 
-    async function fetchStatus() {
-      if (window.pywebview) {
-        const res = await window.pywebview.api.get_status();
-        updateUI(res);
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      try {
+        const opts = { method };
+        if (body) {
+          opts.headers = { 'Content-Type': 'application/json' };
+          opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(endpoint, opts);
+        return await res.json();
+      } catch (e) {
+        console.error(e);
+        return null;
       }
+    }
+
+    async function fetchStatus() {
+      const res = await apiCall('/api/status');
+      if (res) updateUI(res);
     }
 
     function switchTab(tab) {
@@ -244,8 +252,8 @@
       const container = document.getElementById('projects-container');
       container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Escaneando proyectos...</div>`;
       
-      const list = await window.pywebview.api.list_projects();
-      document.getElementById('proj-count').innerText = list.length;
+      const list = await apiCall('/api/projects');
+      document.getElementById('proj-count').innerText = list ? list.length : 0;
 
       if (!list || list.length === 0) {
         container.innerHTML = `<div class="text-xs text-slate-500 text-center py-8">No se encontraron proyectos en la carpeta seleccionada.</div>`;
@@ -268,10 +276,10 @@
             </div>
           </div>
           <div class="flex items-center gap-1.5">
-            <button onclick="window.pywebview.api.open_url('${p.url}')" title="Abrir en el Navegador" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-sky-400 transition">
+            <button onclick="apiCall('/api/open-url', 'POST', { url: '${p.url}' })" title="Abrir en el Navegador" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-sky-400 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </button>
-            <button onclick="window.pywebview.api.open_folder('${p.path.replace(/\\/g, '\\\\')}')" title="Abrir Carpeta" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition">
+            <button onclick="apiCall('/api/open-folder', 'POST', { folder: '${p.path.replace(/\\/g, '\\\\')}' })" title="Abrir Carpeta" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
             </button>
             <button onclick="confirmDeleteProject('${p.name}')" title="Eliminar Proyecto" class="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition">
@@ -283,9 +291,9 @@
     }
 
     async function confirmDeleteProject(name) {
-      if (confirm(`¿Estás seguro de que deseas ELIMINAR el proyecto '${name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada.`)) {
+      if (confirm(`¿Estás seguro de que deseas ELIMINAR el proyecto '${name}'?\n\nEsta acción borrará los archivos en disco y la base de datos asociada.`)) {
         document.getElementById('footer-msg').innerText = `Eliminando ${name}...`;
-        const res = await window.pywebview.api.delete_project(name, true);
+        const res = await apiCall('/api/delete-project', 'POST', { name });
         alert(res.message);
         loadProjectsList();
       }
@@ -346,19 +354,19 @@
       btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Procesando...`;
       btn.disabled = true;
       if (currentStatus && currentStatus.all_running) {
-        const res = await window.pywebview.api.stop_services();
-        updateUI(res);
+        const res = await apiCall('/api/stop', 'POST');
+        if (res) updateUI(res);
       } else {
-        const res = await window.pywebview.api.start_services();
-        updateUI(res);
+        const res = await apiCall('/api/start', 'POST');
+        if (res) updateUI(res);
       }
       btn.disabled = false;
     }
 
     async function setPHP(version) {
       document.getElementById("footer-msg").innerText = `Cambiando a PHP ${version}...`;
-      const res = await window.pywebview.api.switch_php(version);
-      updateUI(res);
+      const res = await apiCall('/api/switch-php', 'POST', { version });
+      if (res) updateUI(res);
     }
 
     async function promptProject(type) {
@@ -366,17 +374,15 @@
       if (!name || !name.trim()) return;
 
       document.getElementById("footer-msg").innerText = `Creando ${type} '${name.trim()}'...`;
-      const res = await window.pywebview.api.create_project(type, name.trim());
-      alert(res.message);
-      fetchStatus();
-      if (!document.getElementById('view-projects').classList.contains('hidden')) {
-        loadProjectsList();
+      const res = await apiCall('/api/create-project', 'POST', { type, name: name.trim() });
+      if (res) {
+        alert(res.message);
+        fetchStatus();
+        if (!document.getElementById('view-projects').classList.contains('hidden')) {
+          loadProjectsList();
+        }
       }
     }
-
-    function openLocalhost() { window.pywebview.api.open_localhost(); }
-    function openProjectsDir() { window.pywebview.api.open_projects_dir(); }
-    function openTerminal() { window.pywebview.api.open_terminal(); }
 
     function toggleSettingsModal(show) {
       const modal = document.getElementById("modal-settings");
@@ -389,9 +395,9 @@
     }
 
     async function browseProjectsFolder() {
-      const selected = await window.pywebview.api.choose_folder();
-      if (selected) {
-        document.getElementById("cfg-projects-dir").value = selected;
+      const res = await apiCall('/api/choose-folder');
+      if (res && res.folder) {
+        document.getElementById("cfg-projects-dir").value = res.folder;
       }
     }
 
@@ -401,18 +407,18 @@
         nginx_port: parseInt(document.getElementById("cfg-nginx-port").value),
         mariadb_port: parseInt(document.getElementById("cfg-mariadb-port").value)
       };
-      const res = await window.pywebview.api.update_config(newConfig);
-      updateUI(res);
-      toggleSettingsModal(false);
-      alert("Configuración actualizada.");
+      const res = await apiCall('/api/config', 'POST', newConfig);
+      if (res) {
+        updateUI(res);
+        toggleSettingsModal(false);
+        alert("Configuración actualizada.");
+      }
     }
 
-    window.addEventListener('pywebviewready', () => {
-      fetchStatus();
-      setInterval(fetchStatus, 3000);
-      window.pywebview.api.list_projects().then(l => {
-        document.getElementById('proj-count').innerText = l ? l.length : 0;
-      });
+    fetchStatus();
+    setInterval(fetchStatus, 3000);
+    apiCall('/api/projects').then(l => {
+      document.getElementById('proj-count').innerText = l ? l.length : 0;
     });
   </script>
 </body>
