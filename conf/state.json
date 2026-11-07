@@ -1,0 +1,7 @@
+{
+  "php_version": "8.5",
+  "nginx_port": 80,
+  "mariadb_port": 3307,
+  "php_port": 9000,
+  "projects_dir": "D:\\LabIA"
+}
