@@ -9,6 +9,7 @@ import time
 import socket
 import json
 import shutil
+import stat
 import urllib.request
 import zipfile
 
@@ -332,10 +333,10 @@ def list_projects():
         if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
             folder_path = entry.path
             
-            # Detección estricta de Laravel (presencia de artisan o composer con laravel)
+            # DetecciÃ³n estricta de Laravel (presencia de artisan o composer con laravel)
             is_laravel = os.path.exists(os.path.join(folder_path, "artisan"))
             
-            # Detección estricta de WordPress (archivos de núcleo WP)
+            # DetecciÃ³n estricta de WordPress (archivos de nÃºcleo WP)
             is_wp = (
                 os.path.exists(os.path.join(folder_path, "wp-config.php")) or
                 os.path.exists(os.path.join(folder_path, "wp-config-sample.php")) or
@@ -406,12 +407,30 @@ def delete_project(project_name, delete_db=True):
         except Exception:
             pass
 
-    # 3. Eliminar directorio de archivos
+    # 3. Eliminar directorio de archivos con soporte para archivos de solo lectura y Git
+    def _handle_remove_readonly(func, path, _):
+        try:
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        except Exception:
+            pass
+
     try:
-        shutil.rmtree(target_dir)
+        shutil.rmtree(target_dir, onerror=_handle_remove_readonly)
+    except Exception:
+        pass
+
+    # Fallback por si Windows retiene algÃºn descriptor de archivo brevemente
+    if os.path.exists(target_dir):
+        try:
+            subprocess.run(f'cmd /c rmdir /s /q "{target_dir}"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+
+    if not os.path.exists(target_dir):
         return True, f"Proyecto '{project_name}' eliminado completamente."
-    except Exception as e:
-        return False, f"No se pudo eliminar la carpeta: {e}"
+    else:
+        return False, f"No se pudo eliminar completamente la carpeta '{project_name}' (bloqueo en Windows)."
 
 def create_project_laravel(project_name, progress_cb=None):
     state = load_state()

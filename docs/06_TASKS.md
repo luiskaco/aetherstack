@@ -17,6 +17,8 @@
 - [x] Generación de icono `.ico` y acceso directo en el Escritorio.
 - [x] Filtro estricto en "Mis Proyectos" para mostrar solo Laravel y WordPress.
 - [x] Función de eliminación completa de proyectos (archivos, DB y Virtual Host).
+- [x] Recarga automática inmediata de la lista de proyectos al eliminar o crear un proyecto.
+- [x] Detección reactiva de cambios en disco en segundo plano y buscador en tiempo real.
 - [x] Rediseño a **Material Design 3 (M3 Dark Theme)**.
 - [x] Documentación oficial en `/docs`.
 

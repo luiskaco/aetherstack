@@ -108,6 +108,7 @@ class AetherDribbbleApp(ctk.CTk):
                                          fg_color="transparent", border_width=0, text_color=TEXT_DARK,
                                          font=ctk.CTkFont(size=12))
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.search_entry.bind("<KeyRelease>", lambda e: self.load_projects_list())
 
         # Botón Maestro Iniciar/Detener
         self.btn_master = ctk.CTkButton(top_bar, text="INICIAR STACK", font=ctk.CTkFont(size=12, weight="bold"),
@@ -263,8 +264,21 @@ class AetherDribbbleApp(ctk.CTk):
             w.destroy()
 
         projects = core.list_projects()
+        self._last_project_names = [p["name"] for p in projects]
+
+        query = ""
+        if hasattr(self, "search_entry"):
+            try:
+                query = self.search_entry.get().strip().lower()
+            except Exception:
+                pass
+
+        if query:
+            projects = [p for p in projects if query in p["name"].lower() or query in p["type"].lower()]
+
         if not projects:
-            empty = ctk.CTkLabel(self.scroll_table, text="No hay proyectos WordPress ni Laravel en la carpeta.",
+            msg_txt = "No se encontraron proyectos con ese criterio." if query else "No hay proyectos WordPress ni Laravel en la carpeta."
+            empty = ctk.CTkLabel(self.scroll_table, text=msg_txt,
                                  font=ctk.CTkFont(size=12), text_color=TEXT_MUTED)
             empty.pack(pady=40)
             return
@@ -394,6 +408,17 @@ class AetherDribbbleApp(ctk.CTk):
 
     def auto_refresh_loop(self):
         self.refresh_status()
+        # Detección y recarga automática si los proyectos en disco cambiaron
+        try:
+            current_projects = [p["name"] for p in core.list_projects()]
+            if getattr(self, "_last_project_names", None) is not None:
+                if self._last_project_names != current_projects:
+                    self._last_project_names = current_projects
+                    self.load_projects_list()
+            else:
+                self._last_project_names = current_projects
+        except Exception:
+            pass
         self.after(3000, self.auto_refresh_loop)
 
     def toggle_services(self):
@@ -431,20 +456,27 @@ class AetherDribbbleApp(ctk.CTk):
             else:
                 success, msg = core.create_project_wordpress(name)
             
+            # Recargar de inmediato la sección en el hilo de UI
+            self.after(0, self.load_projects_list)
+            self.after(0, self.refresh_status)
             if success:
                 messagebox.showinfo("AetherStack", f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.")
             else:
                 messagebox.showerror("Error", msg)
-            self.after(100, lambda: [self.refresh_status(), self.load_projects_list()])
 
         threading.Thread(target=run, daemon=True).start()
 
     def delete_project_modal(self, name):
         if messagebox.askyesno("Eliminar Proyecto", f"¿Eliminar '{name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada."):
-            success, msg = core.delete_project(name, delete_db=True)
-            messagebox.showinfo("AetherStack", msg)
-            self.load_projects_list()
-            self.refresh_status()
+            def do_delete():
+                success, msg = core.delete_project(name, delete_db=True)
+                # Recargar de inmediato la lista de proyectos en la interfaz
+                self.after(0, self.load_projects_list)
+                self.after(0, self.refresh_status)
+                if not success:
+                    self.after(50, lambda: messagebox.showerror("Error al eliminar", msg))
+
+            threading.Thread(target=do_delete, daemon=True).start()
 
     def open_settings_modal(self):
         win = ctk.CTkToplevel(self)

@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.1] - 2026-11-07
+
+### Mejorado
+- Recarga automática inmediata de la sección "Mis Proyectos" al eliminar un proyecto, sin requerir clics adicionales.
+- Ejecución asíncrona no bloqueante de la eliminación física y de bases de datos.
+- Sincronización automática periódica cada 3 segundos que detecta altas y bajas de carpetas directamente en disco.
+- Filtro reactivo en la barra de búsqueda en tiempo real.
+- Robustez en eliminación de carpetas bloqueadas o con atributos de solo lectura en Windows.
+
 ## [1.0.0] - 2026-11-07
 
 ### Añadido
