@@ -552,29 +552,90 @@ class AetherDribbbleApp(ctk.CTk):
 
         threading.Thread(target=run, daemon=True).start()
 
+    def center_modal(self, modal, width, height):
+        modal.update_idletasks()
+        self.update_idletasks()
+        p_x = self.winfo_rootx()
+        p_y = self.winfo_rooty()
+        p_w = self.winfo_width()
+        p_h = self.winfo_height()
+        x = max(0, p_x + (p_w - width) // 2)
+        y = max(0, p_y + (p_h - height) // 2)
+        modal.geometry(f"{width}x{height}+{x}+{y}")
+
     def prompt_project(self, ptype):
-        dialog = ctk.CTkInputDialog(text=f"Nombre para el proyecto {ptype.capitalize()} (ej: mi-web):",
-                                    title=f"Crear {ptype.capitalize()}")
-        name = dialog.get_input()
-        if not name or not name.strip():
-            return
-        name = name.strip()
+        win = ctk.CTkToplevel(self)
+        is_lar = ptype.lower() == "laravel"
+        title_txt = "Crear Proyecto Laravel" if is_lar else "Crear Sitio WordPress"
+        icon_char = "⚡" if is_lar else "🚀"
 
-        def run():
-            if ptype == "laravel":
-                success, msg = core.create_project_laravel(name)
-            else:
-                success, msg = core.create_project_wordpress(name)
-            
-            # Recargar de inmediato la sección en el hilo de UI
-            self.after(0, self.load_projects_list)
-            self.after(0, self.refresh_status)
-            if success:
-                messagebox.showinfo("AetherStack", f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.")
-            else:
-                messagebox.showerror("Error", msg)
+        win.title(title_txt)
+        win.resizable(False, False)
+        win.configure(fg_color=BG_CARD)
+        win.attributes('-topmost', True)
+        win.transient(self)
+        self.center_modal(win, 420, 220)
 
-        threading.Thread(target=run, daemon=True).start()
+        pad = ctk.CTkFrame(win, fg_color="transparent")
+        pad.pack(fill="both", expand=True, padx=22, pady=18)
+
+        # Cabecera con icono y título
+        head = ctk.CTkFrame(pad, fg_color="transparent")
+        head.pack(fill="x", pady=(0, 8))
+        ctk.CTkLabel(head, text=icon_char, font=ctk.CTkFont(size=18)).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(head, text=title_txt, font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=TEXT_DARK).pack(side="left")
+
+        ctk.CTkLabel(pad, text="Ingresa el nombre del proyecto (ej: mi-web):",
+                     font=ctk.CTkFont(size=11), text_color=TEXT_MUTED).pack(anchor="w", pady=(0, 6))
+
+        entry_name = ctk.CTkEntry(pad, placeholder_text="ej: mi-web, blog, api-rest",
+                                  fg_color=BG_ROW, border_color=BORDER, text_color=TEXT_DARK,
+                                  height=34, corner_radius=10, font=ctk.CTkFont(size=12))
+        entry_name.pack(fill="x", pady=(0, 16))
+        win.after(80, entry_name.focus)
+
+        def on_confirm():
+            name = entry_name.get().strip()
+            if not name:
+                return
+            win.destroy()
+
+            def run():
+                if ptype == "laravel":
+                    success, msg = core.create_project_laravel(name)
+                else:
+                    success, msg = core.create_project_wordpress(name)
+
+                self.after(0, self.load_projects_list)
+                self.after(0, self.refresh_status)
+                if success:
+                    messagebox.showinfo("AetherStack", f"¡Proyecto {ptype.capitalize()} '{name}' creado con éxito!\nBase de datos en puerto 3307.")
+                else:
+                    messagebox.showerror("Error", msg)
+
+            threading.Thread(target=run, daemon=True).start()
+
+        def on_cancel():
+            win.destroy()
+
+        entry_name.bind("<Return>", lambda e: on_confirm())
+        win.bind("<Escape>", lambda e: on_cancel())
+
+        btn_row = ctk.CTkFrame(pad, fg_color="transparent")
+        btn_row.pack(fill="x")
+
+        btn_cancel = ctk.CTkButton(btn_row, text="Cancelar", height=32, corner_radius=10,
+                                   fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                   border_width=1, border_color=BORDER, command=on_cancel)
+        btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        btn_ok = ctk.CTkButton(btn_row, text="Crear Proyecto", height=32, corner_radius=10,
+                               fg_color=ACCENT_BLUE, hover_color="#1D4ED8", text_color="#FFFFFF",
+                               font=ctk.CTkFont(size=11, weight="bold"), command=on_confirm)
+        btn_ok.pack(side="right", fill="x", expand=True, padx=(6, 0))
+
+        win.grab_set()
 
     def delete_project_modal(self, name):
         if messagebox.askyesno("Eliminar Proyecto", f"¿Eliminar '{name}'?\n\nEsta acción borrará la carpeta en disco y la base de datos asociada."):
@@ -591,10 +652,11 @@ class AetherDribbbleApp(ctk.CTk):
     def open_settings_modal(self):
         win = ctk.CTkToplevel(self)
         win.title("Configuración")
-        win.geometry("450x330")
         win.resizable(False, False)
         win.configure(fg_color=BG_CARD)
         win.attributes('-topmost', True)
+        win.transient(self)
+        self.center_modal(win, 450, 330)
 
         ctk.CTkLabel(win, text="Configuración Global", font=ctk.CTkFont(size=16, weight="bold"),
                      text_color=TEXT_DARK).pack(anchor="w", padx=22, pady=(18, 4))
