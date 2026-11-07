@@ -1,0 +1,22 @@
+# 08 - Changelog: AetherStack
+
+Todos los cambios notables de este proyecto se documentan en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a [Semantic Versioning](https://semver.org/).
+
+---
+
+## [1.0.0] - 2026-11-07
+
+### Añadido
+- Motor central portable con Nginx 1.28, PHP 8.4 y PHP 8.5.
+- Selector de versiones de PHP en caliente sin reinicios forzados.
+- MariaDB configurado de forma independiente en puerto `3307`.
+- Creador automatizado de proyectos Laravel (Composer + `.env` + DB).
+- Creador automatizado de sitios WordPress con `wp-config.php` preconfigurado.
+- Pestaña "Mis Proyectos" con filtro estricto (únicamente WordPress y Laravel).
+- Funcionalidad de eliminación de proyectos (archivos, DB y Virtual Host).
+- Menú modal de Configuración Global para modificar carpeta de proyectos y puertos.
+- Icono `.ico` personalizado y acceso directo en el Escritorio de Windows.
+- Interfaz gráfica rediseñada bajo **Material Design 3 (M3 Dark Theme)**.
+- Documentación técnica completa en `/docs`.
