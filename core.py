@@ -42,6 +42,16 @@ def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
 
+def get_installed_php_versions():
+    php_root = os.path.join(BIN_DIR, "php")
+    versions = []
+    if os.path.exists(php_root):
+        for entry in os.scandir(php_root):
+            if entry.is_dir() and entry.name.startswith("php-"):
+                v = entry.name.replace("php-", "")
+                versions.append(v)
+    return sorted(versions, key=lambda x: [int(p) if p.isdigit() else p for p in x.split(".")])
+
 def is_port_in_use(port, host='127.0.0.1'):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(0.3)

@@ -175,12 +175,15 @@ class AetherDribbbleApp(ctk.CTk):
         t2_top.pack(fill="x", padx=14, pady=(12, 4))
         ctk.CTkLabel(t2_top, text="🐘", font=ctk.CTkFont(size=18)).pack(side="left")
 
-        self.php_segmented = ctk.CTkSegmentedButton(t2_top, values=["8.4", "8.5"], variable=self.php_var,
-                                                   command=self.on_switch_php,
-                                                   width=75, height=22, corner_radius=6,
-                                                   fg_color=BG_MAIN, selected_color=ACCENT_BLUE,
-                                                   text_color=TEXT_DARK, selected_hover_color=ACCENT_BLUE)
-        self.php_segmented.pack(side="right")
+        php_versions = core.get_installed_php_versions() or ["8.1", "8.2", "8.3", "8.4", "8.5"]
+        self.php_menu = ctk.CTkOptionMenu(t2_top, values=php_versions, variable=self.php_var,
+                                          command=self.on_switch_php,
+                                          width=80, height=24, corner_radius=8,
+                                          fg_color=BG_MAIN, button_color=ACCENT_BLUE,
+                                          button_hover_color="#1D4ED8", text_color=TEXT_DARK,
+                                          dropdown_fg_color=BG_CARD, dropdown_text_color=TEXT_DARK,
+                                          dropdown_hover_color=BTN_SEC_HOVER, font=ctk.CTkFont(size=11, weight="bold"))
+        self.php_menu.pack(side="right")
 
         self.label_php_title = ctk.CTkLabel(self.card_php, text="PHP FastCGI (8.4)",
                                             font=ctk.CTkFont(size=12, weight="bold"), text_color=TEXT_DARK)
@@ -389,7 +392,10 @@ class AetherDribbbleApp(ctk.CTk):
             self.card_nginx.configure(fg_color="#1E293B")
             self.badge_nginx.configure(text="OFFLINE", fg_color="#0F172A", text_color="#94A3B8")
 
-        self.label_php_title.configure(text=f"PHP FastCGI ({status['php']['version']})")
+        php_v = status["php"]["version"]
+        self.label_php_title.configure(text=f"PHP FastCGI ({php_v})")
+        if self.php_var.get() != php_v:
+            self.php_var.set(php_v)
 
         if status["mariadb"]["running"]:
             self.badge_db.configure(text="ONLINE", fg_color="#064E3B", text_color="#34D399")

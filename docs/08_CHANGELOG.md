@@ -6,6 +6,13 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.2] - 2026-11-07
+
+### Añadido
+- Soporte para versiones de PHP inferiores a 8.4: integración completa de **PHP 8.1, PHP 8.2 y PHP 8.3** (junto con 8.4 y 8.5).
+- Selector dinámico de PHP con menú desplegable (`CTkOptionMenu`) en la tarjeta FastCGI que detecta automáticamente cualquier versión instalada en `bin/php/`.
+- Conmutación en caliente en segundo plano sin reiniciar Nginx ni la interfaz.
+
 ## [1.0.1] - 2026-11-07
 
 ### Mejorado

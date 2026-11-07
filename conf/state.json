@@ -1,5 +1,5 @@
 {
-  "php_version": "8.5",
+  "php_version": "8.4",
   "nginx_port": 80,
   "mariadb_port": 3307,
   "php_port": 9000,
