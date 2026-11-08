@@ -6,6 +6,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.8] - 2026-11-08
+
+### Añadido
+- Documentación completa bilingüe en `README.md` (Español e Inglés):
+  - Selector de idioma con anclas de salto rápido en la cabecera del repositorio (`Español 🇪🇸` / `English 🇺🇸`).
+  - Documentación en español 100% actualizada con HeidiSQL Portable, conmutación PHP 8.1-8.5, portabilidad plug-and-play e internacionalización.
+  - Sección completa en inglés con tabla comparativa de rendimiento frente a Laragon, Docker Desktop y XAMPP, guías de inicio rápido, configuración de MariaDB 3307 y tabla de referencia a `/docs`.
+
 ## [1.0.7] - 2026-11-07
 
 ### Añadido

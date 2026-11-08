@@ -8,6 +8,7 @@
 ---
 
 ## Tareas Completadas
+- [x] Documentación bilingüe integral en `README.md` (Español e Inglés) con selector de idiomas en cabecera, tabla comparativa, guías paso a paso, estructura de carpetas, atajos de HeidiSQL y enlaces completos a `/docs`.
 - [x] Integración de **HeidiSQL Portable** v12.22 (el mismo gestor de Laragon) en `bin/heidisql/`:
   - Aplicación de escritorio nativa de Windows, ultra-rápida y sin advertencias de PHP.
   - Modo 100% portable (`portable.lock` y `portable_settings.txt`) preconfigurado con sesión para MariaDB 11 en `127.0.0.1:3307`.

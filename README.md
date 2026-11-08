@@ -8,8 +8,14 @@
 [![PHP Versions](https://img.shields.io/badge/PHP-8.1%20%7C%208.2%20%7C%208.3%20%7C%208.4%20%7C%208.5-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![Nginx](https://img.shields.io/badge/Nginx-1.28%20Stable-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![MariaDB](https://img.shields.io/badge/MariaDB-11.8%20LTS%20(Port%203307)-C0765A?style=for-the-badge&logo=mariadb&logoColor=white)](https://mariadb.org/)
+[![HeidiSQL](https://img.shields.io/badge/HeidiSQL-v12.22%20Portable-1E3A8A?style=for-the-badge&logo=mysql&logoColor=white)](https://www.heidisql.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
+
+<br/>
+
+**Selecciona tu idioma / Select your language:**  
+[ 🇪🇸 **Español** ](#-español) &nbsp;&bull;&nbsp; [ 🇺🇸 **English** ](#-english)
 
 <br/>
 
@@ -19,30 +25,33 @@
 
 ---
 
+# 🇪🇸 Español
+
 ## 📋 Tabla de Contenidos
 
-1. [Visión General](#-visión-general)
-2. [¿Por qué AetherStack?](#-por-qué-aetherstack)
-3. [Componentes del Stack](#-componentes-del-stack)
-4. [Características Principales](#-características-principales)
-5. [Estructura del Proyecto](#-estructura-del-proyecto)
-6. [Guía de Inicio Rápido](#-guía-de-inicio-rápido)
-7. [Gestión de Proyectos](#-gestión-de-proyectos)
-8. [Configuración de Base de Datos](#-configuración-de-base-de-datos)
-9. [Terminal de Desarrollo Integrada](#-terminal-de-desarrollo-integrada)
-10. [Documentación Técnica Oficial](#-documentación-técnica-oficial)
+1. [Visión General](#1-visión-general)
+2. [¿Por qué AetherStack?](#2-por-qué-aetherstack)
+3. [Componentes del Stack](#3-componentes-del-stack)
+4. [Características Principales](#4-características-principales)
+5. [Estructura del Proyecto](#5-estructura-del-proyecto)
+6. [Guía de Inicio Rápido](#6-guía-de-inicio-rápido)
+7. [Gestión de Proyectos](#7-gestión-de-proyectos)
+8. [Base de Datos & HeidiSQL](#8-base-de-datos--heidisql)
+9. [Terminal de Desarrollo](#9-terminal-de-desarrollo)
+10. [Documentación Técnica Oficial](#10-documentación-técnica-oficial)
+11. [Licencia](#11-licencia)
 
 ---
 
-## 🌟 Visión General
+### 1. Visión General
 
 **AetherStack** nace como una alternativa moderna, minimalista y de alto rendimiento a herramientas tradicionales como Laragon, XAMPP y Docker Desktop. Diseñado específicamente para desarrolladores que trabajan con **Laravel**, **WordPress** y aplicaciones PHP contemporáneas sobre Windows, ofrece una experiencia libre de anuncios, donaciones intrusivas, instaladores pesados y dependencias externas.
 
-Todo el stack es **100% portable y autocontenido**, sin escribir en el Registro de Windows ni ensuciar las variables de entorno globales del sistema operativo.
+Todo el stack es **100% portable y autocontenido**: no escribe en el Registro de Windows, resuelve todas sus rutas de forma relativa y permite trasladar la suite completa a otra PC o unidad USB manteniendo todas las bases de datos y configuraciones intactas.
 
 ---
 
-## ⚡ ¿Por qué AetherStack?
+### 2. ¿Por qué AetherStack?
 
 | Criterio | AetherStack ⚡ | Laragon 🐘 | Docker Desktop 🐳 | XAMPP 📦 |
 | :--- | :---: | :---: | :---: | :---: |
@@ -51,64 +60,60 @@ Todo el stack es **100% portable y autocontenido**, sin escribir en el Registro 
 | **Ventanas emergentes / Donaciones** | **0 (Totalmente limpio)** | Frecuentes | Notificaciones | Ninguno |
 | **Conflictos de Puerto (MySQL)** | **Sin conflicto (3307)** | Ocupa 3306 | Ocupa 3306 | Ocupa 3306 |
 | **Conmutador de PHP** | **8.1, 8.2, 8.3, 8.4, 8.5** | Manual | Vía Dockerfile | Manual complejo |
+| **Gestor de Base de Datos** | **HeidiSQL Portable integrado** | HeidiSQL externo | phpMyAdmin contenedor | phpMyAdmin web |
 | **Portabilidad** | **100% Autocontenido** | Semi-portable | No portable | Instalador fijo |
 
 ---
 
-## 🧩 Componentes del Stack
+### 3. Componentes del Stack
 
 | Servicio | Versión / Detalle | Puerto | Protocolo |
 | :--- | :--- | :---: | :--- |
 | **Nginx** | 1.28.0 Mainline optimizado para Windows | `80` | HTTP / FastCGI Proxy |
 | **PHP Engine** | 8.1, 8.2, 8.3, 8.4 y 8.5 (NTS x64) | `9000` | FastCGI Daemon |
 | **MariaDB** | 11.8.x LTS Portable Edition | `3307` | TCP/IP (Evita colisión con 3306) |
+| **HeidiSQL** | 12.22 Portable Edition (modo oscuro) | Desktop | GUI nativa de Windows |
 | **Composer** | 2.8.x Portable PHAR con cache aislada | CLI | CLI Package Manager |
-| **Aether Console** | Cliente de escritorio nativo (Dark SaaS UI) | GUI | Python CustomTkinter 5.2+ |
+| **Aether Console** | Cliente de escritorio nativo (SaaS Dark UI) | GUI | Python CustomTkinter 5.2+ |
 
 ---
 
-## 🚀 Características Principales
+### 4. Características Principales
 
-### 1. Conmutador Multi-Versión de PHP en Caliente
-Permite alternar entre **PHP 8.1, 8.2, 8.3, 8.4 y 8.5** con un solo clic desde el menú desplegable de la interfaz. El servicio FastCGI se reinicia automáticamente en segundo plano sin interrumpir Nginx ni recargar la ventana.
+#### ⚡ Conmutador Multi-Versión de PHP en Caliente
+Alterna entre **PHP 8.1, 8.2, 8.3, 8.4 y 8.5** con un solo clic desde el menú desplegable en la barra superior. El servicio FastCGI se conmuta en segundo plano sin reiniciar Nginx ni perder la sesión de trabajo.
 
-### 2. Scaffolders Automatizados en 1 Clic
-- **Laravel:** Descarga la última versión vía Composer, genera la base de datos asociada en MariaDB (`<nombre>_db`), configura automáticamente el archivo `.env` (puerto `3307`, credenciales y host) y emite el Virtual Host con `/public` como DocumentRoot.
-- **WordPress:** Descarga el núcleo oficial en español, crea la base de datos en MariaDB, genera el archivo `wp-config.php` preconfigurado con claves únicas y registra el Virtual Host correspondiente.
+#### 🚀 Scaffolders Automatizados en 1 Clic
+- **Laravel:** Descarga la versión oficial vía Composer, crea la base de datos asociada (`<nombre>_db`), configura el archivo `.env` con el puerto `3307` y genera el Virtual Host con DocumentRoot en `/public`.
+- **WordPress:** Descarga el núcleo oficial, crea la base de datos en MariaDB, preconfigura `wp-config.php` y emite el Virtual Host correspondiente.
 
-### 3. Filtro Estricto y Detección Reactiva de Proyectos
-La sección "Mis Proyectos" escanea periódicamente el directorio raíz configurado y lista de forma exclusiva proyectos válidos de **WordPress** (presencia de `wp-config.php` o estructura WP) y **Laravel** (presencia del ejecutable `artisan`). 
-Cualquier carpeta creada, eliminada o renombrada directamente desde el Explorador de Windows o la consola se sincroniza en pantalla en menos de 3 segundos sin recarga manual.
+#### 🗄️ HeidiSQL Portable Integrado
+Incluye el gestor oficial de bases de datos de escritorio de Laragon preconfigurado. Un clic en el botón **"Gestor DB"** o en el icono de base de datos de cualquier proyecto abre HeidiSQL conectado automáticamente a MariaDB en el puerto 3307.
 
-### 4. Eliminación Completa y Asíncrona
-Al eliminar un proyecto desde la interfaz:
-- Se purga la base de datos asociada en MariaDB.
-- Se retira el archivo de Virtual Host en Nginx y se recarga el servidor web.
-- Se elimina la carpeta de archivos en disco (manejando atributos de solo lectura y bloqueos de Git).
-- La fila desaparece de inmediato en segundo plano sin congelar la interfaz ni mostrar alertas modales intrusivas.
+#### 🌐 Soporte Bilingüe Nativo (ES / EN)
+Botón de alternancia instantánea `🌐 EN` / `🌐 ES` en la barra superior con persistencia de configuración. Traduce toda la interfaz, modales, alertas y confirmaciones en tiempo real.
 
-### 5. Barra de Navegación de Directorio
-La barra superior muestra permanentemente la ruta activa de proyectos con un botón de acceso directo para abrir el Explorador de Windows al instante.
+#### 🛡️ Condición Preventiva Offline
+Bloqueo inteligente en la interfaz y en el motor central: si los servicios están apagados, el sistema impide crear proyectos o abrir el gestor de base de datos para evitar archivos huérfanos o fallos de conexión.
+
+#### 📦 Portabilidad Total Plug & Play
+Todas las rutas internas de MariaDB (`my.ini`), Nginx (`nginx.conf`, vhosts), PHP (`php.ini`) y scripts batch se resuelven dinámicamente con rutas relativas. Copiar la carpeta a otra PC o unidad USB funciona de inmediato sin alterar datos.
 
 ---
 
-## 📂 Estructura del Proyecto
+### 5. Estructura del Proyecto
 
 ```text
 aetherstack/
 ├── bin/                       # Binarios portables del ecosistema
 │   ├── composer/              # Composer PHAR y script de ejecución
-│   ├── mariadb/               # Motor y utilitarios cliente de MariaDB 11.8
+│   ├── heidisql/              # HeidiSQL Portable v12.22
+│   ├── mariadb/               # Motor y herramientas CLI de MariaDB 11.8
 │   ├── nginx/                 # Servidor web Nginx 1.28
-│   └── php/                   # Versiones de PHP aisladas
-│       ├── php-8.1/           # PHP 8.1 NTS + extensiones + php.ini
-│       ├── php-8.2/           # PHP 8.2 NTS + extensiones + php.ini
-│       ├── php-8.3/           # PHP 8.3 NTS + extensiones + php.ini
-│       ├── php-8.4/           # PHP 8.4 NTS + extensiones + php.ini
-│       └── php-8.5/           # PHP 8.5 Development Preview
+│   └── php/                   # Versiones de PHP aisladas (8.1, 8.2, 8.3, 8.4, 8.5)
 ├── conf/                      # Archivos de configuración maestros
-│   ├── my.ini                 # Configuración de MariaDB (puerto 3307, buffer 256M)
-│   ├── nginx.conf             # Servidor maestro Nginx con upstream a FastCGI
+│   ├── my.ini                 # Configuración de MariaDB (puerto 3307)
+│   ├── nginx.conf             # Servidor maestro Nginx con upstream FastCGI
 │   ├── state.json             # Estado persistente del stack y rutas
 │   └── vhosts/                # Virtual Hosts autogenerados (*.conf)
 ├── data/                      # Almacenamiento físico de bases de datos MariaDB
@@ -117,21 +122,22 @@ aetherstack/
 ├── AetherStack.bat            # Lanzador optimizado para la aplicación gráfica
 ├── app.py                     # Interfaz de escritorio moderna (SaaS Dark Theme)
 ├── core.py                    # Motor de orquestación, sockets y procesos
+├── i18n.py                    # Módulo de internacionalización (ES / EN)
 ├── start.bat                  # Script de arranque headless por consola
 └── stop.bat                   # Script de apagado limpio por consola
 ```
 
 ---
 
-## 🛠️ Guía de Inicio Rápido
+### 6. Guía de Inicio Rápido
 
-### Acceso Directo de Escritorio
-Al iniciar AetherStack se genera un acceso directo oficial en el Escritorio de Windows con icono propio:
+#### Acceso Directo de Escritorio
+Al iniciar AetherStack se genera un acceso directo oficial en el Escritorio con icono propio (`icon.ico` nativo de Windows):
 - **Nombre:** `AetherStack`
-- **Destino:** Ejecuta `AetherStack.bat` en segundo plano sin dejar consolas CMD residuales.
+- **Destino:** Ejecuta la consola gráfica sin terminales negras residuales.
 
-### Control por Línea de Comandos
-Si preferís operar el stack sin interfaz gráfica, podés ejecutar directamente desde la carpeta del proyecto:
+#### Control por Línea de Comandos
+Si prefieres operar el stack sin interfaz gráfica, ejecuta directamente desde la carpeta del proyecto:
 ```cmd
 :: Iniciar todos los servicios (Nginx, PHP FastCGI, MariaDB)
 start.bat
@@ -142,9 +148,9 @@ stop.bat
 
 ---
 
-## 🌐 Gestión de Proyectos
+### 7. Gestión de Proyectos
 
-Todos los proyectos se ubican en la carpeta raíz configurada (modificable en cualquier momento desde el botón de configuración de la app).
+Todos los proyectos se ubican en la carpeta raíz configurada (modificable desde el botón de configuración de la app).
 
 Cada proyecto cuenta con dos métodos de acceso HTTP inmediato:
 1. **Acceso directo por subdirectorio:**
@@ -160,27 +166,27 @@ Cada proyecto cuenta con dos métodos de acceso HTTP inmediato:
 
 ---
 
-## 🗄️ Configuración de Base de Datos
+### 8. Base de Datos & HeidiSQL
 
-MariaDB se encuentra preinicializado y configurado en un puerto independiente para garantizar compatibilidad total con Docker Desktop, WSL o servicios MySQL previos:
+MariaDB se encuentra preinicializado y configurado en el puerto independiente **3307** para garantizar compatibilidad total con Docker, WSL o instalaciones locales previas de MySQL en el puerto 3306:
 
 - **Host:** `127.0.0.1` (o `localhost`)
 - **Puerto:** `3307`
 - **Usuario:** `root`
 - **Contraseña:** *(vacía / sin contraseña por defecto)*
-- **Juego de caracteres predeterminado:** `utf8mb4`
+- **Juego de caracteres:** `utf8mb4`
 - **Cotejamiento (Collation):** `utf8mb4_unicode_ci`
 
-Podés conectarte desde cualquier cliente visual estándar (HeidiSQL, DBeaver, TablePlus, VS Code Database Client o PhpStorm) apuntando al puerto **3307**.
+Puedes conectarte desde el botón **Gestor DB** (que abre HeidiSQL Portable preconfigurado) o desde cualquier cliente externo (DBeaver, TablePlus, VS Code o PhpStorm) apuntando al puerto **3307**.
 
 ---
 
-## 💻 Terminal de Desarrollo Integrada
+### 9. Terminal de Desarrollo
 
-Al pulsar el botón **Terminal** dentro de los accesos rápidos de la interfaz, se despliega una consola de comandos `cmd.exe` con el entorno completamente configurado:
+Al pulsar el botón **Terminal** dentro de los accesos rápidos, se despliega una consola `cmd.exe` con el entorno completamente configurado:
 - El directorio de trabajo inicia directamente en tu carpeta de proyectos activa.
 - La variable `PATH` se precarga con los binarios de la versión activa de PHP, Composer y el cliente CLI de MariaDB.
-- Podés ejecutar directamente comandos globales como:
+- Puedes ejecutar directamente comandos globales como:
   ```bash
   php -v
   composer create-project ...
@@ -190,9 +196,9 @@ Al pulsar el botón **Terminal** dentro de los accesos rápidos de la interfaz, 
 
 ---
 
-## 📚 Documentación Técnica Oficial
+### 10. Documentación Técnica Oficial
 
-El proyecto cuenta con una especificación técnica formal y auditada dentro del directorio [`docs/`](docs/):
+El proyecto cuenta con especificaciones técnicas completas dentro de [`docs/`](docs/):
 
 | Documento | Título | Descripción |
 | :--- | :--- | :--- |
@@ -209,6 +215,204 @@ El proyecto cuenta con una especificación técnica formal y auditada dentro del
 
 ---
 
-## 📄 Licencia
+### 11. Licencia
 
 Este proyecto está liberado bajo la licencia **MIT**. Eres libre de usarlo, modificarlo y distribuirlo para proyectos personales o comerciales sin restricciones.
+
+<br/>
+
+---
+
+# 🇺🇸 English
+
+## 📋 Table of Contents
+
+1. [Overview](#1-overview)
+2. [Why AetherStack?](#2-why-aetherstack)
+3. [Stack Components](#3-stack-components)
+4. [Key Features](#4-key-features)
+5. [Project Structure](#5-project-structure)
+6. [Quick Start Guide](#6-quick-start-guide)
+7. [Project Management](#7-project-management)
+8. [Database & HeidiSQL](#8-database--heidisql)
+9. [Development Terminal](#9-development-terminal)
+10. [Official Technical Documentation](#10-official-technical-documentation)
+11. [License](#11-license)
+
+---
+
+### 1. Overview
+
+**AetherStack** is a modern, minimalist, high-performance alternative to traditional local development tools such as Laragon, XAMPP, and Docker Desktop. Specifically built for developers building **Laravel**, **WordPress**, and modern PHP applications on Windows, it provides an ad-free experience without intrusive donation popups, heavy installers, or external dependencies.
+
+The entire stack is **100% portable and self-contained**: it does not write to the Windows Registry, resolves all paths relatively, and allows transferring the entire suite to another PC or USB flash drive while keeping all databases and configurations fully intact.
+
+---
+
+### 2. Why AetherStack?
+
+| Criteria | AetherStack ⚡ | Laragon 🐘 | Docker Desktop 🐳 | XAMPP 📦 |
+| :--- | :---: | :---: | :---: | :---: |
+| **Boot Time** | **< 1.0 second** | ~3-5 seconds | ~30-60 seconds | ~5-10 seconds |
+| **RAM Memory Footprint** | **< 95 MB** | ~180-250 MB | ~2.5 GB - 4.5 GB | ~250-400 MB |
+| **Popups / Donation Prompts** | **0 (Completely clean)** | Frequent | Notifications | None |
+| **Port Conflicts (MySQL)** | **No conflict (3307)** | Uses 3306 | Uses 3306 | Uses 3306 |
+| **PHP Version Switcher** | **8.1, 8.2, 8.3, 8.4, 8.5** | Manual | Via Dockerfile | Complex manual setup |
+| **Database Manager** | **Integrated Portable HeidiSQL** | External HeidiSQL | Container phpMyAdmin | Web phpMyAdmin |
+| **Portability** | **100% Self-contained** | Semi-portable | Not portable | Fixed installer |
+
+---
+
+### 3. Stack Components
+
+| Service | Version / Detail | Port | Protocol |
+| :--- | :--- | :---: | :--- |
+| **Nginx** | 1.28.0 Mainline optimized for Windows | `80` | HTTP / FastCGI Proxy |
+| **PHP Engine** | 8.1, 8.2, 8.3, 8.4, and 8.5 (NTS x64) | `9000` | FastCGI Daemon |
+| **MariaDB** | 11.8.x LTS Portable Edition | `3307` | TCP/IP (Avoids default 3306 conflict) |
+| **HeidiSQL** | 12.22 Portable Edition (dark theme) | Desktop | Native Windows GUI |
+| **Composer** | 2.8.x Portable PHAR with isolated cache | CLI | CLI Package Manager |
+| **Aether Console** | Native desktop client (SaaS Dark UI) | GUI | Python CustomTkinter 5.2+ |
+
+---
+
+### 4. Key Features
+
+#### ⚡ On-The-Fly Multi-Version PHP Switcher
+Switch between **PHP 8.1, 8.2, 8.3, 8.4, and 8.5** with a single click from the top dropdown menu. The FastCGI service restarts in the background without restarting Nginx or interrupting your active workspace.
+
+#### 🚀 1-Click Automated Scaffolders
+- **Laravel:** Downloads the latest release via Composer, creates the associated MariaDB database (`<name>_db`), configures the `.env` file with port `3307`, and creates the Virtual Host pointing to `/public`.
+- **WordPress:** Downloads the official core, provisions the MariaDB database, sets up `wp-config.php` with unique authentication keys, and registers the local Virtual Host.
+
+#### 🗄️ Integrated Portable HeidiSQL
+Includes Laragon's official desktop database manager preconfigured. Clicking the **"DB Manager"** button or the database icon next to any project opens HeidiSQL connected directly to MariaDB on port 3307.
+
+#### 🌐 Native Bilingual Support (ES / EN)
+Instant toggle button `🌐 EN` / `🌐 ES` in the top bar with persistent configuration. Translates the entire user interface, dialogs, warnings, and confirmations in real time.
+
+#### 🛡️ Offline Preventive Guard
+Smart safeguard in both the UI and core engine: if services are stopped, creating projects or launching the database manager is blocked to prevent orphaned files or connection errors.
+
+#### 📦 Full Plug & Play Portability
+All internal paths across MariaDB (`my.ini`), Nginx (`nginx.conf`, vhosts), PHP (`php.ini`), and batch scripts use relative paths. Copying the folder to another PC or external USB drive works out-of-the-box without manual reconfigurations.
+
+---
+
+### 5. Project Structure
+
+```text
+aetherstack/
+├── bin/                       # Portable ecosystem binaries
+│   ├── composer/              # Composer PHAR and runner script
+│   ├── heidisql/              # HeidiSQL Portable v12.22
+│   ├── mariadb/               # MariaDB 11.8 engine and CLI utilities
+│   ├── nginx/                 # Nginx 1.28 web server
+│   └── php/                   # Isolated PHP versions (8.1, 8.2, 8.3, 8.4, 8.5)
+├── conf/                      # Master configuration files
+│   ├── my.ini                 # MariaDB configuration (port 3307)
+│   ├── nginx.conf             # Nginx master config with FastCGI upstream
+│   ├── state.json             # Persistent state and directory paths
+│   └── vhosts/                # Autogenerated Virtual Hosts (*.conf)
+├── data/                      # MariaDB physical database files
+├── docs/                      # Formal documentation suite (/docs)
+├── logs/                      # Centralized log storage (Nginx, PHP, MariaDB)
+├── AetherStack.bat            # Optimized GUI application launcher
+├── app.py                     # Modern desktop interface (SaaS Dark Theme)
+├── core.py                    # Orchestration engine, sockets and processes
+├── i18n.py                    # Internationalization module (ES / EN)
+├── start.bat                  # Headless console startup script
+└── stop.bat                   # Clean console shutdown script
+```
+
+---
+
+### 6. Quick Start Guide
+
+#### Desktop Shortcut
+On first launch, AetherStack creates an official desktop shortcut with its custom Windows icon (`icon.ico`):
+- **Name:** `AetherStack`
+- **Target:** Launches the GUI console without leaving lingering CMD terminal windows.
+
+#### Command-Line Operations
+If you prefer running the stack headlessly without the GUI, run directly from the project directory:
+```cmd
+:: Start all services (Nginx, PHP FastCGI, MariaDB)
+start.bat
+
+:: Stop all processes cleanly
+stop.bat
+```
+
+---
+
+### 7. Project Management
+
+All projects are created inside the configured root projects directory (customizable at any time via the Settings modal).
+
+Every project is immediately accessible via two HTTP methods:
+1. **Direct subdirectory URL:**
+   ```text
+   http://localhost/<project-name>/
+   ```
+2. **Local Virtual Host URL:**
+   ```text
+   http://<project-name>.local
+   ```
+
+*Note for Laravel:* Nginx automatically routes the root to the `/public` directory.
+
+---
+
+### 8. Database & HeidiSQL
+
+MariaDB is pre-initialized and configured on dedicated port **3307** to ensure complete compatibility with Docker, WSL, or existing local MySQL services running on default port 3306:
+
+- **Host:** `127.0.0.1` (or `localhost`)
+- **Port:** `3307`
+- **User:** `root`
+- **Password:** *(empty / no password by default)*
+- **Default Character Set:** `utf8mb4`
+- **Default Collation:** `utf8mb4_unicode_ci`
+
+Connect via the **DB Manager** button (opens preconfigured HeidiSQL Portable) or from any external database GUI (DBeaver, TablePlus, VS Code, or PhpStorm) targeting port **3307**.
+
+---
+
+### 9. Development Terminal
+
+Clicking the **Terminal** button in the dashboard quick actions opens a `cmd.exe` console pre-wired for your active environment:
+- Working directory starts directly in your active projects folder.
+- The `PATH` environment variable is loaded with the active PHP version, Composer, and the MariaDB CLI client.
+- Run global commands directly:
+  ```bash
+  php -v
+  composer create-project ...
+  mariadb -u root -P 3307
+  php artisan migrate
+  ```
+
+---
+
+### 10. Official Technical Documentation
+
+The project includes formal specifications and architecture records under [`docs/`](docs/):
+
+| Document | Title | Description |
+| :--- | :--- | :--- |
+| [`01_PROJECT_PRD.md`](docs/01_PROJECT_PRD.md) | Product Requirements | Functional and non-functional requirements specification. |
+| [`02_SDD.md`](docs/02_SDD.md) | System Design | Component architecture, port topology, and lifecycle. |
+| [`03_SYSTEM_SPEC.md`](docs/03_SYSTEM_SPEC.md) | Technical Specifications | Runtime flags, binary parameters, and config directives. |
+| [`04_DATA_MODEL.md`](docs/04_DATA_MODEL.md) | Data Model | Internal state schema (`state.json`, vhosts, system tables). |
+| [`05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md) | Architecture Decisions | Foundational design choices (FastCGI, port 3307, native UI). |
+| [`06_TASKS.md`](docs/06_TASKS.md) | Active Backlog | Task milestones and project handover status. |
+| [`07_DECISIONS.md`](docs/07_DECISIONS.md) | Architecture Records | Historical record of technical decisions and trade-offs. |
+| [`08_CHANGELOG.md`](docs/08_CHANGELOG.md) | Changelog | Version history adhering to the Keep a Changelog standard. |
+| [`09_TESTING.md`](docs/09_TESTING.md) | Testing Strategy | Verification suite for ports, processes, FastCGI, and scaffolders. |
+| [`10_RUNBOOK.md`](docs/10_RUNBOOK.md) | Operations Runbook | Maintenance, troubleshooting, and backup procedures. |
+
+---
+
+### 11. License
+
+This project is licensed under the **MIT License**. You are free to use, modify, and distribute it for personal or commercial projects without restrictions.
