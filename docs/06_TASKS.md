@@ -8,6 +8,8 @@
 ---
 
 ## Tareas Completadas
+- [x] Empaquetado y publicación del **Release Oficial v1.0.0** en GitHub con paquete portable descargable `AetherStack-v1.0.0-portable.zip` (359 MB) y notas de lanzamiento bilingües.
+- [x] Reordenación estratégica del `README.md`: sección en **Inglés como idioma principal inicial** para captar la atención de la comunidad global en GitHub, seguida de la versión en Español completa con salto rápido en la cabecera.
 - [x] Reordenación estratégica del `README.md`: sección en **Inglés como idioma principal inicial** para captar la atención de la comunidad global en GitHub, seguida de la versión en Español completa con salto rápido en la cabecera.
 - [x] Documentación bilingüe integral en `README.md` (Español e Inglés) con selector de idiomas en cabecera, tabla comparativa, guías paso a paso, estructura de carpetas, atajos de HeidiSQL y enlaces completos a `/docs`.
 - [x] Integración de **HeidiSQL Portable** v12.22 (el mismo gestor de Laragon) en `bin/heidisql/`:
