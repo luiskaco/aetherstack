@@ -6,6 +6,29 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.1.0] - 2026-11-08
+
+### Seguridad
+- **Nginx solo en local:** el servidor y los virtual hosts escuchan en `127.0.0.1` (antes en todas las interfaces, accesibles desde la red local). Se desactiva el listado de carpetas (`autoindex`) y se bloquea el acceso web a la carpeta de AetherStack (código, `data/`, `logs/`).
+- **Validación de nombres de proyecto** (`^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`) y comprobación de que la ruta queda dentro de la carpeta de proyectos. Evita path traversal al crear/eliminar e inyección en SQL, en la config de Nginx y en comandos de shell.
+- Se eliminan los `os.system` de la interfaz: carpetas con `os.startfile`, URLs con `webbrowser` y terminal con `subprocess` (sin shell).
+- Ajustes: se validan los puertos (1-65535 y distintos) y que la carpeta de proyectos exista.
+- Los vhosts antiguos que escuchaban en todas las interfaces se migran a `127.0.0.1` automáticamente.
+
+### Cambiado
+- La carpeta de proyectos por defecto en instalaciones nuevas es `aetherstack/projects` (antes, la carpeta padre de donde se descomprimía).
+- Los proyectos con nombres fuera de la regla anterior no aparecen en la lista.
+- `conf/state.json`, `conf/nginx.conf`, `conf/my.ini` y `AetherStack.lnk` dejan de versionarse: se generan en el primer arranque o con `python generate_icon.py`.
+
+### Corregido
+- Nginx no arrancaba en una copia nueva: faltaban `bin/nginx/temp` y `bin/nginx/logs`. Ahora se crean solos.
+
+### Release
+- Nuevo `tools/build_release_zip.py`: lista blanca, base MariaDB vacía generada en el momento y escaneo de datos personales que aborta el build.
+- **El asset de v1.0.0 incluía el perfil del navegador y las bases de datos del autor; se retira y se sustituye por v1.1.0.**
+
+---
+
 ## [1.0.8] - 2026-11-08
 
 ### Añadido

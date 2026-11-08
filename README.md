@@ -132,9 +132,11 @@ aetherstack/
 ### 6. Quick Start Guide
 
 #### Desktop Shortcut
-On first launch, AetherStack creates an official desktop shortcut with its custom Windows icon (`icon.ico`):
-- **Name:** `AetherStack`
-- **Target:** Launches the GUI console without leaving lingering CMD terminal windows.
+Double-click `AetherStack.bat` to launch the GUI. To create a desktop shortcut with the custom icon (`icon.ico`), run once:
+```cmd
+python generate_icon.py
+```
+The portable ZIP does not ship a `.lnk` file because shortcuts store machine-specific paths.
 
 #### Command-Line Operations
 If you prefer running the stack headlessly without the GUI, run directly from the project directory:
@@ -174,6 +176,8 @@ MariaDB is pre-initialized and configured on dedicated port **3307** to ensure c
 - **Port:** `3307`
 - **User:** `root`
 - **Password:** *(empty / no password by default)*
+
+> **Security note:** MariaDB, PHP-FastCGI and Nginx listen on `127.0.0.1` only, so nothing is reachable from your network. Do not change the bind address: `root` has no password. Project names accept only letters, numbers, `-` and `_`.
 - **Default Character Set:** `utf8mb4`
 - **Default Collation:** `utf8mb4_unicode_ci`
 
@@ -330,9 +334,11 @@ aetherstack/
 ### 6. Guía de Inicio Rápido
 
 #### Acceso Directo de Escritorio
-Al iniciar AetherStack se genera un acceso directo oficial en el Escritorio con icono propio (`icon.ico` nativo de Windows):
-- **Nombre:** `AetherStack`
-- **Destino:** Ejecuta la consola gráfica sin terminales negras residuales.
+Haz doble clic en `AetherStack.bat` para abrir la interfaz. Para crear un acceso directo en el Escritorio con el icono propio (`icon.ico`), ejecuta una vez:
+```cmd
+python generate_icon.py
+```
+El ZIP portable no incluye ningún `.lnk` porque los accesos directos guardan rutas propias de cada equipo.
 
 #### Control por Línea de Comandos
 Si prefieres operar el stack sin interfaz gráfica, ejecuta directamente desde la carpeta del proyecto:
@@ -372,6 +378,10 @@ MariaDB se encuentra preinicializado y configurado en el puerto independiente **
 - **Puerto:** `3307`
 - **Usuario:** `root`
 - **Contraseña:** *(vacía / sin contraseña por defecto)*
+
+> **Nota de seguridad:** MariaDB, PHP-FastCGI y Nginx escuchan solo en `127.0.0.1`, por lo que nada es accesible desde tu red. No cambies la dirección de escucha: `root` no tiene contraseña. Los nombres de proyecto aceptan solo letras, números, `-` y `_`.
+
+> **Nota de seguridad:** MariaDB, PHP-FastCGI y Nginx escuchan solo en `127.0.0.1`, por lo que nada es accesible desde tu red. No cambies la dirección de escucha: `root` no tiene contraseña. Los nombres de proyecto aceptan solo letras, números, `-` y `_`.
 - **Juego de caracteres:** `utf8mb4`
 - **Cotejamiento (Collation):** `utf8mb4_unicode_ci`
 

@@ -2,12 +2,27 @@
 
 ## Estado de Traspaso (Handover State)
 - **Estado Actual:** Sistema operativo, estable y funcional.
-- **Acceso:** Disponible en el Escritorio con icono propio (`AetherStack.lnk`).
+- **Acceso:** `AetherStack.bat`; acceso directo opcional con `python generate_icon.py`.
 - **Tipo:** Aplicación desktop portable para Windows 10/11 x64.
+- **Release:** v1.1.0 (ver `10_RUNBOOK.md` § 5 para repetir el proceso).
+
+---
+
+## Pendiente (revisión de seguridad y buenas prácticas, 2026-11-08)
+- [ ] MariaDB `root` sin contraseña: crear un usuario por proyecto (`.env` de Laravel / `wp-config.php`) y avisar en la UI.
+- [ ] Verificar integridad (SHA256) de las descargas de Nginx, PHP, MariaDB, Composer y WordPress.
+- [ ] Crear `requirements.txt` con `customtkinter` fijado.
+- [ ] Reemplazar los `except Exception: pass` por registro en `logs/aetherstack.log`.
+- [ ] `core.py` reescribe configuraciones al importarse: moverlo a una función `init()` llamada desde `app.py`.
+- [ ] `start.bat` fija PHP 8.4 y `switch-php.bat` usa un enlace `current` que la app no usa: unificar con `state.json`.
+- [ ] Tests automáticos de `core.py` (validación de nombres, generación de configs) y completar `docs/09_TESTING.md`.
+- [ ] Decidir si la lista de proyectos debe mostrar carpetas con nombres no válidos (hoy se ocultan).
 
 ---
 
 ## Tareas Completadas
+- [x] Revisión de seguridad: Nginx solo en `127.0.0.1` y sin listado de carpetas, validación de nombres de proyecto, eliminación de `os.system`, validación de Ajustes.
+- [x] Release **v1.1.0** reproducible con `tools/build_release_zip.py` (lista blanca + base MariaDB vacía + escaneo de datos personales). Se retira el asset de v1.0.0, que incluía datos personales.
 - [x] Empaquetado y publicación del **Release Oficial v1.0.0** en GitHub con paquete portable descargable `AetherStack-v1.0.0-portable.zip` (359 MB) y notas de lanzamiento bilingües.
 - [x] Reordenación estratégica del `README.md`: sección en **Inglés como idioma principal inicial** para captar la atención de la comunidad global en GitHub, seguida de la versión en Español completa con salto rápido en la cabecera.
 - [x] Reordenación estratégica del `README.md`: sección en **Inglés como idioma principal inicial** para captar la atención de la comunidad global en GitHub, seguida de la versión en Español completa con salto rápido en la cabecera.

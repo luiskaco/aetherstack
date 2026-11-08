@@ -9,7 +9,7 @@ La configuración de usuario y estado del entorno se guarda en `conf/state.json`
   "nginx_port": 80,
   "mariadb_port": 3307,
   "php_port": 9000,
-  "projects_dir": "D:\\LabIA",
+  "projects_dir": "<ruta-de-aetherstack>/projects",
   "theme": "dark",
   "language": "es"
 }
