@@ -8,7 +8,11 @@
 ---
 
 ## Tareas Completadas
-- [x] Gestor y visor de base de datos integrado (Adminer) en `tools/adminer/` con tema dark, soporte completo para creación/edición de tablas, importación y exportación de dumps `.sql`, auto-login en `127.0.0.1:3307`, botón en Acceso Rápido ("Gestor DB"), acceso en el panel lateral de MariaDB y botón de apertura directa para cada proyecto.
+- [x] Integración de **HeidiSQL Portable** v12.22 (el mismo gestor de Laragon) en `bin/heidisql/`:
+  - Aplicación de escritorio nativa de Windows, ultra-rápida y sin advertencias de PHP.
+  - Modo 100% portable (`portable.lock` y `portable_settings.txt`) preconfigurado con sesión para MariaDB 11 en `127.0.0.1:3307`.
+  - Lanzamiento directo desde el Dashboard ("Gestor DB"), panel lateral de MariaDB y botón por proyecto para abrir su BD enfocada.
+  - Reemplazo y descarte definitivo del visor web Adminer, manteniendo Nginx limpio.
 - [x] Portabilidad total y plug-and-play: resolución dinámica de rutas relativas a `BASE_DIR` en scripts batch (`%~dp0`), `nginx.conf`, `my.ini` (MariaDB) y `php.ini`, permitiendo mover la suite a cualquier PC o pendrive sin fallos de configuración.
 - [x] Internacionalización (i18n): soporte completo para Español (ES) e Inglés (EN) con botón de alternancia en la barra superior (`🌐 EN` / `🌐 ES`) y persistencia en configuración.
 - [x] Condición preventiva de creación: bloqueo estricto en UI y lógica core para impedir crear proyectos si el stack de servicios (Nginx, PHP, MariaDB) no está activo.

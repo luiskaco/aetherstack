@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.7] - 2026-11-07
+
+### Añadido
+- Integración de **HeidiSQL Portable v12.22** (el gestor oficial de Laragon) en `bin/heidisql/`:
+  - Aplicación de escritorio nativa de Windows con interfaz profesional moderna, edición de celdas en cuadrícula tipo hoja de cálculo, diseñador de tablas y creador visual de esquemas.
+  - Asistente de importación y exportación de archivos `.sql` y copias de seguridad con barra de progreso.
+  - Editor de consultas SQL de alto rendimiento con autocompletado y resaltado de sintaxis.
+  - Modo 100% portable (`portable_settings.txt`) preconfigurado en modo oscuro (`Windows10 Dark`) con conexión directa a MariaDB en `127.0.0.1:3307`.
+  - Conexión instantánea desde el botón **"Gestor DB"**, botón en el panel de MariaDB y botón por proyecto para enfocar su base de datos específica.
+
+### Eliminado
+- Descarte del visor web Adminer, eliminando advertencias de PHP y manteniendo Nginx optimizado y libre de puertos secundarios.
+
 ## [1.0.6] - 2026-11-07
 
 ### Añadido

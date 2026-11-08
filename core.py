@@ -245,20 +245,6 @@ http {{
         root   "{proj_dir}";
         index  index.php index.html index.htm;
 
-        location ^~ /aether-db/ {{
-            alias  "{BASE_DIR_SLASH}/tools/adminer/";
-            index  index.php;
-            try_files $uri $uri/ /aether-db/index.php?$query_string;
-
-            location ~ \\.php$ {{
-                fastcgi_pass   php_cgi;
-                fastcgi_index  index.php;
-                fastcgi_param  SCRIPT_FILENAME  $request_filename;
-                include        "{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params";
-                fastcgi_read_timeout 300;
-            }}
-        }}
-
         location / {{
             autoindex on;
             try_files $uri $uri/ /index.php?$query_string;
@@ -276,30 +262,6 @@ http {{
 
         location ~ /\\. {{
             deny all;
-        }}
-    }}
-
-    # AetherStack - Database Manager (Adminer) en Puerto 3308
-    server {{
-        listen       3308;
-        server_name  localhost 127.0.0.1;
-
-        root   "{BASE_DIR_SLASH}/tools/adminer";
-        index  index.php;
-
-        client_max_body_size 256M;
-
-        location / {{
-            try_files $uri $uri/ /index.php?$query_string;
-        }}
-
-        location ~ \\.php$ {{
-            try_files $uri =404;
-            fastcgi_pass   php_cgi;
-            fastcgi_index  index.php;
-            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-            include        "{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params";
-            fastcgi_read_timeout 300;
         }}
     }}
 
@@ -682,15 +644,26 @@ def create_project_wordpress(project_name, progress_cb=None):
     return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
 
 def open_db_manager(db_name=None):
-    """Abre el gestor web de base de datos (Adminer) en el navegador predeterminado."""
+    """Abre el gestor de base de datos HeidiSQL Portable conectado a MariaDB."""
     state = load_state()
     port = state.get("mariadb_port", 3307)
-    base_url = f"http://localhost:3308/?server=127.0.0.1%3A{port}&username=root"
-    if db_name:
-        url = f"{base_url}&db={db_name}"
-    else:
-        url = base_url
-    webbrowser.open(url)
+    heidisql_exe = os.path.join(BIN_DIR, "heidisql", "heidisql.exe")
+
+    if os.path.exists(heidisql_exe):
+        args = [
+            heidisql_exe,
+            "-h=127.0.0.1",
+            f"-P={port}",
+            "-u=root",
+        ]
+        if db_name:
+            args.append(f"-d={db_name}")
+        try:
+            subprocess.Popen(args, cwd=os.path.dirname(heidisql_exe))
+            return True
+        except Exception:
+            pass
+    return False
 
 # Sincronización automática de rutas portables en cada carga de módulo
 try:
