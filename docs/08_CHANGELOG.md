@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.1.1] - 2026-11-08
+
+### Rendimiento
+- El estado de los servicios se consulta con la API de Windows (instantánea de procesos) en lugar de lanzar `tasklist` varias veces: `get_status()` pasa de ~970 ms a ~13 ms.
+- Antes, la interfaz se congelaba cerca de 1 s cada 3 s al refrescar el estado; ahora no hay pausas perceptibles.
+- El arranque de la interfaz baja de ~4,2 s a ~2,5 s. El resto es dibujado de widgets de customtkinter.
+
+---
+
 ## [1.1.0] - 2026-11-08
 
 ### Seguridad

@@ -109,13 +109,47 @@ def is_port_in_use(port, host='127.0.0.1'):
         s.settimeout(0.3)
         return s.connect_ex((host, port)) == 0
 
-def is_process_running(process_name):
+def _running_process_names():
+    """Nombres (en minúsculas) de todos los procesos activos, vía API de Windows (~2 ms, sin lanzar tasklist)."""
+    import ctypes
+    from ctypes import wintypes
+
+    class PROCESSENTRY32W(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD),
+            ("th32ProcessID", wintypes.DWORD), ("th32DefaultHeapID", ctypes.c_void_p),
+            ("th32ModuleID", wintypes.DWORD), ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD), ("pcPriClassBase", wintypes.LONG),
+            ("dwFlags", wintypes.DWORD), ("szExeFile", wintypes.WCHAR * 260),
+        ]
+
+    k32 = ctypes.windll.kernel32
+    k32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    k32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    k32.Process32FirstW.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESSENTRY32W)]
+    k32.Process32NextW.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESSENTRY32W)]
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+
+    TH32CS_SNAPPROCESS = 0x2
+    snap = k32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    names = set()
+    if not snap or snap == wintypes.HANDLE(-1).value:
+        return names
     try:
-        output = subprocess.check_output(
-            f'tasklist /FI "IMAGENAME eq {process_name}" /NH',
-            shell=True, text=True, stderr=subprocess.DEVNULL
-        )
-        return process_name.lower() in output.lower()
+        entry = PROCESSENTRY32W()
+        entry.dwSize = ctypes.sizeof(PROCESSENTRY32W)
+        ok = k32.Process32FirstW(snap, ctypes.byref(entry))
+        while ok:
+            names.add(entry.szExeFile.lower())
+            ok = k32.Process32NextW(snap, ctypes.byref(entry))
+    finally:
+        k32.CloseHandle(snap)
+    return names
+
+def is_process_running(process_name, _names=None):
+    try:
+        names = _names if _names is not None else _running_process_names()
+        return process_name.lower() in names
     except Exception:
         return False
 
@@ -123,9 +157,10 @@ def get_status():
     state = load_state()
     php_ver = state.get("php_version", "8.4")
     
-    nginx_running = is_process_running("nginx.exe") and is_port_in_use(state["nginx_port"])
-    php_running = is_process_running("php-cgi.exe") and is_port_in_use(state["php_port"])
-    mariadb_running = (is_process_running("mariadbd.exe") or is_process_running("mysqld.exe")) and is_port_in_use(state["mariadb_port"])
+    procs = _running_process_names()  # una sola consulta por ciclo
+    nginx_running = "nginx.exe" in procs and is_port_in_use(state["nginx_port"])
+    php_running = "php-cgi.exe" in procs and is_port_in_use(state["php_port"])
+    mariadb_running = ("mariadbd.exe" in procs or "mysqld.exe" in procs) and is_port_in_use(state["mariadb_port"])
 
     return {
         "nginx": {
