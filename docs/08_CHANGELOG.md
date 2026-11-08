@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.0.6] - 2026-11-07
+
+### Añadido
+- Visor y gestor completo de bases de datos integrado con **Adminer** en `tools/adminer/`:
+  - Capacidad completa para crear, ver, modificar, importar y exportar tablas y bases de datos (`.sql` y `.sql.gz`).
+  - Auto-login transparente preconfigurado a MariaDB en `127.0.0.1:3307` con usuario `root`.
+  - Tema oscuro a medida (`adminer.css`) integrado con la paleta de colores de AetherStack (Slate 900 y acentos neón).
+  - Exposición web directa en puerto dedicado `http://localhost:3308` y alias `/aether-db/`.
+  - Botón de acceso rápido **"Gestor DB"** (`🗄`) en la sección de Acceso Rápido del Dashboard.
+  - Botón **"Abrir Gestor Web"** en el panel lateral de detalles de MariaDB Server.
+  - Botón directo de base de datos (`🗄`) en cada fila de proyecto de "Mis Proyectos" para abrir directamente la BD correspondiente (`<nombre>_db`).
+  - Protección preventiva: alerta al usuario si intenta abrir el gestor mientras el stack se encuentra apagado.
+
 ## [1.0.5] - 2026-11-07
 
 ### Añadido

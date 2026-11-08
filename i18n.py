@@ -44,6 +44,7 @@ TRANSLATIONS = {
         "action_localhost": "Localhost",
         "action_folder": "Carpeta",
         "action_terminal": "Terminal",
+        "action_database": "Gestor DB",
         
         # Projects Table
         "projects_table_title": "Mis Proyectos (WordPress & Laravel)",
@@ -60,6 +61,7 @@ TRANSLATIONS = {
         "db_pass_label": "Clave:",
         "db_no_pass": "(sin contraseña)",
         "btn_copy_conn": "📋 Copiar Conexión",
+        "btn_open_db_web": "🗄 Abrir Gestor Web",
         "projects_folder_card": "📁 Carpeta de Proyectos",
         "btn_view_logs": "📜 Ver Logs del Stack",
         
@@ -91,6 +93,7 @@ TRANSLATIONS = {
         "alert_delete_error_title": "Error al Eliminar",
         "alert_conn_copied_title": "Conexión Copiada",
         "alert_conn_copied_msg": "Datos de conexión MySQL copiados al portapapeles.",
+        "alert_db_offline_msg": "Debes iniciar el stack de servicios para abrir el gestor de bases de datos.\n\nPulsa 'INICIAR STACK' para levantar MariaDB y Nginx.",
     },
     "en": {
         # Common / Buttons
@@ -129,6 +132,7 @@ TRANSLATIONS = {
         "action_localhost": "Localhost",
         "action_folder": "Folder",
         "action_terminal": "Terminal",
+        "action_database": "DB Manager",
         
         # Projects Table
         "projects_table_title": "My Projects (WordPress & Laravel)",
@@ -145,6 +149,7 @@ TRANSLATIONS = {
         "db_pass_label": "Password:",
         "db_no_pass": "(no password)",
         "btn_copy_conn": "📋 Copy Connection",
+        "btn_open_db_web": "🗄 Open DB Web Manager",
         "projects_folder_card": "📁 Projects Folder",
         "btn_view_logs": "📜 View Stack Logs",
         
@@ -176,6 +181,7 @@ TRANSLATIONS = {
         "alert_delete_error_title": "Error Deleting Project",
         "alert_conn_copied_title": "Connection Copied",
         "alert_conn_copied_msg": "MySQL connection details copied to clipboard.",
+        "alert_db_offline_msg": "You must start the service stack to open the database manager.\n\nClick 'START STACK' to start MariaDB and Nginx.",
     }
 }
 

@@ -252,6 +252,10 @@ class AetherDribbbleApp(ctk.CTk):
                                                                     self.open_terminal)
         box_cli.pack(side="left", padx=10)
 
+        box_db, self.lbl_act_db = self.create_round_action_btn(q_row, "🗄", t("action_database"), "#261C3B", "#C084FC",
+                                                               lambda: self.open_db_manager())
+        box_db.pack(side="left", padx=10)
+
     def create_round_action_btn(self, parent, icon, text, bg_color, fg_color, command):
         box = ctk.CTkFrame(parent, fg_color="transparent")
         
@@ -327,6 +331,13 @@ class AetherDribbbleApp(ctk.CTk):
                                     border_width=1, border_color=BORDER,
                                     command=lambda url=p["url"]: os.system(f"start {url}"))
             btn_web.pack(side="right", padx=(2, 8), pady=6)
+
+            db_target = f"{p['name'].lower().replace('-', '_')}_db"
+            btn_db = ctk.CTkButton(row, text="🗄", width=28, height=28, corner_radius=8,
+                                   fg_color=BTN_SEC_BG, hover_color="#2E1065", text_color="#C084FC",
+                                   border_width=1, border_color=BORDER,
+                                   command=lambda d=db_target: self.open_db_manager(d))
+            btn_db.pack(side="right", padx=2, pady=6)
 
             btn_dir = ctk.CTkButton(row, text="📁", width=28, height=28, corner_radius=8,
                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
@@ -443,6 +454,12 @@ class AetherDribbbleApp(ctk.CTk):
                                          height=24, corner_radius=6, border_width=1, border_color=BORDER,
                                          command=self.copy_db_connection)
         self.btn_copy_db.pack(fill="x", pady=(6, 0))
+
+        self.btn_open_db = ctk.CTkButton(c_db_pad, text=t("btn_open_db_web"), font=ctk.CTkFont(size=10, weight="bold"),
+                                         fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color="#C084FC",
+                                         height=24, corner_radius=6, border_width=1, border_color=BORDER,
+                                         command=lambda: self.open_db_manager())
+        self.btn_open_db.pack(fill="x", pady=(4, 0))
 
         # 4. Tarjeta: Carpeta Activa de Proyectos
         card_dir = ctk.CTkFrame(pad_box, fg_color=BG_CARD, corner_radius=14, border_width=1, border_color=BORDER)
@@ -583,6 +600,8 @@ class AetherDribbbleApp(ctk.CTk):
             self.lbl_act_folder.configure(text=t("action_folder"))
         if hasattr(self, "lbl_act_terminal"):
             self.lbl_act_terminal.configure(text=t("action_terminal"))
+        if hasattr(self, "lbl_act_db"):
+            self.lbl_act_db.configure(text=t("action_database"))
 
         # 4. Tabla de proyectos
         if hasattr(self, "lbl_files"):
@@ -603,6 +622,8 @@ class AetherDribbbleApp(ctk.CTk):
             self.lbl_db_pass_val.configure(text=t("db_no_pass"))
         if hasattr(self, "btn_copy_db"):
             self.btn_copy_db.configure(text=t("btn_copy_conn"))
+        if hasattr(self, "btn_open_db"):
+            self.btn_open_db.configure(text=t("btn_open_db_web"))
         if hasattr(self, "lbl_side_dir_title"):
             self.lbl_side_dir_title.configure(text=t("projects_folder_card"))
         if hasattr(self, "btn_side_explore"):
@@ -984,6 +1005,17 @@ class AetherDribbbleApp(ctk.CTk):
         composer_dir = os.path.join(core.BIN_DIR, "composer")
         env_cmd = f'set "PATH={php_dir};{composer_dir};{mariadb_bin};%PATH%" & cd /d "{p_dir}" & start cmd.exe /k "echo AetherStack Dev Shell (PHP {ver}) & echo."'
         os.system(env_cmd)
+
+    def open_db_manager(self, db_name=None):
+        status = core.get_status()
+        if not status["all_running"]:
+            self.show_dark_alert(
+                t("action_database"),
+                t("alert_db_offline_msg"),
+                alert_type="warning"
+            )
+            return
+        core.open_db_manager(db_name)
 
 if __name__ == "__main__":
     app = AetherDribbbleApp()

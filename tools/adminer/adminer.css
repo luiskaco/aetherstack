@@ -1,0 +1,224 @@
+/* AetherStack - Dark Mode Theme for Adminer */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-base: #0B0F19;
+    --bg-surface: #111827;
+    --bg-card: #1E293B;
+    --bg-card-hover: #26354D;
+    --border-color: #334155;
+    --accent-cyan: #38BDF8;
+    --accent-blue: #2563EB;
+    --accent-blue-hover: #1D4ED8;
+    --text-primary: #F8FAFC;
+    --text-muted: #94A3B8;
+    --success: #10B981;
+    --danger: #EF4444;
+}
+
+body {
+    background-color: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#menu {
+    background-color: #0F172A !important;
+    border-right: 1px solid var(--border-color) !important;
+    padding: 20px 16px !important;
+    width: 260px !important;
+}
+
+#menu h1 {
+    font-size: 16px !important;
+    margin: 0 0 16px 0 !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+#menu h1 a {
+    color: var(--accent-cyan) !important;
+    text-decoration: none !important;
+}
+
+#menu p {
+    color: var(--text-muted) !important;
+    margin: 8px 0 !important;
+}
+
+#menu a {
+    color: #93C5FD !important;
+    text-decoration: none !important;
+}
+
+#menu a:hover {
+    color: var(--accent-cyan) !important;
+    text-decoration: underline !important;
+}
+
+#menu select {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 8px !important;
+}
+
+#content {
+    background-color: var(--bg-surface) !important;
+    margin-left: 280px !important;
+    padding: 28px 36px !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+}
+
+h2 {
+    color: var(--text-primary) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+h3 {
+    color: var(--text-primary) !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
+
+/* Links */
+a {
+    color: var(--accent-cyan) !important;
+    text-decoration: none !important;
+}
+
+a:hover {
+    color: #7DD3FC !important;
+    text-decoration: underline !important;
+}
+
+/* Tables */
+table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    margin: 16px 0 !important;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+th {
+    background-color: #0F172A !important;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 10px 14px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    text-align: left !important;
+}
+
+td {
+    padding: 9px 14px !important;
+    border-bottom: 1px solid #1E293B !important;
+    color: var(--text-primary) !important;
+}
+
+tr:last-child td {
+    border-bottom: none !important;
+}
+
+tr:hover td {
+    background-color: var(--bg-card-hover) !important;
+}
+
+/* Inputs & Forms */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 7px 11px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    outline: none !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent-cyan) !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+}
+
+textarea {
+    font-family: 'JetBrains Mono', Consolas, monospace !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+}
+
+/* Buttons */
+input[type="submit"],
+button,
+.button {
+    background-color: var(--accent-blue) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 7px 16px !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.05s ease !important;
+}
+
+input[type="submit"]:hover,
+button:hover,
+.button:hover {
+    background-color: var(--accent-blue-hover) !important;
+}
+
+input[type="submit"]:active,
+button:active {
+    transform: translateY(1px) !important;
+}
+
+/* Messages & Alerts */
+.message {
+    background-color: #064E3B !important;
+    border: 1px solid #059669 !important;
+    color: #6EE7B7 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    margin: 12px 0 !important;
+}
+
+.error {
+    background-color: #451A1A !important;
+    border: 1px solid #DC2626 !important;
+    color: #FCA5A5 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    margin: 12px 0 !important;
+}
+
+/* Footer */
+#footer {
+    display: none !important;
+}
