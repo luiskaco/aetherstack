@@ -38,6 +38,8 @@ PROGRESS_BG = "#1E293B"
 GREEN_SUCCESS = "#10B981"
 RED_ERROR = "#EF4444"
 ACCENT_BLUE = "#2563EB"
+ACCENT_TEXT = "#60A5FA"          # Azul claro para texto sobre fondos oscuros (contraste 7:1)
+TEXT_STATUS_OFF = "#CBD5E1"     # Texto de badges apagados (contraste 12:1)
 
 class AetherDribbbleApp(ctk.CTk):
     def __init__(self):
@@ -171,7 +173,7 @@ class AetherDribbbleApp(ctk.CTk):
         t1_top.pack(fill="x", padx=14, pady=(12, 4))
         ctk.CTkLabel(t1_top, text="🌐", font=ctk.CTkFont(size=18), text_color="#FFFFFF").pack(side="left")
         self.badge_nginx = ctk.CTkLabel(t1_top, text="OFFLINE", font=ctk.CTkFont(size=9, weight="bold"),
-                                       fg_color="#0F172A", text_color="#94A3B8", corner_radius=6)
+                                       fg_color="#0F172A", text_color=TEXT_STATUS_OFF, corner_radius=6)
         self.badge_nginx.pack(side="right")
 
         ctk.CTkLabel(self.card_nginx, text="Nginx Web Server", font=ctk.CTkFont(size=12, weight="bold"),
@@ -216,7 +218,7 @@ class AetherDribbbleApp(ctk.CTk):
         t3_top.pack(fill="x", padx=14, pady=(12, 4))
         ctk.CTkLabel(t3_top, text="🐬", font=ctk.CTkFont(size=18)).pack(side="left")
         self.badge_db = ctk.CTkLabel(t3_top, text="OFFLINE", font=ctk.CTkFont(size=9, weight="bold"),
-                                     fg_color=BG_MAIN, text_color=TEXT_MUTED, corner_radius=6)
+                                     fg_color=BG_MAIN, text_color=TEXT_STATUS_OFF, corner_radius=6)
         self.badge_db.pack(side="right")
 
         ctk.CTkLabel(self.card_db, text="MariaDB Server", font=ctk.CTkFont(size=12, weight="bold"),
@@ -281,7 +283,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.lbl_files.pack(side="left")
 
         self.btn_reload = ctk.CTkButton(t_head, text=t("reload_list"), font=ctk.CTkFont(size=11, weight="bold"),
-                                        fg_color="transparent", text_color=ACCENT_BLUE,
+                                        fg_color="transparent", text_color=ACCENT_TEXT,
                                         hover_color="#1E293B", width=90, height=24, command=self.load_projects_list)
         self.btn_reload.pack(side="right")
 
@@ -388,7 +390,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.lbl_side_title.pack(side="left")
 
         self.badge_stack_status = ctk.CTkLabel(head_box, text=t("status_standby"), font=ctk.CTkFont(size=9, weight="bold"),
-                                              fg_color="#1E293B", text_color="#94A3B8", corner_radius=6, padx=6, pady=2)
+                                              fg_color="#1E293B", text_color=TEXT_STATUS_OFF, corner_radius=6, padx=6, pady=2)
         self.badge_stack_status.pack(side="right")
 
         # 2. Tarjeta: Rendimiento del Sistema (RAM)
@@ -404,7 +406,7 @@ class AetherDribbbleApp(ctk.CTk):
                                               text_color=TEXT_DARK)
         self.lbl_side_ram_title.pack(side="left")
         self.lbl_ram_pct = ctk.CTkLabel(ram_head, text="35%", font=ctk.CTkFont(size=11, weight="bold"),
-                                       text_color=ACCENT_BLUE)
+                                       text_color=ACCENT_TEXT)
         self.lbl_ram_pct.pack(side="right")
 
         self.progress_bar = ctk.CTkProgressBar(c_ram_pad, height=6, corner_radius=3, fg_color=PROGRESS_BG, progress_color=ACCENT_BLUE)
@@ -478,7 +480,7 @@ class AetherDribbbleApp(ctk.CTk):
         p_chip.pack(fill="x", pady=(0, 8))
         self.lbl_active_folder = ctk.CTkLabel(p_chip, text=core.get_projects_root(),
                                               font=ctk.CTkFont(size=10, family="Consolas", weight="bold"),
-                                              text_color=ACCENT_BLUE, padx=8, pady=4, wraplength=210, justify="left")
+                                              text_color=ACCENT_TEXT, padx=8, pady=4, wraplength=210, justify="left")
         self.lbl_active_folder.pack(fill="x")
 
         dir_btns = ctk.CTkFrame(c_dir_pad, fg_color="transparent")
@@ -521,7 +523,7 @@ class AetherDribbbleApp(ctk.CTk):
             self.badge_nginx.configure(text=t("status_online"), fg_color="#10B981", text_color="#FFFFFF")
         else:
             self.card_nginx.configure(fg_color="#1E293B")
-            self.badge_nginx.configure(text=t("status_offline"), fg_color="#0F172A", text_color="#94A3B8")
+            self.badge_nginx.configure(text=t("status_offline"), fg_color="#0F172A", text_color=TEXT_STATUS_OFF)
 
         php_v = status["php"]["version"]
         self.label_php_title.configure(text=f"PHP FastCGI ({php_v})")
@@ -531,7 +533,7 @@ class AetherDribbbleApp(ctk.CTk):
         if status["mariadb"]["running"]:
             self.badge_db.configure(text=t("status_online"), fg_color="#064E3B", text_color="#34D399")
         else:
-            self.badge_db.configure(text=t("status_offline"), fg_color=BG_MAIN, text_color=TEXT_MUTED)
+            self.badge_db.configure(text=t("status_offline"), fg_color=BG_MAIN, text_color=TEXT_STATUS_OFF)
 
         if status["all_running"]:
             self.btn_master.configure(text=t("btn_stop_stack"), fg_color=RED_ERROR, hover_color="#DC2626")
@@ -542,7 +544,7 @@ class AetherDribbbleApp(ctk.CTk):
         else:
             self.btn_master.configure(text=t("btn_start_stack"), fg_color=GREEN_SUCCESS, hover_color="#059669")
             if hasattr(self, "badge_stack_status"):
-                self.badge_stack_status.configure(text=t("status_standby"), fg_color="#1E293B", text_color="#94A3B8")
+                self.badge_stack_status.configure(text=t("status_standby"), fg_color="#1E293B", text_color=TEXT_STATUS_OFF)
             if hasattr(self, "ram_lbl"):
                 self.ram_lbl.configure(text=t("ram_stack_stopped"))
 
