@@ -13,6 +13,10 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Antes, la interfaz se congelaba cerca de 1 s cada 3 s al refrescar el estado; ahora no hay pausas perceptibles.
 - El arranque de la interfaz baja de ~4,2 s a ~2,5 s. El resto es dibujado de widgets de customtkinter.
 
+### Interfaz
+- Mejor contraste: el texto azul pasa de `#2563EB` (3,4:1) a `#60A5FA` (7:1) y el texto de los badges OFFLINE/STANDBY se aclara (12:1).
+- El título de la tabla de proyectos pasa a ser solo "Mis Proyectos" / "My Projects".
+
 ---
 
 ## [1.1.0] - 2026-11-08
