@@ -4,7 +4,9 @@ Diseño sólido, sin parpadeos ni conmutaciones involuntarias de tema.
 """
 import os
 import sys
+import subprocess
 import threading
+import webbrowser
 import customtkinter as ctk
 from tkinter import filedialog
 import core
@@ -329,10 +331,10 @@ class AetherDribbbleApp(ctk.CTk):
             btn_web = ctk.CTkButton(row, text="🌐", width=28, height=28, corner_radius=8,
                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
                                     border_width=1, border_color=BORDER,
-                                    command=lambda url=p["url"]: os.system(f"start {url}"))
+                                    command=lambda url=p["url"]: webbrowser.open(url))
             btn_web.pack(side="right", padx=(2, 8), pady=6)
 
-            db_target = f"{p['name'].lower().replace('-', '_')}_db"
+            db_target = core.db_name_for(p["name"])
             btn_db = ctk.CTkButton(row, text="🗄", width=28, height=28, corner_radius=8,
                                    fg_color=BTN_SEC_BG, hover_color="#2E1065", text_color="#C084FC",
                                    border_width=1, border_color=BORDER,
@@ -342,7 +344,7 @@ class AetherDribbbleApp(ctk.CTk):
             btn_dir = ctk.CTkButton(row, text="📁", width=28, height=28, corner_radius=8,
                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
                                     border_width=1, border_color=BORDER,
-                                    command=lambda path=p["path"]: os.system(f'explorer "{path}"'))
+                                    command=lambda path=p["path"]: self.open_folder(path))
             btn_dir.pack(side="right", padx=2, pady=6)
 
             btn_del = ctk.CTkButton(row, text="🗑", width=28, height=28, corner_radius=8,
@@ -835,6 +837,9 @@ class AetherDribbbleApp(ctk.CTk):
             name = entry_name.get().strip()
             if not name:
                 return
+            if not core.is_valid_project_name(name):
+                self.show_dark_alert(t("alert_create_error_title"), t("alert_invalid_name_msg"), alert_type="error")
+                return
 
             status = core.get_status()
             if not status["all_running"]:
@@ -897,7 +902,7 @@ class AetherDribbbleApp(ctk.CTk):
             if not success:
                 self.after(50, lambda: self.show_dark_alert(t("alert_delete_error_title"), msg, alert_type="error"))
 
-        db_name = f"{name.lower().replace('-', '_')}_db"
+        db_name = core.db_name_for(name)
         self.show_dark_confirm(
             t("modal_delete_title"),
             t("modal_delete_msg", name=name, db_name=db_name),
@@ -960,10 +965,21 @@ class AetherDribbbleApp(ctk.CTk):
         entry_db.pack(fill="x", pady=4)
 
         def save():
+            projects_dir = entry_dir.get().strip()
+            try:
+                nginx_port = int(entry_nginx.get())
+                db_port = int(entry_db.get())
+            except ValueError:
+                self.show_dark_alert(t("settings_title"), t("alert_invalid_settings_msg"), alert_type="error")
+                return
+            valid_ports = all(1 <= p_ <= 65535 for p_ in (nginx_port, db_port)) and nginx_port != db_port
+            if not valid_ports or not os.path.isdir(projects_dir):
+                self.show_dark_alert(t("settings_title"), t("alert_invalid_settings_msg"), alert_type="error")
+                return
             new_conf = {
-                "projects_dir": entry_dir.get().strip(),
-                "nginx_port": int(entry_nginx.get()),
-                "mariadb_port": int(entry_db.get())
+                "projects_dir": projects_dir,
+                "nginx_port": nginx_port,
+                "mariadb_port": db_port
             }
             core.update_global_config(new_conf)
             self.state_data = core.load_state()
@@ -978,11 +994,15 @@ class AetherDribbbleApp(ctk.CTk):
     def open_localhost(self):
         port = self.state_data.get("nginx_port", 80)
         url = f"http://localhost:{port}" if port != 80 else "http://localhost"
-        os.system(f"start {url}")
+        webbrowser.open(url)
+
+    def open_folder(self, path):
+        """Abre una carpeta en el Explorador sin pasar por el shell."""
+        if os.path.isdir(path):
+            os.startfile(path)
 
     def open_projects_dir(self):
-        p_dir = core.get_projects_root()
-        os.system(f'explorer "{p_dir}"')
+        self.open_folder(core.get_projects_root())
 
     def copy_db_connection(self):
         port = self.state_data.get("mariadb_port", 3307)
@@ -995,16 +1015,20 @@ class AetherDribbbleApp(ctk.CTk):
     def open_logs_dir(self):
         logs_dir = os.path.join(core.BASE_DIR, "logs")
         os.makedirs(logs_dir, exist_ok=True)
-        os.system(f'explorer "{logs_dir}"')
+        self.open_folder(logs_dir)
 
     def open_terminal(self):
         ver = self.php_var.get()
-        p_dir = self.state_data.get("projects_dir", "D:\\LabIA")
+        if ver not in core.get_installed_php_versions():
+            return
+        p_dir = core.get_projects_root()
         php_dir = os.path.join(core.BIN_DIR, "php", f"php-{ver}")
         mariadb_bin = os.path.join(core.BIN_DIR, "mariadb")
         composer_dir = os.path.join(core.BIN_DIR, "composer")
-        env_cmd = f'set "PATH={php_dir};{composer_dir};{mariadb_bin};%PATH%" & cd /d "{p_dir}" & start cmd.exe /k "echo AetherStack Dev Shell (PHP {ver}) & echo."'
-        os.system(env_cmd)
+        env = os.environ.copy()
+        env["PATH"] = os.pathsep.join([php_dir, composer_dir, mariadb_bin, env.get("PATH", "")])
+        subprocess.Popen(["cmd.exe", "/k", f"echo AetherStack Dev Shell (PHP {ver})"],
+                         cwd=p_dir, env=env, creationflags=subprocess.CREATE_NEW_CONSOLE)
 
     def open_db_manager(self, db_name=None):
         status = core.get_status()

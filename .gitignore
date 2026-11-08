@@ -21,3 +21,15 @@ scratch/
 # OS
 Thumbs.db
 Desktop.ini
+
+# Estado generado por instalación (se crea al primer arranque)
+/conf/state.json
+/conf/nginx.conf
+/conf/my.ini
+/projects/
+
+# Accesos directos (contienen rutas y SID del equipo)
+*.lnk
+
+# Paquetes de release generados
+/dist/

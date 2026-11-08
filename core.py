@@ -12,7 +12,7 @@ import shutil
 import stat
 import urllib.request
 import zipfile
-import webbrowser
+import re
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BIN_DIR = os.path.join(BASE_DIR, "bin")
@@ -22,33 +22,55 @@ LOGS_DIR = os.path.join(BASE_DIR, "logs")
 STATE_FILE = os.path.join(CONF_DIR, "state.json")
 BASE_DIR_SLASH = BASE_DIR.replace("\\", "/")
 
+# Nombres de proyecto permitidos: solo letras, números, guion y guion bajo.
+# Evita path traversal, inyección en SQL/Nginx y en comandos de shell.
+PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
+
+def is_valid_project_name(name):
+    return isinstance(name, str) and bool(PROJECT_NAME_RE.match(name))
+
+def get_safe_project_path(project_name):
+    """Devuelve la ruta del proyecto si el nombre es válido y queda dentro de la raíz; si no, None."""
+    if not is_valid_project_name(project_name):
+        return None
+    root = os.path.realpath(get_projects_root())
+    target = os.path.realpath(os.path.join(root, project_name))
+    if os.path.dirname(target) != root:
+        return None
+    return target
+
+def db_name_for(project_name):
+    return f"{project_name.lower().replace('-', '_')}_db"
+
+def reload_nginx_if_running():
+    if is_process_running("nginx.exe"):
+        nginx_dir = os.path.join(BIN_DIR, "nginx")
+        nginx_exe = os.path.join(nginx_dir, "nginx.exe")
+        subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 def get_projects_root():
     state = load_state()
     p_dir = state.get("projects_dir")
     if p_dir and os.path.exists(p_dir):
         return p_dir
+    # Carpeta propia dentro de AetherStack (nunca la carpeta padre): es el valor seguro por defecto.
     local_proj = os.path.join(BASE_DIR, "projects")
-    if os.path.exists(local_proj):
-        return local_proj
-    parent_dir = os.path.abspath(os.path.join(BASE_DIR, ".."))
-    if os.path.exists(parent_dir):
-        return parent_dir
-    return BASE_DIR
+    os.makedirs(local_proj, exist_ok=True)
+    return local_proj
 
 DEFAULT_CONFIG = {
     "php_version": "8.4",
     "nginx_port": 80,
     "mariadb_port": 3307,
     "php_port": 9000,
-    "projects_dir": "D:\\\\LabIA",
+    "projects_dir": os.path.join(BASE_DIR, "projects"),
     "theme": "dark",
     "language": "es"
 }
 
 def load_state():
     conf = DEFAULT_CONFIG.copy()
-    if not os.path.exists("D:\\LabIA"):
-        conf["projects_dir"] = os.path.abspath(os.path.join(BASE_DIR, ".."))
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
@@ -191,16 +213,37 @@ def sync_vhosts_paths():
                     with open(entry.path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
                     new_content = re.sub(r'include\s+"[^"]*fastcgi_params";', fastcgi_target, content)
+                    # Migra vhosts antiguos que escuchaban en todas las interfaces
+                    new_content = re.sub(r'(?m)^(\s*)listen\s+(\d+);', r'\1listen 127.0.0.1:\2;', new_content)
                     if new_content != content:
                         with open(entry.path, "w", encoding="utf-8") as f:
                             f.write(new_content)
                 except Exception:
                     pass
 
+def ensure_runtime_dirs():
+    """Nginx y los logs necesitan estas carpetas; las carpetas vacías no viajan en un zip."""
+    for d in (LOGS_DIR, os.path.join(BIN_DIR, "nginx", "temp"), os.path.join(BIN_DIR, "nginx", "logs")):
+        try:
+            os.makedirs(d, exist_ok=True)
+        except OSError:
+            pass
+
 def update_nginx_config():
+    ensure_runtime_dirs()
     state = load_state()
     proj_dir = get_projects_root().replace("\\", "/")
-    
+
+    # Si AetherStack vive dentro de la carpeta de proyectos, su propio código,
+    # datos y logs no deben ser servidos por el servidor web.
+    protect_block = ""
+    try:
+        rel_self = os.path.relpath(BASE_DIR, get_projects_root()).replace("\\", "/")
+        if not rel_self.startswith("..") and rel_self != "." and not os.path.isabs(rel_self):
+            protect_block = f'location ^~ "/{rel_self}/" {{ return 404; }}'
+    except ValueError:
+        pass  # unidades distintas en Windows: no está dentro de la raíz
+
     nginx_conf_content = f"""# AetherStack - Nginx Master Configuration
 worker_processes  auto;
 
@@ -239,14 +282,16 @@ http {{
     }}
 
     server {{
-        listen       {state['nginx_port']};
+        listen       127.0.0.1:{state['nginx_port']};
         server_name  localhost;
 
         root   "{proj_dir}";
         index  index.php index.html index.htm;
 
+        {protect_block}
+
         location / {{
-            autoindex on;
+            autoindex off;
             try_files $uri $uri/ /index.php?$query_string;
         }}
 
@@ -354,6 +399,8 @@ def stop_services():
     return get_status()
 
 def switch_php(version):
+    if version not in get_installed_php_versions():
+        return get_status()
     state = load_state()
     state["php_version"] = version
     save_state(state)
@@ -371,6 +418,8 @@ def switch_php(version):
     return get_status()
 
 def create_database(db_name):
+    if not re.fullmatch(r"[a-z0-9_]{1,70}", db_name or ""):
+        return False, "Nombre de base de datos inválido."
     state = load_state()
     mariadb_dir = os.path.join(BIN_DIR, "mariadb")
     mariadb_cli = os.path.join(mariadb_dir, "mariadb.exe")
@@ -388,6 +437,8 @@ def create_database(db_name):
         return False, str(e)
 
 def drop_database(db_name):
+    if not re.fullmatch(r"[a-z0-9_]{1,70}", db_name or ""):
+        return False
     state = load_state()
     mariadb_dir = os.path.join(BIN_DIR, "mariadb")
     mariadb_cli = os.path.join(mariadb_dir, "mariadb.exe")
@@ -405,6 +456,8 @@ def drop_database(db_name):
         return False
 
 def create_virtual_host(project_name, is_laravel=False):
+    if not is_valid_project_name(project_name):
+        raise ValueError("Nombre de proyecto inválido.")
     state = load_state()
     proj_dir = get_projects_root().replace("\\", "/")
     vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
@@ -413,7 +466,7 @@ def create_virtual_host(project_name, is_laravel=False):
     
     raw_template = """# Virtual host para {name}
 server {{
-    listen {port};
+    listen 127.0.0.1:{port};
     server_name {name}.local;
 
     root "{root}";
@@ -442,10 +495,7 @@ server {{
     with open(vhost_file, "w", encoding="utf-8") as f:
         f.write(content)
         
-    if is_process_running("nginx.exe"):
-        nginx_dir = os.path.join(BIN_DIR, "nginx")
-        nginx_exe = os.path.join(nginx_dir, "nginx.exe")
-        subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    reload_nginx_if_running()
 
 def list_projects():
     state = load_state()
@@ -458,81 +508,59 @@ def list_projects():
         return projects
 
     for entry in os.scandir(proj_root):
-        if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
-            folder_path = entry.path
-            
-            # Detección estricta de Laravel (presencia de artisan o composer con laravel)
-            is_laravel = os.path.exists(os.path.join(folder_path, "artisan"))
-            
-            # Detección estricta de WordPress (archivos de núcleo WP)
-            is_wp = (
-                os.path.exists(os.path.join(folder_path, "wp-config.php")) or
-                os.path.exists(os.path.join(folder_path, "wp-config-sample.php")) or
-                os.path.exists(os.path.join(folder_path, "wp-settings.php")) or
-                os.path.exists(os.path.join(folder_path, "wp-load.php"))
-            )
-            
-            # Solo incluir si es estrictamente Laravel o WordPress
-            if not (is_laravel or is_wp):
-                continue
-                
-            p_type = "Laravel" if is_laravel else "WordPress"
-            url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
-            url_vhost = f"http://{entry.name}.local{port_str}"
+        # Solo carpetas con nombre seguro (ver PROJECT_NAME_RE); el resto se ignora.
+        if not (entry.is_dir() and entry.name.lower() != "aetherstack"
+                and is_valid_project_name(entry.name)):
+            continue
 
-            projects.append({
-                "name": entry.name,
-                "type": p_type,
-                "path": folder_path,
-                "url": url_sub,
-                "vhost": url_vhost,
-                "db_name": f"{entry.name.lower().replace('-', '_')}_db"
-            })
-    return projects
+        folder_path = entry.path
 
-    for entry in os.scandir(proj_root):
-        if entry.is_dir() and entry.name.lower() != "aetherstack" and not entry.name.startswith("."):
-            folder_path = entry.path
-            is_laravel = os.path.exists(os.path.join(folder_path, "artisan")) or os.path.exists(os.path.join(folder_path, "public", "index.php"))
-            is_wp = os.path.exists(os.path.join(folder_path, "wp-config.php")) or os.path.exists(os.path.join(folder_path, "wp-settings.php"))
-            
-            p_type = "Laravel" if is_laravel else ("WordPress" if is_wp else "PHP / Web")
-            url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
-            url_vhost = f"http://{entry.name}.local{port_str}"
+        # Detección estricta de Laravel (presencia de artisan)
+        is_laravel = os.path.exists(os.path.join(folder_path, "artisan"))
 
-            projects.append({
-                "name": entry.name,
-                "type": p_type,
-                "path": folder_path,
-                "url": url_sub,
-                "vhost": url_vhost,
-                "db_name": f"{entry.name.lower().replace('-', '_')}_db"
-            })
+        # Detección estricta de WordPress (archivos de núcleo WP)
+        is_wp = any(
+            os.path.exists(os.path.join(folder_path, f))
+            for f in ("wp-config.php", "wp-config-sample.php", "wp-settings.php", "wp-load.php")
+        )
+
+        # Solo incluir si es estrictamente Laravel o WordPress
+        if not (is_laravel or is_wp):
+            continue
+
+        p_type = "Laravel" if is_laravel else "WordPress"
+        url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
+        url_vhost = f"http://{entry.name}.local{port_str}"
+
+        projects.append({
+            "name": entry.name,
+            "type": p_type,
+            "path": folder_path,
+            "url": url_sub,
+            "vhost": url_vhost,
+            "db_name": db_name_for(entry.name)
+        })
     return projects
 
 def delete_project(project_name, delete_db=True):
-    state = load_state()
-    proj_root = get_projects_root()
-    target_dir = os.path.join(proj_root, project_name)
+    target_dir = get_safe_project_path(project_name)
+    if target_dir is None:
+        return False, f"Nombre de proyecto inválido: '{project_name}'."
 
     if not os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' no existe."
 
     # 1. Eliminar base de datos si se solicitó
     if delete_db:
-        db_name = f"{project_name.lower().replace('-', '_')}_db"
-        drop_database(db_name)
+        drop_database(db_name_for(project_name))
 
     # 2. Eliminar Virtual Host
     vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
     if os.path.exists(vhost_file):
         try:
             os.remove(vhost_file)
-            if is_process_running("nginx.exe"):
-                nginx_dir = os.path.join(BIN_DIR, "nginx")
-                nginx_exe = os.path.join(nginx_dir, "nginx.exe")
-                subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:
+            reload_nginx_if_running()
+        except OSError:
             pass
 
     # 3. Eliminar directorio de archivos con soporte para archivos de solo lectura y Git
@@ -540,27 +568,30 @@ def delete_project(project_name, delete_db=True):
         try:
             os.chmod(path, stat.S_IWRITE)
             func(path)
-        except Exception:
+        except OSError:
             pass
 
     try:
         shutil.rmtree(target_dir, onerror=_handle_remove_readonly)
-    except Exception:
+    except OSError:
         pass
 
     # Fallback por si Windows retiene algún descriptor de archivo brevemente
     if os.path.exists(target_dir):
+        time.sleep(0.5)
         try:
-            subprocess.run(f'cmd /c rmdir /s /q "{target_dir}"', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:
+            shutil.rmtree(target_dir, onerror=_handle_remove_readonly)
+        except OSError:
             pass
 
     if not os.path.exists(target_dir):
         return True, f"Proyecto '{project_name}' eliminado completamente."
-    else:
-        return False, f"No se pudo eliminar completamente la carpeta '{project_name}' (bloqueo en Windows)."
+    return False, f"No se pudo eliminar completamente la carpeta '{project_name}' (bloqueo en Windows)."
 
 def create_project_laravel(project_name, progress_cb=None):
+    target_dir = get_safe_project_path(project_name)
+    if target_dir is None:
+        return False, "Nombre inválido: usa solo letras, números, guion (-) y guion bajo (_)."
     status = get_status()
     if not status["all_running"]:
         return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
@@ -570,7 +601,6 @@ def create_project_laravel(project_name, progress_cb=None):
     php_ver = state.get("php_version", "8.4")
     php_exe = os.path.join(BIN_DIR, "php", f"php-{php_ver}", "php.exe")
     composer_phar = os.path.join(BIN_DIR, "composer", "composer.phar")
-    target_dir = os.path.join(proj_root, project_name)
 
     if os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
@@ -581,7 +611,7 @@ def create_project_laravel(project_name, progress_cb=None):
     if res.returncode != 0:
         return False, f"Error en Composer: {res.stderr}"
 
-    db_name = f"{project_name.lower().replace('-', '_')}_db"
+    db_name = db_name_for(project_name)
     if progress_cb: progress_cb(f"Creando base de datos '{db_name}'...")
     create_database(db_name)
 
@@ -601,13 +631,15 @@ def create_project_laravel(project_name, progress_cb=None):
     return True, f"Proyecto Laravel '{project_name}' listo en {target_dir}."
 
 def create_project_wordpress(project_name, progress_cb=None):
+    target_dir = get_safe_project_path(project_name)
+    if target_dir is None:
+        return False, "Nombre inválido: usa solo letras, números, guion (-) y guion bajo (_)."
     status = get_status()
     if not status["all_running"]:
         return False, "No se puede crear el proyecto: los servicios del stack (Nginx, PHP o MariaDB) no están en ejecución."
 
     state = load_state()
     proj_root = get_projects_root()
-    target_dir = os.path.join(proj_root, project_name)
     if os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
 
@@ -624,7 +656,7 @@ def create_project_wordpress(project_name, progress_cb=None):
     shutil.move(os.path.join(temp_extract, "wordpress"), target_dir)
     shutil.rmtree(temp_extract, ignore_errors=True)
 
-    db_name = f"{project_name.lower().replace('-', '_')}_db"
+    db_name = db_name_for(project_name)
     if progress_cb: progress_cb(f"Creando base de datos '{db_name}'...")
     create_database(db_name)
 
