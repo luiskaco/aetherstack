@@ -47,7 +47,7 @@ TRANSLATIONS = {
         "action_database": "Gestor DB",
         
         # Projects Table
-        "projects_table_title": "Mis Proyectos (WordPress & Laravel)",
+        "projects_table_title": "Mis Proyectos",
         "reload_list": "Recargar lista",
         "no_projects_found": "No hay proyectos WordPress ni Laravel en la carpeta.",
         
@@ -137,7 +137,7 @@ TRANSLATIONS = {
         "action_database": "DB Manager",
         
         # Projects Table
-        "projects_table_title": "My Projects (WordPress & Laravel)",
+        "projects_table_title": "My Projects",
         "reload_list": "Reload list",
         "no_projects_found": "No WordPress or Laravel projects found in folder.",
         
