@@ -14,6 +14,7 @@ import urllib.request
 import zipfile
 import re
 import downloads
+import vhosts
 import html
 
 VERSION = "1.2.5"
@@ -73,7 +74,8 @@ DEFAULT_CONFIG = {
     "projects_dir": os.path.join(BASE_DIR, "projects"),
     "theme": "dark",
     "language": "es",
-    "check_updates": True
+    "check_updates": True,
+    "vhost_tld": vhosts.DEFAULT_TLD
 }
 
 def load_state():
@@ -436,6 +438,9 @@ http {{
 
     client_max_body_size 128M;
 
+    # Con varios proyectos, el valor por defecto (32) hace que Nginx no recargue
+    server_names_hash_bucket_size 128;
+
     gzip  on;
     gzip_disable "msie6";
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
@@ -628,38 +633,25 @@ def create_virtual_host(project_name, is_laravel=False):
     doc_root = f"{proj_dir}/{project_name}/public" if is_laravel else f"{proj_dir}/{project_name}"
     fastcgi_params = f"{BASE_DIR_SLASH}/bin/nginx/conf/fastcgi_params"
     
-    raw_template = """# Virtual host para {name}
-server {{
-    listen 127.0.0.1:{port};
-    server_name {name}.local;
-
-    root "{root}";
-    index index.php index.html;
-
-    location / {{
-        try_files $uri $uri/ /index.php?$query_string;
-    }}
-
-    location ~ \\.php$ {{
-        try_files $uri =404;
-        fastcgi_split_path_info ^(.+\\.php)(/.+)$;
-        fastcgi_pass php_cgi;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include "{fastcgi_params}";
-        fastcgi_read_timeout 300;
-    }}
-
-    location ~ /\\. {{
-        deny all;
-    }}
-}}
-"""
-    content = raw_template.format(name=project_name, root=doc_root, port=state["nginx_port"], fastcgi_params=fastcgi_params)
+    content = vhosts.render_vhost(project_name, doc_root, state["nginx_port"], fastcgi_params,
+                                  state.get("vhost_tld"))
     with open(vhost_file, "w", encoding="utf-8") as f:
         f.write(content)
         
     reload_nginx_if_running()
+
+def adopt_existing_projects():
+    """
+    Crea el virtual host de cada proyecto WordPress/Laravel que ya está en la carpeta de proyectos
+    (por ejemplo, venidos de Laragon). No toca sus archivos ni sus bases de datos.
+    Devuelve [(nombre, dominio)].
+    """
+    state = load_state()
+    adopted = []
+    for p in list_projects():
+        create_virtual_host(p["name"], is_laravel=(p["type"] == "Laravel"))
+        adopted.append((p["name"], vhosts.domain_for(p["name"], state.get("vhost_tld"))))
+    return adopted
 
 def list_projects():
     state = load_state()
@@ -694,7 +686,7 @@ def list_projects():
 
         p_type = "Laravel" if is_laravel else "WordPress"
         url_sub = f"http://localhost{port_str}/{entry.name}/public" if is_laravel else f"http://localhost{port_str}/{entry.name}"
-        url_vhost = f"http://{entry.name}.local{port_str}"
+        url_vhost = f"http://{vhosts.domain_for(entry.name, state.get('vhost_tld'))}{port_str}"
 
         projects.append({
             "name": entry.name,

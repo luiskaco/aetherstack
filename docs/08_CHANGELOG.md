@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [Sin publicar]
+
+### Añadido
+- **Dominio de desarrollo configurable** (`vhost_tld` en `conf/state.json`, por defecto `local`): permite usar `.test` y mantener las direcciones que ya guardan tus sitios.
+- **Adopción de proyectos existentes** (`core.adopt_existing_projects()`): crea el virtual host de cada WordPress/Laravel que ya esté en la carpeta de proyectos, sin tocar sus archivos ni sus bases de datos. Pensado para migrar desde Laragon.
+- Módulo `vhosts.py` con la generación de virtual hosts, con pruebas.
+
+### Corregido
+- Con varios proyectos (probado con 16) Nginx no recargaba y mostraba `could not build server_names_hash`. Se sube `server_names_hash_bucket_size` a 128.
+
+---
+
 ## [1.2.5] - 2026-11-09
 
 ### Corregido

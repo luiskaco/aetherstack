@@ -74,3 +74,19 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 - **Copia de seguridad:** guarda una copia en tu gestor de contraseñas. Si la pierdes no puedes firmar nuevos releases, y las instalaciones existentes rechazarían los que firmes con una clave nueva: tendrías que publicar a mano una versión con la clave pública nueva y pedir a la comunidad que la descargue.
 - **Si se filtra:** genera otra (`python tools/sign_release.py init` tras mover la anterior), cambia `RELEASE_PUBLIC_KEY` en `updater.py`, publica la versión nueva a mano y avisa a la comunidad. Quien tenga la clave vieja podría firmar releases falsos para las instalaciones antiguas.
 - **Ver la clave pública:** `python tools/sign_release.py pubkey`. Debe coincidir con `RELEASE_PUBLIC_KEY` en `updater.py`.
+
+---
+
+## 7. Migrar desde Laragon
+Probado con el proyecto piloto `frutiflex`. Laragon no se modifica en ningún paso.
+
+1. **Cierra Laragon** (puertos 80 y 3306 libres). Sus archivos de `www` no se copian: en Ajustes apunta AetherStack a esa carpeta (o muévela después, mismo disco = instantáneo).
+2. **Exporta cada base con el MySQL de Laragon** (no se puede copiar la carpeta de datos: MySQL 8.4 y MariaDB 11.8 son distintos por dentro). Levanta su `mysqld` con su `my.ini`, exporta y apágalo con `mysqladmin shutdown`:
+   ```cmd
+   mysqldump --user=root --host=127.0.0.1 --port=3306 --single-transaction --routines --triggers --events --default-character-set=utf8mb4 --no-tablespaces --result-file=nombre.sql nombre_bd
+   ```
+   En PowerShell escribe `--host=127.0.0.1`; con `-h127.0.0.1` el punto corta el argumento. Los volcados contienen datos de clientes: guárdalos fuera del repositorio.
+3. **Ajustes de AetherStack:** carpeta de proyectos = `C:/laragon/www`, puerto de MariaDB = `3306` (así no cambia ningún `wp-config.php`) y `vhost_tld` = `test`.
+4. **Importa** con el mismo nombre de base que usa el `wp-config.php`: `CREATE DATABASE ... utf8mb4_0900_ai_ci` (MariaDB 11.8 la entiende) y `mariadb --database=nombre < nombre.sql`.
+5. **Adopta los proyectos** con `core.adopt_existing_projects()` y comprueba `http://nombre.test` (portada, `wp-login.php`, API REST). Los dominios `.test` ya están en el archivo `hosts` porque Laragon los añadió.
+6. Cuando todos los sitios funcionen, mueve `www`, apunta AetherStack a la nueva ruta y recién entonces desinstala Laragon.

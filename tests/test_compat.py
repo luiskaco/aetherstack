@@ -32,7 +32,9 @@ OLD_CLIENT_TAGS = ["v1.2.1", "v1.2.2", "v1.2.3", "v1.2.4"]
 
 
 def old_allowlist(tag):
-    """(archivos_raiz, carpetas) que aceptaba el updater.py de esa versión, o None si no hay git/tag."""
+    """(archivos_raiz, carpetas, acepta_py_nuevos) del updater.py de esa versión, o None si no hay git/tag.
+
+    acepta_py_nuevos: desde v1.2.4 el actualizador admite por patrón cualquier módulo .py de la raíz."""
     try:
         src = subprocess.run(["git", "show", f"{tag}:updater.py"], cwd=ROOT, capture_output=True,
                              text=True, encoding="utf-8", check=True).stdout
@@ -43,7 +45,7 @@ def old_allowlist(tag):
         if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
             if node.targets[0].id in ("CODE_ROOT_FILES", "CODE_TREES"):
                 values[node.targets[0].id] = ast.literal_eval(node.value)
-    return values["CODE_ROOT_FILES"], values["CODE_TREES"]
+    return values["CODE_ROOT_FILES"], values["CODE_TREES"], "_TOP_LEVEL_PY_RE" in src
 
 
 def current_package_members():
@@ -62,9 +64,10 @@ class CompatTests(unittest.TestCase):
             allow = old_allowlist(tag)
             if allow is None:
                 self.skipTest(f"No hay git o falta la etiqueta {tag}")
-            root_files, trees = allow
+            root_files, trees, accepts_new_py = allow
             not_installable = [m for m in current_package_members()
-                               if m not in root_files and not any(m.startswith(t + "/") for t in trees)]
+                               if m not in root_files and not any(m.startswith(t + "/") for t in trees)
+                               and not (accepts_new_py and re.match(r"^[A-Za-z0-9_]+\.py$", m))]
             self.assertEqual(not_installable, [],
                              f"{tag} ignoraría estos archivos y la app quedaría rota tras actualizar: "
                              f"{not_installable}. Publica primero una versión intermedia que los admita.")
@@ -104,7 +107,8 @@ class CompatTests(unittest.TestCase):
             allow = old_allowlist(tag)
             if allow is None:
                 self.skipTest(f"No hay git o falta la etiqueta {tag}")
-            root_files, _ = allow
+            root_files, _, accepts_new_py = allow
+            self.assertFalse(accepts_new_py)
             self.assertNotIn(culprit, root_files)
             self.assertIn(culprit, current_package_members())
 

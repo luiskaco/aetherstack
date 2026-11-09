@@ -8,6 +8,20 @@
 
 ---
 
+## Migración desde Laragon (en curso)
+Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 bases). Destino: AetherStack (MariaDB 11.8).
+- [x] Piloto `frutiflex`: base exportada con el `mysqldump` de Laragon e importada en AetherStack; `http://frutiflex.test` responde (portada, `wp-login.php` y API REST en 200) con Nginx y PHP de AetherStack.
+- [x] Dominio de desarrollo configurable (`vhost_tld`, p. ej. `test`) y adopción de proyectos existentes (`adopt_existing_projects`).
+- [x] Nginx: `server_names_hash_bucket_size 128` (con 16 dominios no recargaba).
+- [ ] Botón en la interfaz para "Importar proyectos" y campo de dominio en Ajustes (hoy se hace por código).
+- [ ] Migrar las 15 bases restantes (`orangev2026` pesa 1,5 GB) y verificar cada sitio.
+- [ ] Decidir qué hacer con 4 bases sin proyecto: `observatorioweb`, `pluginglobal`, `porunperuold`, `pupscold`.
+- [ ] Archivo `hosts`: Laragon añade los `.test`; antes de desinstalarlo, AetherStack debe gestionarlos (requiere permisos de administrador).
+- [ ] Mover `C:\laragon\www` a `developOrange\web` (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final.
+- [ ] Revisar versión de PHP que usaba cada sitio en Laragon (AetherStack usa una sola global).
+
+---
+
 ## Pendiente (revisión de seguridad y buenas prácticas, 2026-11-08)
 - [ ] MariaDB `root` sin contraseña: crear un usuario por proyecto (`.env` de Laravel / `wp-config.php`) y avisar en la UI.
 - [ ] Reemplazar los `except Exception: pass` por registro en `logs/aetherstack.log`.
