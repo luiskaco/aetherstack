@@ -6,7 +6,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
-## [Sin publicar]
+## [1.2.2] - 2026-11-09
 
 ### Seguridad
 - **Releases firmados (Ed25519):** la app solo instala actualizaciones firmadas con la clave del autor. La clave privada vive fuera del repositorio; la app lleva solo la pública. La firma cubre la versión y el contenido, así que ni un release publicado por un tercero ni un zip antiguo reutilizado se instalan.
