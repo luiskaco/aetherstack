@@ -18,9 +18,10 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [x] Migradas las 15 bases restantes (todas con las filas iguales a Laragon, tabla por tabla) y respaldo completo en `developOrange\respaldo-laragon-2026-11-09` (1,4 GB).
 - [x] PHP con 4 procesos: con uno solo, los sitios se bloqueaban entre sí.
 - [x] `legacy-panasa`: restaurado `AUTO_INCREMENT` en 25 tablas (ya faltaba en Laragon); ver el runbook § 7.
-- [ ] Verificar cada uno de los 16 sitios por HTTP (en curso).
-- [ ] `porunperuold` y `pupscold` estaban dañadas en Laragon (faltan ~120 de 162 tablas); solo se rescató lo existente (`*.salvage.sql`). Decidir si se descartan.
-- [ ] Decidir qué hacer con 4 bases sin proyecto: `observatorioweb`, `pluginglobal`, `porunperuold`, `pupscold`.
+- [x] OPcache y `realpath_cache` ajustados al arrancar: los sitios pasaron de 30-120 s a 2-5 s.
+- [ ] Verificación final de los 16 sitios por HTTP (en curso).
+- [x] `porunperuold` y `pupscold` (dañadas en Laragon: faltaban ~120 de 162 tablas) eliminadas de Laragon por decisión del usuario. Queda solo lo rescatado en `respaldo-laragon-2026-11-09\*.salvage.sql`, que puede borrarse a mano.
+- [ ] Decidir qué hacer con las 2 bases restantes sin proyecto: `observatorioweb` y `pluginglobal`.
 - [ ] Archivo `hosts`: Laragon añade los `.test`; antes de desinstalarlo, AetherStack debe gestionarlos (requiere permisos de administrador).
 - [ ] Mover `C:\laragon\www` a `developOrange\web` (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final.
 - [ ] Revisar versión de PHP que usaba cada sitio en Laragon (AetherStack usa una sola global).

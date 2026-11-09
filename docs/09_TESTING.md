@@ -34,3 +34,5 @@ python -m unittest discover -s tests -v
 | **Bandeja y copia única** (`tray.py`, `single_instance.py`) | `tests/test_tray.py`: estado del stack, color por estado, icono distinguible a 16 px y con esquinas transparentes, bloqueo de copia única y aviso entre copias | ✅ 6 pruebas |
 | **Bandeja con la app real** | App abierta de verdad: icono visible y verde con el stack activo, menú correcto, la X oculta la ventana (no la destruye), una segunda copia la muestra, salir desde la bandeja pregunta | ✅ |
 | **Copia única con procesos reales** | Dos lanzamientos con `pythonw.exe app.py` | ✅ un solo proceso y una sola ventana |
+| **Ajuste de php.ini** (`phpini.py`) | `tests/test_phpini.py`: reemplaza valores existentes, no toca otros ajustes, añade los que faltan en un solo bloque marcado, idempotente, respeta líneas comentadas | ✅ 6 pruebas |
+| **Rendimiento real (16 sitios)** | Portadas de los sitios más lentos antes/después de ajustar OPcache y el pool de PHP | ✅ de 30-120 s a 2-5 s |

@@ -15,6 +15,7 @@ import zipfile
 import re
 import downloads
 import vhosts
+import phpini
 import html
 
 VERSION = "1.2.5"
@@ -285,6 +286,7 @@ def update_php_configs():
                         with open(ini_file, "r", encoding="utf-8", errors="ignore") as f:
                             content = f.read()
                         new_content = re.sub(r'error_log\s*=\s*".*?"', f'error_log = "{log_path}"', content)
+                        new_content = phpini.tune_php_ini(new_content)
                         with open(ini_file, "w", encoding="utf-8") as f:
                             f.write(new_content)
                     except Exception:

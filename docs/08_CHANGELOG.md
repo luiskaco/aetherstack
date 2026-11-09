@@ -18,6 +18,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Módulo `vhosts.py` con la generación de virtual hosts, con pruebas.
 
 ### Corregido
+- **OPcache dimensionada para varios sitios (`phpini.py`).** Con los valores de fábrica (128 MB y 10.000 archivos) la caché se llenaba con 16 sitios WordPress y PHP recompilaba en cada petición: portadas de 30 a más de 120 segundos. AetherStack aplica al arrancar `opcache.memory_consumption=256`, `max_accelerated_files=50000`, `interned_strings_buffer=32`, `revalidate_freq=2` y `realpath_cache`, en el `php.ini` de cada versión de PHP. Medido con 16 sitios: de 30-120 s a 2-5 s en frío y ~2 s en caliente.
 - **Varios procesos de PHP (4 por defecto, `php_workers` en `conf/state.json`).** Antes había un solo `php-cgi`, que en Windows atiende una petición a la vez: una página lenta o un sitio que se llama a sí mismo (cron, Action Scheduler, comprobaciones de WordPress) bloqueaba todos los demás hasta agotar el tiempo (se veían como cuelgues de 75 s al migrar 16 sitios). Nginx reparte ahora las peticiones entre los procesos. Los procesos se lanzan sin pasar por la consola del sistema.
 - Con varios proyectos (probado con 16) Nginx no recargaba y mostraba `could not build server_names_hash`. Se sube `server_names_hash_bucket_size` a 128.
 
