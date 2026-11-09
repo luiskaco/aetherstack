@@ -12,6 +12,7 @@ Principios:
     nombre del equipo en algún archivo, el build falla y el zip se borra.
 """
 import getpass
+import hashlib
 import os
 import socket
 import subprocess
@@ -21,15 +22,13 @@ import time
 import zipfile
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, BASE_DIR)
+import updater  # lista blanca de código compartida con el actualizador de la app
 DIST_DIR = os.path.join(BASE_DIR, "dist")
 ROOT_NAME = "aetherstack"
 
-# Archivos sueltos de la raíz que sí se publican
-ROOT_FILES = [
-    "app.py", "core.py", "i18n.py", "generate_icon.py", "icon.ico",
-    "AetherStack.bat", "start.bat", "stop.bat", "switch-php.bat",
-    "LICENSE", "README.md",
-]
+# Archivos sueltos de la raíz que sí se publican (misma lista que el actualizador)
+ROOT_FILES = updater.CODE_ROOT_FILES
 # Carpetas que se copian completas (con filtros más abajo)
 TREES = ["bin", "docs", "ui"]
 # Carpetas vacías que deben existir en el paquete
@@ -149,6 +148,32 @@ def scan_for_leaks(zip_path):
                         problems.append(f"{label} dentro de {name}")
                         break
     return problems
+
+
+def build_code_zip(version):
+    """Zip liviano solo con código (lo usa la actualización con un clic) + su SHA256."""
+    out_zip = os.path.join(DIST_DIR, f"AetherStack-code-v{version}.zip")
+    with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+        for name in updater.CODE_ROOT_FILES:
+            zf.write(os.path.join(BASE_DIR, name), f"{ROOT_NAME}/{name}")
+        for tree in updater.CODE_TREES:
+            for abs_path, rel in iter_tree(tree):
+                zf.write(abs_path, f"{ROOT_NAME}/{rel}")
+    problems = scan_for_leaks(out_zip)
+    if problems:
+        os.remove(out_zip)
+        print("BUILD DE CÓDIGO ABORTADO. Se encontró:")
+        for p in problems:
+            print("  -", p)
+        sys.exit(1)
+    h = hashlib.sha256()
+    with open(out_zip, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    sha_file = out_zip + ".sha256"
+    with open(sha_file, "w", encoding="utf-8", newline="\n") as f:
+        f.write(f"{h.hexdigest()}  {os.path.basename(out_zip)}\n")
+    print(f"OK: {out_zip}\n    {os.path.getsize(out_zip) // 1024} KB, SHA256 {h.hexdigest()}")
 
 
 def main():

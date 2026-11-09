@@ -10,6 +10,7 @@ import webbrowser
 import customtkinter as ctk
 from tkinter import filedialog
 import core
+import updater
 import i18n
 from i18n import t
 
@@ -82,12 +83,53 @@ class AetherDribbbleApp(ctk.CTk):
         self.lbl_update = ctk.CTkLabel(banner, text=t("update_available", version=info["version"]),
                                        font=ctk.CTkFont(size=12, weight="bold"), text_color="#FFFFFF")
         self.lbl_update.pack(side="left", padx=(14, 8), pady=8)
-        self.btn_update = ctk.CTkButton(banner, text=t("update_download"), width=110, height=28, corner_radius=8,
+        self.one_click_update = bool(info.get("code_url") and info.get("sha_url"))
+        self.btn_update = ctk.CTkButton(banner, text=self._update_btn_text(), width=130, height=28, corner_radius=8,
                                         font=ctk.CTkFont(size=11, weight="bold"),
                                         fg_color=ACCENT_BLUE, hover_color="#3B82F6", text_color="#FFFFFF",
-                                        command=lambda: webbrowser.open(info["url"]))
+                                        command=self.confirm_update if self.one_click_update
+                                        else (lambda: webbrowser.open(info["url"])))
         self.btn_update.pack(side="right", padx=(8, 10), pady=8)
+        if self.one_click_update:
+            ctk.CTkButton(banner, text=t("update_download"), width=100, height=28, corner_radius=8,
+                          font=ctk.CTkFont(size=11), fg_color="transparent", hover_color="#1E40AF",
+                          text_color="#CBD5E1", command=lambda: webbrowser.open(info["url"])
+                          ).pack(side="right", pady=8)
         banner.pack(fill="x", pady=(0, 12), before=self.view_container)
+
+    def _update_btn_text(self):
+        return t("update_now") if getattr(self, "one_click_update", False) else t("update_download")
+
+    def confirm_update(self):
+        info = self.update_info
+        self.show_dark_confirm(t("update_confirm_title"),
+                               t("update_confirm_msg", version=info["version"]),
+                               confirm_text=t("update_now"), on_confirm=self.run_update, danger=False)
+
+    def run_update(self):
+        """Descarga y aplica la actualización en segundo plano; reinicia la app al terminar."""
+        info = self.update_info
+        self.btn_update.configure(state="disabled", text=t("update_downloading"))
+
+        def worker():
+            try:
+                updater.download_and_apply(info["code_url"], info["sha_url"])
+                self.after(0, self._update_done)
+            except Exception as exc:
+                msg = str(exc) if isinstance(exc, updater.UpdateError) else f"{exc}"
+                self.after(0, lambda: self._update_failed(msg))
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _update_done(self):
+        def restart():
+            updater.restart_app()
+            self.destroy()
+        self.show_dark_alert(t("update_done_title"), t("update_done_msg", version=self.update_info["version"]),
+                             "success", callback=restart)
+
+    def _update_failed(self, msg):
+        self.btn_update.configure(state="normal", text=self._update_btn_text())
+        self.show_dark_alert(t("update_error_title"), t("update_error_msg", detail=msg), "error")
 
     def build_dribbble_layout(self):
         self.root_frame = ctk.CTkFrame(self, fg_color=BG_MAIN, corner_radius=0)
@@ -667,7 +709,8 @@ class AetherDribbbleApp(ctk.CTk):
         # Aviso de actualización
         if hasattr(self, "lbl_update"):
             self.lbl_update.configure(text=t("update_available", version=self.update_info["version"]))
-            self.btn_update.configure(text=t("update_download"))
+            if str(self.btn_update.cget("state")) != "disabled":
+                self.btn_update.configure(text=self._update_btn_text())
 
         # 6. Refrescar estado y lista de proyectos
         self.refresh_status()
@@ -774,7 +817,7 @@ class AetherDribbbleApp(ctk.CTk):
         win.after(80, btn.focus)
         return win
 
-    def show_dark_confirm(self, title, message, confirm_text="Eliminar", on_confirm=None):
+    def show_dark_confirm(self, title, message, confirm_text="Eliminar", on_confirm=None, danger=True):
         win = ctk.CTkToplevel(self)
         win.title("AetherStack")
         win.resizable(False, False)
@@ -790,8 +833,9 @@ class AetherDribbbleApp(ctk.CTk):
         head = ctk.CTkFrame(pad, fg_color="transparent")
         head.pack(fill="x", pady=(0, 8))
 
-        badge = ctk.CTkLabel(head, text="🗑", width=32, height=32, corner_radius=16,
-                             fg_color="#451A1A", text_color="#EF4444", font=ctk.CTkFont(size=16))
+        badge = ctk.CTkLabel(head, text="🗑" if danger else "⬆", width=32, height=32, corner_radius=16,
+                             fg_color="#451A1A" if danger else "#1E3A8A",
+                             text_color="#EF4444" if danger else ACCENT_TEXT, font=ctk.CTkFont(size=16))
         badge.pack(side="left", padx=(0, 10))
 
         ctk.CTkLabel(head, text=title, font=ctk.CTkFont(size=14, weight="bold"),
@@ -817,7 +861,8 @@ class AetherDribbbleApp(ctk.CTk):
         btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
         btn_del = ctk.CTkButton(btn_row, text=confirm_text, height=32, corner_radius=10,
-                                fg_color="#DC2626", hover_color="#B91C1C", text_color="#FFFFFF",
+                                fg_color="#DC2626" if danger else ACCENT_BLUE,
+                                hover_color="#B91C1C" if danger else "#1D4ED8", text_color="#FFFFFF",
                                 font=ctk.CTkFont(size=11, weight="bold"), command=confirm)
         btn_del.pack(side="right", fill="x", expand=True, padx=(6, 0))
 

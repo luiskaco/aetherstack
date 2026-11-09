@@ -33,3 +33,4 @@ Desktop.ini
 
 # Paquetes de release generados
 /dist/
+/.update-backup/

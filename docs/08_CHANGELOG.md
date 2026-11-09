@@ -6,6 +6,16 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [Sin publicar]
+
+### Añadido
+- **Actualización con un clic:** si el release trae el zip de código y su SHA256, el aviso muestra "Actualizar ahora". La app descarga, verifica la integridad, reemplaza solo el código y se reinicia. No toca `bin/`, `data/`, `conf/`, `logs/` ni `projects/`.
+- Copia de respaldo en `.update-backup/` y vuelta atrás automática si algo falla. Rechaza rutas peligrosas, código con errores de sintaxis y URLs ajenas al repositorio.
+- El build genera además `AetherStack-code-vX.Y.Z.zip` y su `.sha256`.
+- Primeras pruebas automáticas (`tests/test_updater.py`).
+
+---
+
 ## [1.2.0] - 2026-11-09
 
 ### Añadido

@@ -51,14 +51,17 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/08_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
 2. Genera el paquete con lista blanca y escaneo de datos personales:
    ```cmd
-   python tools/build_release_zip.py 1.1.0
+   python tools/build_release_zip.py 1.2.1
    ```
+   Genera tres archivos en `dist/`: el paquete portable completo, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código) y su `.sha256`. Los dos últimos alimentan el botón "Actualizar ahora" de la app. Si falta alguno, la app solo muestra "Ver novedades".
    El build **aborta y borra el zip** si encuentra tu usuario de Windows, tu email de git, el nombre del equipo, `data/`, `logs/`, `state.json`, vhosts o archivos `.lnk`.
 3. Prueba el zip en una carpeta nueva: descomprime, arranca el stack y comprueba que Nginx, PHP y MariaDB quedan activos.
 4. Crea el tag y publica el asset:
    ```cmd
-   git tag v1.1.0
-   git push origin main v1.1.0
-   gh release create v1.1.0 dist/AetherStack-v1.1.0-portable.zip --title "AetherStack v1.1.0" --notes-file <archivo-de-notas>
+   git tag v1.2.1
+   git push origin main v1.2.1
+   gh release create v1.2.1 dist/AetherStack-v1.2.1-portable.zip dist/AetherStack-code-v1.2.1.zip dist/AetherStack-code-v1.2.1.zip.sha256 --title "AetherStack v1.2.1" --notes-file <archivo-de-notas>
    ```
+   **Importante:** los tres assets deben llevar exactamente esos nombres. La app los reconoce por el patrón `AetherStack-code-vX.Y.Z.zip` y `.zip.sha256`.
+   La actualización con un clic solo cambia código. Si un release cambia los binarios de `bin/` (Nginx, PHP, MariaDB), hay que avisar en las notas de que se debe descargar el paquete portable.
 5. Nunca empaquetes a mano la carpeta del proyecto: `data/` contiene bases de datos reales y el perfil del navegador.

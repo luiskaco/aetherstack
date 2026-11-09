@@ -27,6 +27,14 @@ TRANSLATIONS = {
         "lang_switch_btn": "🌐 EN",
         "update_available": "Nueva versión disponible: v{version}",
         "update_download": "Ver novedades",
+        "update_now": "Actualizar ahora",
+        "update_confirm_title": "Actualizar a v{version}",
+        "update_confirm_msg": "Se descargará la nueva versión, se verificará su integridad y la app se reiniciará.\n\nTus proyectos, bases de datos y ajustes no se tocan.",
+        "update_downloading": "Actualizando...",
+        "update_done_title": "Actualización lista",
+        "update_done_msg": "AetherStack v{version} se instaló correctamente. La app se reiniciará ahora.",
+        "update_error_title": "No se pudo actualizar",
+        "update_error_msg": "Se mantiene la versión actual.\n\n{detail}",
         
         # Dashboard Cards
         "running_services_title": "Servicios en Ejecución",
@@ -119,6 +127,14 @@ TRANSLATIONS = {
         "lang_switch_btn": "🌐 ES",
         "update_available": "New version available: v{version}",
         "update_download": "See what's new",
+        "update_now": "Update now",
+        "update_confirm_title": "Update to v{version}",
+        "update_confirm_msg": "The new version will be downloaded, its integrity verified, and the app will restart.\n\nYour projects, databases and settings are not touched.",
+        "update_downloading": "Updating...",
+        "update_done_title": "Update complete",
+        "update_done_msg": "AetherStack v{version} was installed successfully. The app will restart now.",
+        "update_error_title": "Update failed",
+        "update_error_msg": "The current version is kept.\n\n{detail}",
         
         # Dashboard Cards
         "running_services_title": "Running Services",

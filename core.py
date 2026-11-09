@@ -115,7 +115,16 @@ def check_for_update(timeout=5):
         url = data.get("html_url", "")
         # Solo se abre una URL de GitHub del propio repositorio
         if latest and current and latest > current and url.startswith("https://github.com/luiskaco/aetherstack/"):
-            return {"version": ".".join(map(str, latest)), "url": url}
+            info = {"version": ".".join(map(str, latest)), "url": url, "code_url": None, "sha_url": None}
+            # Actualización con un clic: solo si el release trae el zip de código y su SHA256
+            for asset in data.get("assets", []):
+                name = asset.get("name", "")
+                link = asset.get("browser_download_url", "")
+                if re.match(r"^AetherStack-code-v[\d.]+\.zip$", name):
+                    info["code_url"] = link
+                elif re.match(r"^AetherStack-code-v[\d.]+\.zip\.sha256$", name):
+                    info["sha_url"] = link
+            return info
     except Exception:
         pass
     return None

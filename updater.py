@@ -1,0 +1,205 @@
+"""
+AetherStack - Actualizador de código (solo biblioteca estándar).
+
+Descarga el zip "solo código" de un release de GitHub, verifica su SHA256 y reemplaza
+únicamente los archivos de la lista blanca. Nunca toca bin/, data/, conf/, logs/ ni projects/.
+
+Seguridad:
+  * Solo se descargan URLs del propio repositorio (ALLOWED_URL_PREFIX).
+  * El SHA256 detecta descargas corruptas o incompletas. No protege contra un release
+    publicado por alguien con acceso al repositorio: para eso haría falta firmar los releases.
+  * Se rechazan rutas con '..' o absolutas (zip-slip) y se ignora todo lo que no esté en la lista blanca.
+  * Los .py se compilan antes de reemplazar nada: un zip roto no deja la app inservible.
+  * Antes de reemplazar se guarda una copia en .update-backup/ y, si falla algo, se restaura.
+"""
+import hashlib
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import urllib.request
+import zipfile
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ALLOWED_URL_PREFIX = "https://github.com/luiskaco/aetherstack/releases/download/"
+MAX_ZIP_BYTES = 50 * 1024 * 1024
+
+# Lista blanca de lo que una actualización puede escribir
+CODE_ROOT_FILES = [
+    "app.py", "core.py", "i18n.py", "updater.py", "generate_icon.py", "icon.ico",
+    "AetherStack.bat", "start.bat", "stop.bat", "switch-php.bat",
+    "LICENSE", "README.md",
+]
+CODE_TREES = ("docs", "ui")
+REQUIRED_FILES = ("app.py", "core.py", "updater.py")
+
+_SHA_RE = re.compile(r"\b([0-9a-fA-F]{64})\b")
+
+
+class UpdateError(Exception):
+    """Error esperado durante una actualización (mensaje apto para mostrar al usuario)."""
+
+
+def is_allowed_path(rel):
+    rel = rel.replace("\\", "/")
+    if rel in CODE_ROOT_FILES:
+        return True
+    return any(rel.startswith(tree + "/") for tree in CODE_TREES)
+
+
+def _check_url(url):
+    if not isinstance(url, str) or not url.startswith(ALLOWED_URL_PREFIX):
+        raise UpdateError("URL de actualización no permitida.")
+
+
+def _download(url, dest, limit=MAX_ZIP_BYTES):
+    _check_url(url)
+    req = urllib.request.Request(url, headers={"User-Agent": "AetherStack-Updater"})
+    size = 0
+    with urllib.request.urlopen(req, timeout=30) as resp, open(dest, "wb") as out:
+        while True:
+            chunk = resp.read(64 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > limit:
+                raise UpdateError("La descarga supera el tamaño máximo permitido.")
+            out.write(chunk)
+
+
+def _sha256_of(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _read_expected_hash(sha_path):
+    with open(sha_path, "r", encoding="utf-8", errors="ignore") as f:
+        m = _SHA_RE.search(f.read(4096))
+    if not m:
+        raise UpdateError("El archivo de verificación SHA256 no es válido.")
+    return m.group(1).lower()
+
+
+def _plan_members(zf):
+    """Devuelve [(miembro, ruta_relativa)] solo con lo permitido; rechaza rutas peligrosas."""
+    plan = []
+    for info in zf.infolist():
+        if info.is_dir():
+            continue
+        parts = info.filename.replace("\\", "/").split("/")
+        if len(parts) < 2:
+            continue  # nada fuera de la carpeta raíz del paquete
+        rel = "/".join(parts[1:])
+        if rel.startswith("/") or ".." in rel.split("/") or re.match(r"^[A-Za-z]:", rel):
+            raise UpdateError(f"El paquete contiene una ruta no válida: {info.filename}")
+        if is_allowed_path(rel):
+            plan.append((info, rel))
+    names = {rel for _, rel in plan}
+    missing = [f for f in REQUIRED_FILES if f not in names]
+    if missing:
+        raise UpdateError("El paquete está incompleto, faltan: " + ", ".join(missing))
+    return plan
+
+
+def _dest_inside_base(rel):
+    base = os.path.realpath(BASE_DIR)
+    dest = os.path.realpath(os.path.join(base, rel))
+    if os.path.commonpath([base, dest]) != base:
+        raise UpdateError(f"Ruta fuera de la carpeta de la aplicación: {rel}")
+    return dest
+
+
+def apply_update_from_files(zip_path, expected_hash):
+    """
+    Verifica y aplica un zip de código ya descargado. Devuelve la lista de archivos cambiados.
+    Si algo falla, deja la instalación como estaba.
+    """
+    if _sha256_of(zip_path) != expected_hash.lower():
+        raise UpdateError("La verificación SHA256 falló: la descarga está corrupta o fue alterada.")
+
+    try:
+        zf = zipfile.ZipFile(zip_path)
+    except zipfile.BadZipFile:
+        raise UpdateError("El paquete descargado no es un zip válido.")
+
+    with zf:
+        plan = _plan_members(zf)
+        contents = {}
+        for info, rel in plan:
+            data = zf.read(info)
+            if rel.endswith(".py"):
+                try:
+                    compile(data, rel, "exec")
+                except SyntaxError as exc:
+                    raise UpdateError(f"El paquete trae código inválido en {rel}: {exc.msg}")
+            contents[rel] = data
+
+    backup_dir = os.path.join(BASE_DIR, ".update-backup")
+    shutil.rmtree(backup_dir, ignore_errors=True)
+    os.makedirs(backup_dir, exist_ok=True)
+
+    created, written = [], []
+    try:
+        for rel, data in contents.items():
+            dest = _dest_inside_base(rel)
+            if os.path.exists(dest):
+                saved = os.path.join(backup_dir, rel)
+                os.makedirs(os.path.dirname(saved), exist_ok=True)
+                shutil.copy2(dest, saved)
+            else:
+                created.append(dest)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            tmp = dest + ".new"
+            with open(tmp, "wb") as f:
+                f.write(data)
+            os.replace(tmp, dest)
+            written.append(rel)
+    except Exception as exc:
+        for rel in contents:
+            try:
+                os.remove(os.path.join(BASE_DIR, rel) + ".new")
+            except OSError:
+                pass
+        # Vuelta atrás: restaura lo guardado y borra lo que se había creado
+        for rel in written:
+            saved = os.path.join(backup_dir, rel)
+            dest = os.path.join(BASE_DIR, rel)
+            if os.path.exists(saved):
+                shutil.copy2(saved, dest)
+        for dest in created:
+            try:
+                if os.path.exists(dest):
+                    os.remove(dest)
+            except OSError:
+                pass
+        raise UpdateError(f"No se pudo aplicar la actualización; se restauró la versión anterior. ({exc})")
+    return written
+
+
+def download_and_apply(code_url, sha_url):
+    """Descarga el zip de código y su hash, y aplica la actualización."""
+    _check_url(code_url)
+    _check_url(sha_url)
+    with tempfile.TemporaryDirectory() as tmp:
+        zip_path = os.path.join(tmp, "code.zip")
+        sha_path = os.path.join(tmp, "code.zip.sha256")
+        try:
+            _download(sha_url, sha_path, limit=4096)
+            _download(code_url, zip_path)
+        except UpdateError:
+            raise
+        except Exception as exc:
+            raise UpdateError(f"No se pudo descargar la actualización: {exc}")
+        return apply_update_from_files(zip_path, _read_expected_hash(sha_path))
+
+
+def restart_app():
+    """Lanza una instancia nueva de la app; quien llama debe cerrar la actual."""
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0) | getattr(subprocess, "DETACHED_PROCESS", 0)
+    subprocess.Popen([sys.executable, os.path.join(BASE_DIR, "app.py")], cwd=BASE_DIR,
+                     creationflags=flags, close_fds=True)
