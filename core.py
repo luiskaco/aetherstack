@@ -16,7 +16,7 @@ import re
 import downloads
 import html
 
-VERSION = "1.2.4"
+VERSION = "1.2.5"
 RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
 WORDPRESS_URL = "https://wordpress.org/latest.zip"
 
@@ -118,13 +118,15 @@ def check_for_update(timeout=5):
         # Solo se abre una URL de GitHub del propio repositorio
         if latest and current and latest > current and url.startswith("https://github.com/luiskaco/aetherstack/"):
             info = {"version": ".".join(map(str, latest)), "url": url, "code_url": None, "sig_url": None}
-            # Actualización con un clic: solo si el release trae el zip de código y su firma
+            # Actualización con un clic: solo si el release trae el zip de actualización y su firma.
+            # El prefijo "AetherStack-update-" es la GENERACIÓN del protocolo: las versiones anteriores
+            # buscaban "AetherStack-code-" y por eso ya no ven estos paquetes (que no sabrían instalar).
             for asset in data.get("assets", []):
                 name = asset.get("name", "")
                 link = asset.get("browser_download_url", "")
-                if re.match(r"^AetherStack-code-v[\d.]+\.zip$", name):
+                if re.match(r"^AetherStack-update-v[\d.]+\.zip$", name):
                     info["code_url"] = link
-                elif re.match(r"^AetherStack-code-v[\d.]+\.zip\.sig$", name):
+                elif re.match(r"^AetherStack-update-v[\d.]+\.zip\.sig$", name):
                     info["sig_url"] = link
             return info
     except Exception:

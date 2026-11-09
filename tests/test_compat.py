@@ -14,6 +14,7 @@ Ejecutar: python -m unittest discover -s tests -v
 """
 import ast
 import os
+import re
 import subprocess
 import sys
 import unittest
@@ -22,8 +23,12 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 import updater
 
-# Versiones cuyos clientes pueden actualizarse con un clic al paquete actual
-SUPPORTED_ONE_CLICK_FROM = ["v1.2.3"]
+# Versiones cuyos clientes reconocen el prefijo actual de los assets y pueden actualizarse
+# con un clic al paquete actual. v1.2.5 es la primera con el prefijo "AetherStack-update-".
+SUPPORTED_ONE_CLICK_FROM = []
+
+CURRENT_PREFIX = "AetherStack-update-"
+OLD_CLIENT_TAGS = ["v1.2.1", "v1.2.2", "v1.2.3", "v1.2.4"]
 
 
 def old_allowlist(tag):
@@ -69,6 +74,29 @@ class CompatTests(unittest.TestCase):
         top_level = sorted(f for f in os.listdir(ROOT) if f.endswith(".py") and os.path.isfile(os.path.join(ROOT, f)))
         missing = [f for f in top_level if f not in updater.CODE_ROOT_FILES]
         self.assertEqual(missing, [], f"Añádelos a CODE_ROOT_FILES en updater.py: {missing}")
+
+    def test_old_clients_do_not_recognize_current_update_assets(self):
+        # Si un cliente antiguo reconociera el paquete actual, podría instalarlo a medias y romperse
+        for tag in OLD_CLIENT_TAGS:
+            try:
+                src = subprocess.run(["git", "show", f"{tag}:core.py"], cwd=ROOT, capture_output=True,
+                                     text=True, encoding="utf-8", check=True).stdout
+            except (OSError, subprocess.CalledProcessError):
+                self.skipTest(f"No hay git o falta la etiqueta {tag}")
+            patterns = re.findall(r're\.match\(r"(\^AetherStack-[^"]+)", name\)', src)
+            self.assertTrue(patterns, f"{tag}: no se encontró cómo reconoce los assets")
+            for name in (f"{CURRENT_PREFIX}v9.9.9.zip", f"{CURRENT_PREFIX}v9.9.9.zip.sig", f"{CURRENT_PREFIX}v9.9.9.zip.sha256"):
+                for pat in patterns:
+                    self.assertIsNone(re.match(pat, name), f"{tag} reconocería {name} con {pat}")
+
+    def test_core_uses_the_current_prefix(self):
+        with open(os.path.join(ROOT, "core.py"), encoding="utf-8") as f:
+            src = f.read()
+        self.assertIn(f'^{CURRENT_PREFIX}v[\\d.]+\\.zip$', src)
+
+    def test_build_uses_the_current_prefix(self):
+        with open(os.path.join(ROOT, "tools", "build_release_zip.py"), encoding="utf-8") as f:
+            self.assertIn(f"{CURRENT_PREFIX}v{{version}}.zip", f.read())
 
     def test_detects_the_historical_failures(self):
         # Comprobación de la propia prueba: contra v1.2.1 y v1.2.2 el paquete actual NO cabe

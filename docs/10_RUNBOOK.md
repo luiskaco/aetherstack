@@ -48,22 +48,22 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 ---
 
 ## 5. Publicar un Release
-0. **Regla de compatibilidad (obligatoria).** El actualizador de cada versión instala solo los archivos que conoce. Si el release trae un archivo nuevo en la raíz que las versiones anteriores no aceptan, quien actualice con un clic quedará con la app rota. Antes de publicar corre `python -m unittest discover -s tests`: `test_compat.py` lo comprueba contra el `updater.py` real de las versiones de `SUPPORTED_ONE_CLICK_FROM`. Tras publicar, añade la versión nueva a esa lista y, para las que ya no sean compatibles, retira los assets de código (`AetherStack-code-*`) de su release con `gh release delete-asset`. Si hace falta un archivo nuevo, publica primero una versión intermedia que ya lo admita.
+0. **Regla de compatibilidad (obligatoria).** El actualizador de cada versión instala solo los archivos que conoce. Si el release trae un archivo nuevo en la raíz que las versiones anteriores no aceptan, quien actualice con un clic quedará con la app rota. Antes de publicar corre `python -m unittest discover -s tests`: `test_compat.py` lo comprueba contra el `updater.py` real de las versiones de `SUPPORTED_ONE_CLICK_FROM`. Tras publicar, añade la versión nueva a esa lista y, para las que ya no sean compatibles, retira los assets de actualización (`AetherStack-update-*`) de su release con `gh release delete-asset`. Si un cambio es incompatible con las versiones instaladas (archivos nuevos, otro formato de firma), **cambia el prefijo de los assets** (`AetherStack-update-` → otro) en `core.py` y en el build: las versiones antiguas buscan el prefijo viejo y dejan de ver el paquete, así que no pueden romperse. Nunca publiques un paquete de actualización que alguna versión instalada no sepa instalar entero.
 1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/08_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
 2. Genera el paquete con lista blanca y escaneo de datos personales:
    ```cmd
    python tools/build_release_zip.py 1.2.1
    ```
-   Genera seis archivos en `dist/`: el paquete portable completo y su `.sha256`, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código), su `.sha256` y su firma `.sig`. Publica también el `.sha256` del portable para que quien lo descargue a mano pueda comprobarlo. El zip de código y la firma alimentan el botón "Actualizar ahora" de la app. Si falta la firma, la app solo muestra "Ver novedades". El build se niega a terminar si no encuentra tu clave de firma.
+   Genera cuatro archivos en `dist/`: el paquete portable completo y su `.sha256`, y el zip liviano `AetherStack-update-vX.Y.Z.zip` (solo código) con su firma `.sig`. Publica también el `.sha256` del portable para que quien lo descargue a mano pueda comprobarlo. El zip de actualización y la firma alimentan el botón "Actualizar ahora" de la app. Si falta la firma, la app solo muestra "Ver novedades". El build se niega a terminar si no encuentra tu clave de firma.
    El build **aborta y borra el zip** si encuentra tu usuario de Windows, tu email de git, el nombre del equipo, `data/`, `logs/`, `state.json`, vhosts o archivos `.lnk`.
 3. Prueba el zip en una carpeta nueva: descomprime, arranca el stack y comprueba que Nginx, PHP y MariaDB quedan activos.
 4. Crea el tag y publica el asset:
    ```cmd
    git tag v1.2.1
    git push origin main v1.2.1
-   gh release create v1.2.1 dist/AetherStack-v1.2.1-portable.zip dist/AetherStack-code-v1.2.1.zip dist/AetherStack-code-v1.2.1.zip.sha256 dist/AetherStack-code-v1.2.1.zip.sig --title "AetherStack v1.2.1" --notes-file <archivo-de-notas>
+   gh release create v1.2.1 dist/AetherStack-v1.2.1-portable.zip dist/AetherStack-v1.2.1-portable.zip.sha256 dist/AetherStack-update-v1.2.1.zip dist/AetherStack-update-v1.2.1.zip.sig --title "AetherStack v1.2.1" --notes-file <archivo-de-notas>
    ```
-   **Importante:** los cuatro assets deben llevar exactamente esos nombres. La app los reconoce por el patrón `AetherStack-code-vX.Y.Z.zip` y `.zip.sig`. Mantén publicado el `.sha256`: las instalaciones v1.2.1 solo lo conocen a él.
+   **Importante:** los assets deben llevar exactamente esos nombres. La app reconoce la actualización por el patrón `AetherStack-update-vX.Y.Z.zip` y `.zip.sig`.
    La actualización con un clic solo cambia código. Si un release cambia los binarios de `bin/` (Nginx, PHP, MariaDB), hay que avisar en las notas de que se debe descargar el paquete portable.
 5. Nunca empaquetes a mano la carpeta del proyecto: `data/` contiene bases de datos reales y el perfil del navegador.
 

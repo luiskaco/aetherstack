@@ -4,7 +4,7 @@
 - **Estado Actual:** Sistema operativo, estable y funcional.
 - **Acceso:** `AetherStack.bat`; acceso directo opcional con `python generate_icon.py`.
 - **Tipo:** Aplicación desktop portable para Windows 10/11 x64.
-- **Release:** v1.2.4 (ver `10_RUNBOOK.md` § 5 para repetir el proceso).
+- **Release:** v1.2.5 (ver `10_RUNBOOK.md` § 5 para repetir el proceso).
 
 ---
 

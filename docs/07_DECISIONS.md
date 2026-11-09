@@ -32,4 +32,6 @@
 3. `tests/test_compat.py` valida el paquete actual contra el `updater.py` real de las versiones publicadas.
 4. Una versión incompatible con un clic se retira de la actualización automática borrando los assets de código de su release; el portable completo permanece.
 
+5. **El prefijo de los assets de actualización es la generación del protocolo.** Un cliente solo reconoce su propio prefijo (`AetherStack-update-`); al romper la compatibilidad se cambia el prefijo y los clientes antiguos dejan de ver el paquete. Esto cierra el hueco que dejaba la medida 4: retirar assets release a release no protege frente a la versión siguiente, porque las versiones antiguas seguirían reconociendo el nombre de cualquier release nuevo.
+
 **Consecuencias.** (+) Una actualización fallida deja la app intacta y explica qué hacer. (-) Añadir archivos nuevos que versiones antiguas no admiten exige un release intermedio o que esos usuarios bajen el portable.

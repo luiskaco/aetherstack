@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.2.5] - 2026-11-09
+
+### Corregido
+- **Las versiones antiguas ya no pueden romperse con una actualización que no entienden.** Los paquetes de actualización pasan a llamarse `AetherStack-update-vX.Y.Z.zip` (antes `AetherStack-code-...`). Las versiones hasta v1.2.4 buscan el nombre antiguo, así que dejan de ver el botón de un clic y solo ofrecen "Ver novedades". Se retiraron además los archivos de actualización de v1.2.4.
+- Quien tenga v1.2.4 o anterior descarga este portable una vez a mano; desde v1.2.5 las actualizaciones son con un clic.
+
+### Cambiado
+- El prefijo de los assets es ahora la "generación" del protocolo de actualización: se cambia cuando un release deja de ser compatible con las versiones instaladas. Ver `10_RUNBOOK.md` § 5 y ADR-002.
+
+---
+
 ## [1.2.4] - 2026-11-09
 
 ### Corregido
