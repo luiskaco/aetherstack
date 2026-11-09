@@ -26,6 +26,8 @@ except ImportError:
 from tkinter import filedialog
 import core
 import updater
+import tray
+import single_instance
 import i18n
 from i18n import t
 
@@ -79,6 +81,84 @@ class AetherDribbbleApp(ctk.CTk):
         self.refresh_status()
         self.auto_refresh_loop()
         self.start_update_check()
+        self.setup_tray()
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.after(500, self._poll_show_request)
+
+    # ----------------- Icono de la bandeja y ciclo de vida de la ventana -----------------
+    def setup_tray(self):
+        self.tray = None
+        self._tray_notified = False
+        if not tray.AVAILABLE:
+            return
+        try:
+            self.tray = tray.TrayIcon(
+                f"AetherStack v{core.VERSION}",
+                on_open=lambda: self.after(0, self.show_window),
+                on_toggle=lambda: self.after(0, self.toggle_services),
+                on_quit=lambda: self.after(0, self.request_quit))
+            self.tray.start()
+            self.update_tray(core.get_status())
+        except Exception:
+            self.tray = None
+
+    def update_tray(self, status):
+        if not getattr(self, "tray", None):
+            return
+        state = tray.stack_state(status)
+        text = t("tray_status_" + state)
+        self.tray.set_state(state, {
+            "open": t("tray_open"), "quit": t("tray_quit"),
+            "toggle": t("tray_start") if state == tray.STOPPED else t("tray_stop"),
+            "status": text, "tooltip": f"AetherStack - {text}"})
+
+    def show_window(self):
+        self.deiconify()
+        self.lift()
+        self.focus_force()
+
+    def _poll_show_request(self):
+        # Otra copia de la app (acceso directo) pide mostrar esta ventana
+        try:
+            if single_instance.consume_show_request(core.CONF_DIR):
+                self.show_window()
+            self.after(500, self._poll_show_request)
+        except Exception:
+            pass  # la ventana ya se cerró
+
+    def on_close(self):
+        """La X no apaga los servicios: si siguen activos, la app se oculta en la bandeja."""
+        running = tray.stack_state(core.get_status()) != tray.STOPPED
+        if getattr(self, "tray", None) and running and core.load_state().get("close_to_tray", True):
+            self.withdraw()
+            if not self._tray_notified:
+                self._tray_notified = True
+                self.tray.notify(t("tray_bg_title"), t("tray_bg_msg"))
+        else:
+            self.destroy()
+
+    def request_quit(self):
+        """Salir de verdad. Si el stack sigue activo se pregunta, para no dejarlo corriendo sin icono."""
+        if tray.stack_state(core.get_status()) == tray.STOPPED:
+            self.destroy()
+            return
+        self.show_window()
+        self.show_dark_confirm(t("exit_confirm_title"), t("exit_confirm_msg"),
+                               confirm_text=t("exit_confirm_btn"), on_confirm=self.stop_and_quit)
+
+    def stop_and_quit(self):
+        def run():
+            core.stop_services()
+            self.after(0, self.destroy)
+        threading.Thread(target=run, daemon=True).start()
+
+    def destroy(self):
+        if getattr(self, "tray", None):
+            self.tray.stop()
+            self.tray = None
+        single_instance.release(getattr(self, "_instance_handle", None))
+        self._instance_handle = None
+        super().destroy()
 
     def start_update_check(self):
         """Busca una versión nueva en segundo plano para no bloquear la interfaz."""
@@ -650,6 +730,8 @@ class AetherDribbbleApp(ctk.CTk):
         if hasattr(self, "port_db_lbl"):
             self.port_db_lbl.configure(text=t("mariadb_card_sub", port=db_port))
 
+        self.update_tray(status)
+
     def toggle_language(self):
         new_lang = "en" if i18n.get_lang() == "es" else "es"
         i18n.set_lang(new_lang)
@@ -1136,5 +1218,11 @@ class AetherDribbbleApp(ctk.CTk):
         core.open_db_manager(db_name)
 
 if __name__ == "__main__":
+    # Una sola copia: si ya hay una (quizá oculta en la bandeja), se le pide que se muestre
+    _handle, _first = single_instance.acquire(wait_seconds=4)
+    if not _first:
+        single_instance.request_show(core.CONF_DIR)
+        sys.exit(0)
     app = AetherDribbbleApp()
+    app._instance_handle = _handle
     app.mainloop()

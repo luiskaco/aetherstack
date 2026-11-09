@@ -3,3 +3,5 @@
 customtkinter==6.0.0
 # Solo para generar el icono y el acceso directo (generate_icon.py)
 pillow==13.0.0
+# Icono en la bandeja del sistema (opcional: sin esto la app funciona igual, sin icono)
+pystray==0.19.5

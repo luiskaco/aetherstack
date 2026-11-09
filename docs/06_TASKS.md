@@ -13,6 +13,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [x] Piloto `frutiflex`: base exportada con el `mysqldump` de Laragon e importada en AetherStack; `http://frutiflex.test` responde (portada, `wp-login.php` y API REST en 200) con Nginx y PHP de AetherStack.
 - [x] Dominio de desarrollo configurable (`vhost_tld`, p. ej. `test`) y adopción de proyectos existentes (`adopt_existing_projects`).
 - [x] Nginx: `server_names_hash_bucket_size 128` (con 16 dominios no recargaba).
+- [x] Icono en la bandeja del sistema con el estado del stack, ocultar en bandeja al cerrar y copia única de la app.
 - [ ] Botón en la interfaz para "Importar proyectos" y campo de dominio en Ajustes (hoy se hace por código).
 - [ ] Migrar las 15 bases restantes (`orangev2026` pesa 1,5 GB) y verificar cada sitio.
 - [ ] Decidir qué hacer con 4 bases sin proyecto: `observatorioweb`, `pluginglobal`, `porunperuold`, `pupscold`.

@@ -31,3 +31,6 @@ python -m unittest discover -s tests -v
 | **Descargas verificadas** (`downloads.py`) | `tests/test_downloads.py`: descarga y verificación, hash distinto descartado sin dejar archivos, reutiliza caché, renueva si cambió el hash oficial, reemplaza una caché corrupta, sin red (con caché íntegra / sin caché / con caché corrupta), rechaza HTTP, límite de tamaño | ✅ 11 pruebas |
 | **WordPress real** | Descarga real de wordpress.org verificada (35 MB), segunda vez reutiliza la caché; proyecto WordPress creado de punta a punta con el stack real y borrado después | ✅ |
 | **Dependencias ausentes** | `app.py` sin `customtkinter`: aviso con el comando de instalación y salida limpia | ✅ |
+| **Bandeja y copia única** (`tray.py`, `single_instance.py`) | `tests/test_tray.py`: estado del stack, color por estado, icono distinguible a 16 px y con esquinas transparentes, bloqueo de copia única y aviso entre copias | ✅ 6 pruebas |
+| **Bandeja con la app real** | App abierta de verdad: icono visible y verde con el stack activo, menú correcto, la X oculta la ventana (no la destruye), una segunda copia la muestra, salir desde la bandeja pregunta | ✅ |
+| **Copia única con procesos reales** | Dos lanzamientos con `pythonw.exe app.py` | ✅ un solo proceso y una sola ventana |

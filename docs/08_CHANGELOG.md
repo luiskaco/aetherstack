@@ -9,6 +9,10 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Sin publicar]
 
 ### Añadido
+- **Icono en la bandeja del sistema.** Muestra que AetherStack está en segundo plano y su estado por color: verde (todo activo), ámbar (parcial) y gris (detenido). Clic para abrir; menú con abrir, iniciar/detener el stack y salir. Necesita `pystray` (en `requirements.txt`); sin él la app funciona igual, sin icono.
+- **Cerrar la ventana con la X ya no deja el stack "invisible":** si los servicios siguen activos, la app se oculta en la bandeja y avisa con una notificación. Se desactiva con `"close_to_tray": false` en `conf/state.json`.
+- **Salir desde la bandeja con el stack activo** pregunta antes y ofrece "Detener y salir", para no dejar Nginx, PHP y MariaDB corriendo sin icono.
+- **Una sola copia de la app:** abrir el acceso directo otra vez muestra la ventana ya abierta (aunque esté oculta) en vez de abrir otra.
 - **Dominio de desarrollo configurable** (`vhost_tld` en `conf/state.json`, por defecto `local`): permite usar `.test` y mantener las direcciones que ya guardan tus sitios.
 - **Adopción de proyectos existentes** (`core.adopt_existing_projects()`): crea el virtual host de cada WordPress/Laravel que ya esté en la carpeta de proyectos, sin tocar sus archivos ni sus bases de datos. Pensado para migrar desde Laragon.
 - Módulo `vhosts.py` con la generación de virtual hosts, con pruebas.

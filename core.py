@@ -75,7 +75,8 @@ DEFAULT_CONFIG = {
     "theme": "dark",
     "language": "es",
     "check_updates": True,
-    "vhost_tld": vhosts.DEFAULT_TLD
+    "vhost_tld": vhosts.DEFAULT_TLD,
+    "close_to_tray": True
 }
 
 def load_state():
