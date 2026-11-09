@@ -13,6 +13,7 @@ import stat
 import urllib.request
 import zipfile
 import re
+import html
 
 VERSION = "1.1.1"
 RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
@@ -291,6 +292,85 @@ def sync_vhosts_paths():
                 except Exception:
                     pass
 
+DEFAULT_INDEX_MARKER = "<!-- aetherstack-default-index -->"
+DEFAULT_INDEX_TEXT = {
+    "es": {"title": "Tu entorno local está funcionando", "sub": "Nginx, PHP y MariaDB responden correctamente.",
+           "projects": "Tus proyectos", "empty": "Todavía no hay proyectos. Crea uno de WordPress o Laravel desde AetherStack.",
+           "stack": "Stack", "open": "Abrir"},
+    "en": {"title": "Your local environment is running", "sub": "Nginx, PHP and MariaDB are responding correctly.",
+           "projects": "Your projects", "empty": "No projects yet. Create a WordPress or Laravel project from AetherStack.",
+           "stack": "Stack", "open": "Open"},
+}
+
+def build_default_index():
+    """Página de bienvenida estática de http://localhost. Solo lista proyectos con nombre válido."""
+    state = load_state()
+    lang = state.get("language", "es")
+    tx = DEFAULT_INDEX_TEXT.get(lang, DEFAULT_INDEX_TEXT["es"])
+    items = []
+    for p in list_projects():
+        rel = f"{p['name']}/public/" if p["type"] == "Laravel" else f"{p['name']}/"
+        items.append(
+            f'<a class="row" href="/{html.escape(rel, quote=True)}"><span>{html.escape(p["name"])}</span>'
+            f'<span class="tag">{html.escape(p["type"])}</span><span class="go">{tx["open"]} →</span></a>'
+        )
+    body = "\n".join(items) if items else f'<p class="empty">{html.escape(tx["empty"])}</p>'
+    stack = f'Nginx · PHP {html.escape(str(state.get("php_version", "")))} · MariaDB :{html.escape(str(state.get("mariadb_port", "")))}'
+    return f"""<!DOCTYPE html>
+{DEFAULT_INDEX_MARKER}
+<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AetherStack</title>
+<style>
+:root{{color-scheme:dark}}
+*{{box-sizing:border-box}}
+body{{margin:0;min-height:100vh;background:#0B0F19;color:#F8FAFC;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}}
+main{{width:100%;max-width:640px}}
+.logo{{width:56px;height:56px;border-radius:16px;background:#2563EB;display:grid;place-items:center;font-size:28px;margin-bottom:20px}}
+h1{{font-size:1.6rem;margin:0 0 6px}}
+.sub{{color:#94A3B8;margin:0 0 28px}}
+h2{{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#94A3B8;margin:0 0 10px}}
+.row{{display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:8px;background:#161F30;border:1px solid #1E293B;border-radius:12px;color:#F8FAFC;text-decoration:none}}
+.row:hover,.row:focus-visible{{border-color:#2563EB;outline:none}}
+.row span:first-child{{flex:1;font-weight:600}}
+.tag{{font-size:.75rem;color:#60A5FA}}
+.go{{font-size:.85rem;color:#CBD5E1}}
+.empty{{color:#CBD5E1;background:#161F30;border:1px dashed #334155;border-radius:12px;padding:16px;margin:0}}
+footer{{margin-top:28px;color:#94A3B8;font-size:.8rem}}
+</style></head><body><main>
+<div class="logo">⚡</div>
+<h1>{html.escape(tx["title"])}</h1>
+<p class="sub">{html.escape(tx["sub"])}</p>
+<h2>{html.escape(tx["projects"])}</h2>
+{body}
+<footer>AetherStack v{VERSION} · {tx["stack"]}: {stack}</footer>
+</main></body></html>
+"""
+
+def write_default_index():
+    """
+    Crea/actualiza index.html en la carpeta de proyectos para que localhost no devuelva 403.
+    Nunca pisa un index propio del usuario: solo se reescribe si lleva nuestra marca.
+    """
+    try:
+        root = get_projects_root()
+        for name in ("index.php", "index.htm"):
+            if os.path.exists(os.path.join(root, name)):
+                return
+        target = os.path.join(root, "index.html")
+        if os.path.exists(target):
+            with open(target, "r", encoding="utf-8", errors="ignore") as f:
+                if DEFAULT_INDEX_MARKER not in f.read(512):
+                    return
+        content = build_default_index()
+        if os.path.exists(target):
+            with open(target, "r", encoding="utf-8") as f:
+                if f.read() == content:
+                    return
+        with open(target, "w", encoding="utf-8", newline="\n") as f:
+            f.write(content)
+    except Exception:
+        pass
+
 def ensure_runtime_dirs():
     """Nginx y los logs necesitan estas carpetas; las carpetas vacías no viajan en un zip."""
     for d in (LOGS_DIR, os.path.join(BIN_DIR, "nginx", "temp"), os.path.join(BIN_DIR, "nginx", "logs")):
@@ -301,6 +381,7 @@ def ensure_runtime_dirs():
 
 def update_nginx_config():
     ensure_runtime_dirs()
+    write_default_index()
     state = load_state()
     proj_dir = get_projects_root().replace("\\", "/")
 

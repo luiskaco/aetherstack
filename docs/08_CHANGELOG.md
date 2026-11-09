@@ -10,6 +10,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ### Añadido
 - **Aviso de actualización:** al abrir, la app consulta en segundo plano el último release de GitHub y, si hay una versión más nueva, muestra un aviso con botón "Ver novedades". No descarga ni instala nada por sí sola.
+- **Página de inicio por defecto:** `http://localhost` muestra una bienvenida con la lista de proyectos en vez de `403 Forbidden`. Se regenera sola al crear o eliminar proyectos y nunca pisa un `index` propio del usuario. Sigue sin haber listado de carpetas.
 - La versión actual (`VERSION` en `core.py`) se muestra en el título de la ventana.
 - Se puede desactivar con `"check_updates": false` en `conf/state.json`.
 

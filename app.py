@@ -320,6 +320,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.load_projects_list()
 
     def load_projects_list(self):
+        core.write_default_index()
         for w in self.scroll_table.winfo_children():
             w.destroy()
 
