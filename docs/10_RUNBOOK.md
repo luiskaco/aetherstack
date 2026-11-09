@@ -48,7 +48,7 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 ---
 
 ## 5. Publicar un Release
-1. Verifica que el árbol esté limpio (`git status`) y actualiza `docs/08_CHANGELOG.md`.
+1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/08_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
 2. Genera el paquete con lista blanca y escaneo de datos personales:
    ```cmd
    python tools/build_release_zip.py 1.1.0

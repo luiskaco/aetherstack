@@ -20,6 +20,13 @@
 
 ---
 
+## Actualizaciones automáticas (roadmap)
+- [x] Paso 1: aviso dentro de la app cuando hay un release nuevo en GitHub.
+- [ ] Paso 2: actualización con un clic (zip liviano "solo código" + SHA256 + reinicio + rollback).
+- [ ] Paso 3 (opcional): manifiesto para Scoop / winget.
+
+---
+
 ## Tareas Completadas
 - [x] Revisión de seguridad: Nginx solo en `127.0.0.1` y sin listado de carpetas, validación de nombres de proyecto, eliminación de `os.system`, validación de Ajustes.
 - [x] Release **v1.1.0** reproducible con `tools/build_release_zip.py` (lista blanca + base MariaDB vacía + escaneo de datos personales). Se retira el asset de v1.0.0, que incluía datos personales.

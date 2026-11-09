@@ -25,6 +25,8 @@ TRANSLATIONS = {
         "btn_start_stack": "INICIAR STACK",
         "btn_stop_stack": "DETENER STACK",
         "lang_switch_btn": "🌐 EN",
+        "update_available": "Nueva versión disponible: v{version}",
+        "update_download": "Ver novedades",
         
         # Dashboard Cards
         "running_services_title": "Servicios en Ejecución",
@@ -115,6 +117,8 @@ TRANSLATIONS = {
         "btn_start_stack": "START STACK",
         "btn_stop_stack": "STOP STACK",
         "lang_switch_btn": "🌐 ES",
+        "update_available": "New version available: v{version}",
+        "update_download": "See what's new",
         
         # Dashboard Cards
         "running_services_title": "Running Services",

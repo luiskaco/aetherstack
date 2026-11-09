@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [Sin publicar]
+
+### Añadido
+- **Aviso de actualización:** al abrir, la app consulta en segundo plano el último release de GitHub y, si hay una versión más nueva, muestra un aviso con botón "Ver novedades". No descarga ni instala nada por sí sola.
+- La versión actual (`VERSION` en `core.py`) se muestra en el título de la ventana.
+- Se puede desactivar con `"check_updates": false` en `conf/state.json`.
+
+---
+
 ## [1.1.1] - 2026-11-08
 
 ### Rendimiento

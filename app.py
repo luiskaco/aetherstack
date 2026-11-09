@@ -45,7 +45,7 @@ class AetherDribbbleApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("AetherStack - Local Dev Suite")
+        self.title(f"AetherStack v{core.VERSION} - Local Dev Suite")
         self.geometry("1020x660")
         self.minsize(980, 620)
         self.configure(fg_color=BG_MAIN)
@@ -62,6 +62,32 @@ class AetherDribbbleApp(ctk.CTk):
         self.build_dribbble_layout()
         self.refresh_status()
         self.auto_refresh_loop()
+        self.start_update_check()
+
+    def start_update_check(self):
+        """Busca una versión nueva en segundo plano para no bloquear la interfaz."""
+        def worker():
+            info = core.check_for_update()
+            if info:
+                try:
+                    self.after(0, lambda: self.show_update_banner(info))
+                except Exception:
+                    pass
+        threading.Thread(target=worker, daemon=True).start()
+
+    def show_update_banner(self, info):
+        self.update_info = info
+        banner = ctk.CTkFrame(self.center_content, fg_color="#1E3A8A", corner_radius=12,
+                              border_width=1, border_color=ACCENT_BLUE)
+        self.lbl_update = ctk.CTkLabel(banner, text=t("update_available", version=info["version"]),
+                                       font=ctk.CTkFont(size=12, weight="bold"), text_color="#FFFFFF")
+        self.lbl_update.pack(side="left", padx=(14, 8), pady=8)
+        self.btn_update = ctk.CTkButton(banner, text=t("update_download"), width=110, height=28, corner_radius=8,
+                                        font=ctk.CTkFont(size=11, weight="bold"),
+                                        fg_color=ACCENT_BLUE, hover_color="#3B82F6", text_color="#FFFFFF",
+                                        command=lambda: webbrowser.open(info["url"]))
+        self.btn_update.pack(side="right", padx=(8, 10), pady=8)
+        banner.pack(fill="x", pady=(0, 12), before=self.view_container)
 
     def build_dribbble_layout(self):
         self.root_frame = ctk.CTkFrame(self, fg_color=BG_MAIN, corner_radius=0)
@@ -636,6 +662,11 @@ class AetherDribbbleApp(ctk.CTk):
             self.btn_side_change.configure(text=t("change"))
         if hasattr(self, "btn_side_logs"):
             self.btn_side_logs.configure(text=t("btn_view_logs"))
+
+        # Aviso de actualización
+        if hasattr(self, "lbl_update"):
+            self.lbl_update.configure(text=t("update_available", version=self.update_info["version"]))
+            self.btn_update.configure(text=t("update_download"))
 
         # 6. Refrescar estado y lista de proyectos
         self.refresh_status()

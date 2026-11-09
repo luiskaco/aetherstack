@@ -14,6 +14,9 @@ import urllib.request
 import zipfile
 import re
 
+VERSION = "1.1.1"
+RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BIN_DIR = os.path.join(BASE_DIR, "bin")
 CONF_DIR = os.path.join(BASE_DIR, "conf")
@@ -66,7 +69,8 @@ DEFAULT_CONFIG = {
     "php_port": 9000,
     "projects_dir": os.path.join(BASE_DIR, "projects"),
     "theme": "dark",
-    "language": "es"
+    "language": "es",
+    "check_updates": True
 }
 
 def load_state():
@@ -83,6 +87,37 @@ def load_state():
 def save_state(state):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
+
+def parse_version(text):
+    """Convierte 'v1.2.3' en (1, 2, 3). Devuelve None si no es una versión válida."""
+    m = re.match(r"^v?(\d+)\.(\d+)\.(\d+)", str(text or "").strip())
+    return tuple(int(x) for x in m.groups()) if m else None
+
+def check_for_update(timeout=5):
+    """
+    Consulta el último release publicado en GitHub.
+    Devuelve {"version", "url"} si hay una versión más nueva que VERSION; si no, None.
+    Nunca lanza excepción: sin red o con error de API simplemente devuelve None.
+    Solo envía una petición GET anónima, sin datos del usuario.
+    """
+    if not load_state().get("check_updates", True):
+        return None
+    try:
+        req = urllib.request.Request(RELEASES_API, headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "AetherStack-UpdateCheck",
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        latest = parse_version(data.get("tag_name"))
+        current = parse_version(VERSION)
+        url = data.get("html_url", "")
+        # Solo se abre una URL de GitHub del propio repositorio
+        if latest and current and latest > current and url.startswith("https://github.com/luiskaco/aetherstack/"):
+            return {"version": ".".join(map(str, latest)), "url": url}
+    except Exception:
+        pass
+    return None
 
 def set_language(lang):
     state = load_state()
