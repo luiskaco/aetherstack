@@ -39,6 +39,23 @@ SKIP_DIR_NAMES = {"__pycache__", ".git"}
 SKIP_EXTS = {".pyc", ".tmp", ".pid", ".log", ".err", ".pdb"}
 # Estado propio de cada instalación: se regenera al primer arranque
 SKIP_REL_PREFIXES = ("bin/heidisql/Backups/",)
+# Configs que la app reescribe con rutas absolutas del equipo en cada arranque (core.py).
+# Se empaquetan con una ruta neutra; se regeneran solas al primer inicio.
+REWRITTEN_CONFIGS = ("bin/nginx/conf/nginx.conf",)
+REWRITTEN_CONFIG_NAMES = ("php.ini",)
+NEUTRAL_ROOT = "C:/aetherstack"
+
+
+def neutralize_paths(abs_path, rel):
+    """Devuelve el contenido del archivo con la ruta del proyecto reemplazada, o None si no aplica."""
+    if rel not in REWRITTEN_CONFIGS and not (rel.startswith("bin/php/") and os.path.basename(rel) in REWRITTEN_CONFIG_NAMES):
+        return None
+    with open(abs_path, "r", encoding="utf-8", errors="ignore") as f:
+        text = f.read()
+    base_fwd = BASE_DIR.replace("\\", "/")
+    for variant in (base_fwd, BASE_DIR, BASE_DIR.replace("\\", "\\\\")):
+        text = text.replace(variant, NEUTRAL_ROOT)
+    return text
 
 
 def run_git(*args):
@@ -159,7 +176,11 @@ def main():
         # 3. Árboles completos
         for tree in TREES:
             for abs_path, rel in iter_tree(tree):
-                zf.write(abs_path, f"{ROOT_NAME}/{rel}")
+                neutral = neutralize_paths(abs_path, rel)
+                if neutral is not None:
+                    zf.writestr(f"{ROOT_NAME}/{rel}", neutral)
+                else:
+                    zf.write(abs_path, f"{ROOT_NAME}/{rel}")
                 count += 1
 
         # 4. Base de datos MariaDB vacía

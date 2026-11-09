@@ -6,7 +6,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
-## [Sin publicar]
+## [1.2.0] - 2026-11-09
 
 ### Añadido
 - **Aviso de actualización:** al abrir, la app consulta en segundo plano el último release de GitHub y, si hay una versión más nueva, muestra un aviso con botón "Ver novedades". No descarga ni instala nada por sí sola.

@@ -15,7 +15,7 @@ import zipfile
 import re
 import html
 
-VERSION = "1.1.1"
+VERSION = "1.2.0"
 RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
