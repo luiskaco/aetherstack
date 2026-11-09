@@ -6,7 +6,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
-## [Sin publicar]
+## [1.2.1] - 2026-11-09
 
 ### Añadido
 - **Actualización con un clic:** si el release trae el zip de código y su SHA256, el aviso muestra "Actualizar ahora". La app descarga, verifica la integridad, reemplaza solo el código y se reinicia. No toca `bin/`, `data/`, `conf/`, `logs/` ni `projects/`.

@@ -233,6 +233,7 @@ def main():
 
     size_mb = os.path.getsize(out_zip) // (1024 * 1024)
     print(f"OK: {out_zip}\n    {count} archivos, {size_mb} MB, {int(time.time() - start)} s, sin fugas detectadas")
+    build_code_zip(version)
 
 
 if __name__ == "__main__":
