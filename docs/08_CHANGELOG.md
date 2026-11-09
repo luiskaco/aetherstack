@@ -6,7 +6,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
-## [Sin publicar]
+## [1.2.3] - 2026-11-09
 
 ### Seguridad
 - **Descarga de WordPress verificada:** se comprueba contra el hash que publica wordpress.org (`latest.zip.sha1`, por HTTPS) antes de usarla. Se descarta cualquier archivo que no coincida. Nginx, PHP, MariaDB y Composer no se descargan en ejecución: vienen dentro del paquete portable.

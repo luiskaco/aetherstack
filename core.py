@@ -16,7 +16,7 @@ import re
 import downloads
 import html
 
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
 WORDPRESS_URL = "https://wordpress.org/latest.zip"
 
