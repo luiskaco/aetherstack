@@ -6,6 +6,18 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [1.2.4] - 2026-11-09
+
+### Corregido
+- **La actualización con un clic podía dejar la app sin arrancar.** El actualizador de cada versión solo instala una lista fija de archivos; si el release nuevo traía un archivo nuevo (`sigverify.py` en v1.2.2, `downloads.py` en v1.2.3), las versiones anteriores lo ignoraban y el código nuevo fallaba con `ModuleNotFoundError`. Se retiraron los archivos de actualización de los releases v1.2.2 y v1.2.3; quien tenga v1.2.1 o v1.2.2 debe descargar el paquete portable completo.
+- El actualizador ahora **rechaza el paquete entero** si trae algo que esa versión no sabe instalar, con un mensaje que pide bajar el portable, en vez de instalar a medias.
+- Los módulos `.py` nuevos de la raíz se aceptan sin cambiar la lista, para que los próximos releases puedan añadirlos sin romper esta versión.
+
+### Añadido
+- `tests/test_compat.py`: comprueba el paquete actual contra la lista de archivos del `updater.py` real de las versiones publicadas. Habría detectado este error antes de publicar.
+
+---
+
 ## [1.2.3] - 2026-11-09
 
 ### Seguridad

@@ -11,6 +11,8 @@ Seguridad:
     repositorio, sin la clave privada la firma no valida y no se instala nada.
   * La firma cubre la versión y el SHA256 del zip: no sirve reutilizar un zip firmado antiguo.
   * Se rechazan rutas con '..' o absolutas (zip-slip) y se ignora todo lo que no esté en la lista blanca.
+  * Si el paquete trae algo que esta versión NO sabe instalar, se rechaza entero: instalar a medias
+    dejaría código nuevo sin los archivos que necesita y la app no arrancaría.
   * Los .py se compilan antes de reemplazar nada: un zip roto no deja la app inservible.
   * Antes de reemplazar se guarda una copia en .update-backup/ y, si falla algo, se restaura.
 """
@@ -49,9 +51,15 @@ class UpdateError(Exception):
     """Error esperado durante una actualización (mensaje apto para mostrar al usuario)."""
 
 
+_TOP_LEVEL_PY_RE = re.compile(r"^[A-Za-z0-9_]+\.py$")
+
+
 def is_allowed_path(rel):
     rel = rel.replace("\\", "/")
     if rel in CODE_ROOT_FILES:
+        return True
+    # Módulos nuevos en la raíz: así un release futuro puede añadir archivos .py sin romper esta versión
+    if _TOP_LEVEL_PY_RE.match(rel):
         return True
     return any(rel.startswith(tree + "/") for tree in CODE_TREES)
 
@@ -104,6 +112,7 @@ def verify_signature(zip_path, version, signature_b64):
 def _plan_members(zf):
     """Devuelve [(miembro, ruta_relativa)] solo con lo permitido; rechaza rutas peligrosas."""
     plan = []
+    unsupported = []
     for info in zf.infolist():
         if info.is_dir():
             continue
@@ -115,6 +124,12 @@ def _plan_members(zf):
             raise UpdateError(f"El paquete contiene una ruta no válida: {info.filename}")
         if is_allowed_path(rel):
             plan.append((info, rel))
+        else:
+            unsupported.append(rel)
+    if unsupported:
+        shown = ", ".join(unsupported[:3]) + ("..." if len(unsupported) > 3 else "")
+        raise UpdateError("Esta actualización incluye archivos que tu versión no puede instalar sola "
+                          f"({shown}). Descarga el paquete portable completo desde la página del release.")
     names = {rel for _, rel in plan}
     missing = [f for f in REQUIRED_FILES if f not in names]
     if missing:

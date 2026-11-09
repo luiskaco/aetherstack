@@ -14,6 +14,7 @@ Principios:
 import getpass
 import hashlib
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -56,6 +57,9 @@ def neutralize_paths(abs_path, rel):
     base_fwd = BASE_DIR.replace("\\", "/")
     for variant in (base_fwd, BASE_DIR, BASE_DIR.replace("\\", "\\\\")):
         text = text.replace(variant, NEUTRAL_ROOT)
+    # La carpeta de proyectos la elige cada usuario en Ajustes y puede estar fuera del proyecto:
+    # en el paquete va siempre la carpeta por defecto
+    text = re.sub(r'(?m)^(\s*root\s+)"[^"]*";', r'\1"' + NEUTRAL_ROOT + '/projects";', text)
     return text
 
 

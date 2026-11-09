@@ -86,14 +86,27 @@ class UpdaterTests(unittest.TestCase):
         self.assertEqual(self.read("core.py"), "VERSION = '1'\n")
 
     def test_applies_signed_update_and_keeps_user_data(self):
-        make_zip(self.zip, {**GOOD, "data/keep.txt": "pisado", "bin/x.exe": "no"})
+        make_zip(self.zip, GOOD)
         changed = updater.apply_update_from_files(self.zip, VERSION, sign_file(self.zip, self.seed))
         self.assertEqual(self.read("app.py"), "V = 2\n")
         self.assertEqual(self.read("docs/a.md"), "nuevo")
         self.assertEqual(self.read("data/keep.txt"), "datos del usuario")
-        self.assertFalse(os.path.exists(os.path.join(self.base, "bin")))
         self.assertNotIn("data/keep.txt", changed)
         self.assertEqual(self.read(".update-backup/app.py"), "V = 1\n")
+
+    def test_accepts_new_top_level_python_module(self):
+        make_zip(self.zip, {**GOOD, "nuevo_modulo.py": "Q = 1\n"})
+        updater.apply_update_from_files(self.zip, VERSION, sign_file(self.zip, self.seed))
+        self.assertEqual(self.read("nuevo_modulo.py"), "Q = 1\n")
+
+    def test_refuses_whole_package_if_it_has_files_this_version_cannot_install(self):
+        # Instalar a medias dejaría código nuevo sin los archivos que necesita: se rechaza todo
+        for extra in ("bin/x.exe", "data/keep.txt", "datos_nuevos.bin", "otra_carpeta/a.txt"):
+            make_zip(self.zip, {**GOOD, extra: "x"})
+            with self.assertRaises(updater.UpdateError, msg=extra):
+                updater.apply_update_from_files(self.zip, VERSION, sign_file(self.zip, self.seed))
+            self.assertUntouched()
+            self.assertEqual(self.read("data/keep.txt"), "datos del usuario")
 
     def test_rejects_signature_from_another_key(self):
         make_zip(self.zip, GOOD)
@@ -159,7 +172,9 @@ class UpdaterTests(unittest.TestCase):
     def test_allowed_paths(self):
         self.assertTrue(updater.is_allowed_path("ui/web/dashboard.html"))
         self.assertTrue(updater.is_allowed_path("sigverify.py"))
-        for bad in ("bin/php/php.exe", "data/mariadb/x", "conf/state.json", "projects/a", "logs/x.log", "tools/sign_release.py"):
+        self.assertTrue(updater.is_allowed_path("nuevo_modulo.py"))
+        for bad in ("bin/php/php.exe", "data/mariadb/x", "conf/state.json", "projects/a", "logs/x.log", "tools/sign_release.py",
+                    "datos.bin", "sub/modulo.py", "../evil.py"):
             self.assertFalse(updater.is_allowed_path(bad), bad)
 
 

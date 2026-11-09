@@ -48,6 +48,7 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 ---
 
 ## 5. Publicar un Release
+0. **Regla de compatibilidad (obligatoria).** El actualizador de cada versión instala solo los archivos que conoce. Si el release trae un archivo nuevo en la raíz que las versiones anteriores no aceptan, quien actualice con un clic quedará con la app rota. Antes de publicar corre `python -m unittest discover -s tests`: `test_compat.py` lo comprueba contra el `updater.py` real de las versiones de `SUPPORTED_ONE_CLICK_FROM`. Tras publicar, añade la versión nueva a esa lista y, para las que ya no sean compatibles, retira los assets de código (`AetherStack-code-*`) de su release con `gh release delete-asset`. Si hace falta un archivo nuevo, publica primero una versión intermedia que ya lo admita.
 1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/08_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
 2. Genera el paquete con lista blanca y escaneo de datos personales:
    ```cmd
