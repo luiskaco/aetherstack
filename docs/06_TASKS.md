@@ -25,7 +25,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [ ] Decidir qué hacer con las 2 bases restantes sin proyecto: `observatorioweb` y `pluginglobal`.
 - [x] Archivo `hosts` gestionado por AetherStack (bloque propio, con copia de seguridad): los 16 dominios resuelven sin las líneas de Laragon.
 - [ ] Mover `C:\laragon\www` a `developOrange\web` (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final.
-- [ ] Revisar versión de PHP que usaba cada sitio en Laragon (AetherStack usa una sola global).
+- [x] Versión de PHP: Laragon usaba un único PHP global (8.5.12, sin versiones por sitio). AetherStack queda en 8.5.12; los 16 sitios funcionan igual con 8.4 y 8.5, sin errores de PHP. Tras cambiar de versión, la primera pasada es lenta (la caché de código empieza vacía): normal.
 
 ---
 
