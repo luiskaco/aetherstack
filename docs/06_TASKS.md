@@ -14,7 +14,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [x] Dominio de desarrollo configurable (`vhost_tld`, p. ej. `test`) y adopción de proyectos existentes (`adopt_existing_projects`).
 - [x] Nginx: `server_names_hash_bucket_size 128` (con 16 dominios no recargaba).
 - [x] Icono en la bandeja del sistema con el estado del stack, ocultar en bandeja al cerrar y copia única de la app.
-- [ ] Botón en la interfaz para "Importar proyectos" y campo de dominio en Ajustes (hoy se hace por código).
+- [x] Ajustes: campo "Dominio de desarrollo" y botón "Importar proyectos y hosts".
 - [x] Migradas las 15 bases restantes (todas con las filas iguales a Laragon, tabla por tabla) y respaldo completo en `developOrange\respaldo-laragon-2026-11-09` (1,4 GB).
 - [x] PHP con 4 procesos: con uno solo, los sitios se bloqueaban entre sí.
 - [x] `legacy-panasa`: restaurado `AUTO_INCREMENT` en 25 tablas (ya faltaba en Laragon); ver el runbook § 7.
@@ -23,7 +23,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [ ] `PorUnPeruSkeletonHTML` (sitio estático) no tiene virtual host: AetherStack solo adopta WordPress y Laravel.
 - [x] `porunperuold` y `pupscold` (dañadas en Laragon: faltaban ~120 de 162 tablas) eliminadas de Laragon por decisión del usuario. Queda solo lo rescatado en `respaldo-laragon-2026-11-09\*.salvage.sql`, que puede borrarse a mano.
 - [ ] Decidir qué hacer con las 2 bases restantes sin proyecto: `observatorioweb` y `pluginglobal`.
-- [ ] Archivo `hosts`: Laragon añade los `.test`; antes de desinstalarlo, AetherStack debe gestionarlos (requiere permisos de administrador).
+- [x] Archivo `hosts` gestionado por AetherStack (bloque propio, con copia de seguridad): los 16 dominios resuelven sin las líneas de Laragon.
 - [ ] Mover `C:\laragon\www` a `developOrange\web` (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final.
 - [ ] Revisar versión de PHP que usaba cada sitio en Laragon (AetherStack usa una sola global).
 

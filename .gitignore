@@ -34,3 +34,6 @@ Desktop.ini
 # Paquetes de release generados
 /dist/
 /.update-backup/
+
+# Copia del archivo hosts de Windows antes de que AetherStack lo modifique
+/conf/hosts.backup

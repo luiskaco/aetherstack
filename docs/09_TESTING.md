@@ -36,3 +36,5 @@ python -m unittest discover -s tests -v
 | **Copia única con procesos reales** | Dos lanzamientos con `pythonw.exe app.py` | ✅ un solo proceso y una sola ventana |
 | **Ajuste de php.ini** (`phpini.py`) | `tests/test_phpini.py`: reemplaza valores existentes, no toca otros ajustes, añade los que faltan en un solo bloque marcado, idempotente, respeta líneas comentadas | ✅ 6 pruebas |
 | **Rendimiento real (16 sitios)** | Portadas de los sitios más lentos antes/después de ajustar OPcache y el pool de PHP | ✅ de 30-120 s a 2-5 s |
+| **Archivo hosts** (`hosts.py`) | `tests/test_hosts.py` (15 pruebas): solo dominios válidos (rechaza espacios, `;`, saltos de línea, IPs inyectadas), conserva byte a byte lo ajeno al bloque y el estilo de saltos de línea, idempotente, reemplaza el bloque sin apilar, copia de seguridad que no se sobrescribe, script elevado y su codificación, la prueba de escritura abre el archivo | ✅ |
+| **hosts real** | Bloque escrito con elevación en el archivo real: 16 dominios, líneas originales intactas, copia idéntica al original, segunda sincronización `unchanged`; los 16 dominios resuelven a 127.0.0.1 ignorando las líneas de Laragon | ✅ |

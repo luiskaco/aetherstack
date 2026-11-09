@@ -16,6 +16,7 @@ import re
 import downloads
 import vhosts
 import phpini
+import hosts
 import html
 
 VERSION = "1.2.5"
@@ -667,6 +668,21 @@ def adopt_existing_projects():
         create_virtual_host(p["name"], is_laravel=(p["type"] == "Laravel"))
         adopted.append((p["name"], vhosts.domain_for(p["name"], state.get("vhost_tld"))))
     return adopted
+
+def project_domains():
+    """Dominios de desarrollo de los proyectos detectados (ej. frutiflex.test)."""
+    tld = load_state().get("vhost_tld")
+    return [vhosts.domain_for(p["name"], tld) for p in list_projects()]
+
+def sync_hosts():
+    """
+    Deja en el archivo hosts de Windows los dominios de los proyectos, dentro de un bloque propio.
+    Devuelve "unchanged", "updated", "cancelled" (el usuario rechazó el aviso de Windows) o "error".
+    """
+    try:
+        return hosts.sync(project_domains(), backup_dir=CONF_DIR)
+    except Exception:
+        return "error"
 
 def list_projects():
     state = load_state()

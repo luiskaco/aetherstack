@@ -38,7 +38,7 @@ RELEASE_PUBLIC_KEY = "7142be68e0685297fdfe9be8598ed6a592ccfdba3cd439c3ac01339736
 
 # Lista blanca de lo que una actualización puede escribir
 CODE_ROOT_FILES = [
-    "app.py", "core.py", "i18n.py", "updater.py", "sigverify.py", "downloads.py", "vhosts.py", "phpini.py", "tray.py", "single_instance.py", "requirements.txt",
+    "app.py", "core.py", "i18n.py", "updater.py", "sigverify.py", "downloads.py", "vhosts.py", "phpini.py", "hosts.py", "tray.py", "single_instance.py", "requirements.txt",
     "generate_icon.py", "icon.ico",
     "AetherStack.bat", "start.bat", "stop.bat", "switch-php.bat",
     "LICENSE", "README.md",

@@ -26,6 +26,7 @@ except ImportError:
 from tkinter import filedialog
 import core
 import updater
+import vhosts
 import tray
 import single_instance
 import i18n
@@ -1093,7 +1094,7 @@ class AetherDribbbleApp(ctk.CTk):
         win.configure(fg_color=BG_CARD)
         win.attributes('-topmost', True)
         win.transient(self)
-        self.center_modal(win, 450, 330)
+        self.center_modal(win, 450, 430)
 
         ctk.CTkLabel(win, text=t("settings_title"), font=ctk.CTkFont(size=16, weight="bold"),
                      text_color=TEXT_DARK).pack(anchor="w", padx=22, pady=(18, 4))
@@ -1140,6 +1141,26 @@ class AetherDribbbleApp(ctk.CTk):
         entry_db.insert(0, str(self.state_data.get("mariadb_port", 3307)))
         entry_db.pack(fill="x", pady=4)
 
+        t_row = ctk.CTkFrame(win, fg_color="transparent")
+        t_row.pack(fill="x", padx=22, pady=6)
+        c3 = ctk.CTkFrame(t_row, fg_color="transparent")
+        c3.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        ctk.CTkLabel(c3, text=t("settings_tld_lbl"), font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=TEXT_DARK).pack(anchor="w")
+        entry_tld = ctk.CTkEntry(c3, fg_color=BG_ROW, text_color=TEXT_DARK, border_color=BORDER, corner_radius=10)
+        entry_tld.insert(0, vhosts.normalize_tld(self.state_data.get("vhost_tld")))
+        entry_tld.pack(fill="x", pady=4)
+        c4 = ctk.CTkFrame(t_row, fg_color="transparent")
+        c4.pack(side="right", fill="x", expand=True, padx=(6, 0))
+        ctk.CTkLabel(c4, text=" ", font=ctk.CTkFont(size=11)).pack(anchor="w")
+        btn_sync = ctk.CTkButton(c4, text=t("btn_import_sync"), height=28, corner_radius=10,
+                                 fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
+                                 border_width=1, border_color=BORDER, font=ctk.CTkFont(size=11, weight="bold"))
+        btn_sync.configure(command=lambda: self.import_and_sync(entry_tld.get(), btn_sync))
+        btn_sync.pack(fill="x", pady=4)
+        ctk.CTkLabel(win, text=t("settings_hosts_hint"), font=ctk.CTkFont(size=10), text_color=TEXT_MUTED,
+                     wraplength=400, justify="left").pack(anchor="w", padx=22, pady=(0, 2))
+
         def save():
             projects_dir = entry_dir.get().strip()
             try:
@@ -1166,6 +1187,30 @@ class AetherDribbbleApp(ctk.CTk):
         ctk.CTkButton(win, text=t("save_changes"), fg_color=ACCENT_BLUE, hover_color="#1D4ED8",
                       text_color="#FFFFFF", height=38, corner_radius=12,
                       command=save).pack(fill="x", padx=22, pady=(16, 0))
+
+    def import_and_sync(self, tld, btn):
+        """Adopta los proyectos que ya están en la carpeta y actualiza el archivo hosts (pide permiso a Windows)."""
+        core.update_global_config({"vhost_tld": vhosts.normalize_tld(tld)})
+        self.state_data = core.load_state()
+        btn.configure(state="disabled", text=t("sync_running"))
+
+        def run():
+            try:
+                adopted = core.adopt_existing_projects()
+                result = core.sync_hosts()
+            except Exception:
+                adopted, result = [], "error"
+            self.after(0, lambda: self._sync_done(btn, len(adopted), result))
+        threading.Thread(target=run, daemon=True).start()
+
+    def _sync_done(self, btn, count, result):
+        try:
+            btn.configure(state="normal", text=t("btn_import_sync"))
+        except Exception:
+            pass  # el modal ya se cerró
+        kind = "success" if result in ("updated", "unchanged") else ("warning" if result == "cancelled" else "error")
+        self.show_dark_alert(t("settings_title"), t("sync_" + result, count=count), alert_type=kind)
+        self.load_projects_list()
 
     def open_localhost(self):
         port = self.state_data.get("nginx_port", 80)
