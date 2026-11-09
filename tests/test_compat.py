@@ -25,7 +25,7 @@ import updater
 
 # Versiones cuyos clientes reconocen el prefijo actual de los assets y pueden actualizarse
 # con un clic al paquete actual. v1.2.5 es la primera con el prefijo "AetherStack-update-".
-SUPPORTED_ONE_CLICK_FROM = []
+SUPPORTED_ONE_CLICK_FROM = ["v1.2.5"]
 
 CURRENT_PREFIX = "AetherStack-update-"
 OLD_CLIENT_TAGS = ["v1.2.1", "v1.2.2", "v1.2.3", "v1.2.4"]
