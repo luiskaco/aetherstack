@@ -37,6 +37,30 @@ class VhostTests(unittest.TestCase):
         self.assertEqual(text.count("{"), text.count("}"))
 
 
+class PhpPoolTests(unittest.TestCase):
+    def test_ports_are_consecutive_from_base(self):
+        self.assertEqual(vhosts.php_worker_ports(9000, 4), [9000, 9001, 9002, 9003])
+        self.assertEqual(vhosts.php_worker_ports("9000", "2"), [9000, 9001])
+
+    def test_worker_count_is_clamped_and_defaults_when_invalid(self):
+        self.assertEqual(len(vhosts.php_worker_ports(9000, 0)), 1)
+        self.assertEqual(len(vhosts.php_worker_ports(9000, -5)), 1)
+        self.assertEqual(len(vhosts.php_worker_ports(9000, 999)), vhosts.MAX_PHP_WORKERS)
+        for bad in (None, "x", ""):
+            self.assertEqual(len(vhosts.php_worker_ports(9000, bad)), vhosts.DEFAULT_PHP_WORKERS)
+
+    def test_default_is_more_than_one_worker(self):
+        # Un solo php-cgi bloquea WordPress cuando el sitio se llama a sí mismo
+        self.assertGreater(vhosts.DEFAULT_PHP_WORKERS, 1)
+
+    def test_upstream_lists_every_port(self):
+        text = vhosts.render_upstream_servers([9000, 9001, 9002])
+        for p in (9000, 9001, 9002):
+            self.assertIn(f"server 127.0.0.1:{p};", text)
+        self.assertEqual(text.count("server "), 3)
+        self.assertNotIn("0.0.0.0", text)
+
+
 class NginxTemplateTests(unittest.TestCase):
     def test_master_config_allows_many_server_names(self):
         # Sin esto Nginx falla con "could not build server_names_hash" al tener muchos proyectos

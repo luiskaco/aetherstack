@@ -18,6 +18,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Módulo `vhosts.py` con la generación de virtual hosts, con pruebas.
 
 ### Corregido
+- **Varios procesos de PHP (4 por defecto, `php_workers` en `conf/state.json`).** Antes había un solo `php-cgi`, que en Windows atiende una petición a la vez: una página lenta o un sitio que se llama a sí mismo (cron, Action Scheduler, comprobaciones de WordPress) bloqueaba todos los demás hasta agotar el tiempo (se veían como cuelgues de 75 s al migrar 16 sitios). Nginx reparte ahora las peticiones entre los procesos. Los procesos se lanzan sin pasar por la consola del sistema.
 - Con varios proyectos (probado con 16) Nginx no recargaba y mostraba `could not build server_names_hash`. Se sube `server_names_hash_bucket_size` a 128.
 
 ---

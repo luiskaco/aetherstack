@@ -76,7 +76,8 @@ DEFAULT_CONFIG = {
     "language": "es",
     "check_updates": True,
     "vhost_tld": vhosts.DEFAULT_TLD,
-    "close_to_tray": True
+    "close_to_tray": True,
+    "php_workers": vhosts.DEFAULT_PHP_WORKERS
 }
 
 def load_state():
@@ -395,6 +396,21 @@ def ensure_runtime_dirs():
         except OSError:
             pass
 
+def php_ports(state):
+    return vhosts.php_worker_ports(state["php_port"], state.get("php_workers"))
+
+def start_php_workers(state, php_cgi, php_ini, php_dir):
+    """Levanta un php-cgi por puerto del pool (solo los que no estén ya activos)."""
+    os.environ["PHP_FCGI_MAX_REQUESTS"] = "0"
+    for port in php_ports(state):
+        if not is_port_in_use(port):
+            # Sin shell: los argumentos van como lista. DETACHED_PROCESS hace que el proceso sobreviva
+            # si se cierra la ventana de la app (el stack sigue activo, ver icono de la bandeja).
+            subprocess.Popen([php_cgi, "-b", f"127.0.0.1:{port}", "-c", php_ini], cwd=php_dir,
+                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
+                             | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+
 def update_nginx_config():
     ensure_runtime_dirs()
     write_default_index()
@@ -411,6 +427,7 @@ def update_nginx_config():
     except ValueError:
         pass  # unidades distintas en Windows: no está dentro de la raíz
 
+    php_servers = vhosts.render_upstream_servers(php_ports(state))
     nginx_conf_content = f"""# AetherStack - Nginx Master Configuration
 worker_processes  auto;
 
@@ -447,7 +464,7 @@ http {{
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
     upstream php_cgi {{
-        server 127.0.0.1:{state['php_port']};
+{php_servers}
         keepalive 16;
     }}
 
@@ -538,10 +555,7 @@ def start_services(php_version=None):
         subprocess.Popen(cmd, shell=True, cwd=mariadb_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # 2. PHP FastCGI
-    if not is_port_in_use(state["php_port"]):
-        os.environ["PHP_FCGI_MAX_REQUESTS"] = "0"
-        cmd = f'start /b "" "{php_cgi}" -b 127.0.0.1:{state["php_port"]} -c "{php_ini}"'
-        subprocess.Popen(cmd, shell=True, cwd=php_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    start_php_workers(state, php_cgi, php_ini, php_dir)
 
     # 3. Nginx
     if not is_port_in_use(state["nginx_port"]):
@@ -581,9 +595,7 @@ def switch_php(version):
     php_dir = os.path.join(BIN_DIR, "php", f"php-{version}")
     php_cgi = os.path.join(php_dir, "php-cgi.exe")
     php_ini = os.path.join(php_dir, "php.ini")
-    os.environ["PHP_FCGI_MAX_REQUESTS"] = "0"
-    cmd = f'start /b "" "{php_cgi}" -b 127.0.0.1:{state["php_port"]} -c "{php_ini}"'
-    subprocess.Popen(cmd, shell=True, cwd=php_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    start_php_workers(state, php_cgi, php_ini, php_dir)
     time.sleep(0.8)
     return get_status()
 

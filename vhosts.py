@@ -38,6 +38,28 @@ server {{
 """
 
 
+DEFAULT_PHP_WORKERS = 4
+MAX_PHP_WORKERS = 16
+
+
+def php_worker_ports(base_port, workers):
+    """
+    Puertos de los procesos PHP FastCGI. php-cgi en Windows atiende una sola petición a la vez:
+    con un único proceso, WordPress se bloquea cuando una página se llama a sí misma (cron,
+    comprobaciones) o cuando una petición lenta retiene a todas las demás.
+    """
+    try:
+        n = int(workers)
+    except (TypeError, ValueError):
+        n = DEFAULT_PHP_WORKERS
+    n = max(1, min(MAX_PHP_WORKERS, n))
+    return [int(base_port) + i for i in range(n)]
+
+
+def render_upstream_servers(ports):
+    return "\n".join(f"        server 127.0.0.1:{p};" for p in ports)
+
+
 def normalize_tld(value):
     """Devuelve el dominio válido (minúsculas, sin punto) o DEFAULT_TLD si el valor no sirve."""
     value = str(value or "").strip().lower().lstrip(".")
