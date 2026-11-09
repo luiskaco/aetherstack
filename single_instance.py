@@ -14,7 +14,7 @@ MUTEX_NAME = "Local\\AetherStack.SingleInstance"
 SHOW_FLAG = "show-window.flag"
 
 
-def acquire(wait_seconds=0.0):
+def acquire(wait_seconds=0.0, name=MUTEX_NAME):
     """
     Intenta ser la única copia. Devuelve (handle, es_la_primera).
     Con wait_seconds espera a que otra copia que se está cerrando libere el bloqueo
@@ -26,7 +26,7 @@ def acquire(wait_seconds=0.0):
     kernel32.CreateMutexW.restype = ctypes.c_void_p
     deadline = time.time() + wait_seconds
     while True:
-        handle = kernel32.CreateMutexW(None, False, MUTEX_NAME)
+        handle = kernel32.CreateMutexW(None, False, name)
         already = ctypes.get_last_error() == ERROR_ALREADY_EXISTS or kernel32.GetLastError() == ERROR_ALREADY_EXISTS
         if not already:
             return handle, True

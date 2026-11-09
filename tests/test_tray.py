@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import unittest
+import uuid
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import single_instance
@@ -48,15 +49,17 @@ class IconTests(unittest.TestCase):
 class SingleInstanceTests(unittest.TestCase):
     @unittest.skipUnless(os.name == "nt", "solo Windows")
     def test_second_acquire_fails_until_first_releases(self):
-        first, ok1 = single_instance.acquire()
+        # Nombre propio: la prueba no depende de si la app real está abierta
+        name = "Local\\AetherStack.Test." + uuid.uuid4().hex
+        first, ok1 = single_instance.acquire(name=name)
         try:
             self.assertTrue(ok1)
-            second, ok2 = single_instance.acquire()
+            second, ok2 = single_instance.acquire(name=name)
             self.assertFalse(ok2)
             self.assertIsNone(second)
         finally:
             single_instance.release(first)
-        third, ok3 = single_instance.acquire()
+        third, ok3 = single_instance.acquire(name=name)
         try:
             self.assertTrue(ok3)
         finally:
