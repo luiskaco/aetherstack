@@ -53,15 +53,23 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
    ```cmd
    python tools/build_release_zip.py 1.2.1
    ```
-   Genera tres archivos en `dist/`: el paquete portable completo, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código) y su `.sha256`. Los dos últimos alimentan el botón "Actualizar ahora" de la app. Si falta alguno, la app solo muestra "Ver novedades".
+   Genera cuatro archivos en `dist/`: el paquete portable completo, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código), su `.sha256` y su firma `.sig`. El zip de código y la firma alimentan el botón "Actualizar ahora" de la app. Si falta la firma, la app solo muestra "Ver novedades". El build se niega a terminar si no encuentra tu clave de firma.
    El build **aborta y borra el zip** si encuentra tu usuario de Windows, tu email de git, el nombre del equipo, `data/`, `logs/`, `state.json`, vhosts o archivos `.lnk`.
 3. Prueba el zip en una carpeta nueva: descomprime, arranca el stack y comprueba que Nginx, PHP y MariaDB quedan activos.
 4. Crea el tag y publica el asset:
    ```cmd
    git tag v1.2.1
    git push origin main v1.2.1
-   gh release create v1.2.1 dist/AetherStack-v1.2.1-portable.zip dist/AetherStack-code-v1.2.1.zip dist/AetherStack-code-v1.2.1.zip.sha256 --title "AetherStack v1.2.1" --notes-file <archivo-de-notas>
+   gh release create v1.2.1 dist/AetherStack-v1.2.1-portable.zip dist/AetherStack-code-v1.2.1.zip dist/AetherStack-code-v1.2.1.zip.sha256 dist/AetherStack-code-v1.2.1.zip.sig --title "AetherStack v1.2.1" --notes-file <archivo-de-notas>
    ```
-   **Importante:** los tres assets deben llevar exactamente esos nombres. La app los reconoce por el patrón `AetherStack-code-vX.Y.Z.zip` y `.zip.sha256`.
+   **Importante:** los cuatro assets deben llevar exactamente esos nombres. La app los reconoce por el patrón `AetherStack-code-vX.Y.Z.zip` y `.zip.sig`. Mantén publicado el `.sha256`: las instalaciones v1.2.1 solo lo conocen a él.
    La actualización con un clic solo cambia código. Si un release cambia los binarios de `bin/` (Nginx, PHP, MariaDB), hay que avisar en las notas de que se debe descargar el paquete portable.
 5. Nunca empaquetes a mano la carpeta del proyecto: `data/` contiene bases de datos reales y el perfil del navegador.
+
+---
+
+## 6. Clave de firma de releases
+- **Dónde está:** `~/.aetherstack-signing/release.key` (carpeta personal de Windows, permisos solo para tu usuario). Nunca dentro del repositorio. Se puede usar otra ruta con la variable `AETHERSTACK_SIGNING_KEY`.
+- **Copia de seguridad:** guarda una copia en tu gestor de contraseñas. Si la pierdes no puedes firmar nuevos releases, y las instalaciones existentes rechazarían los que firmes con una clave nueva: tendrías que publicar a mano una versión con la clave pública nueva y pedir a la comunidad que la descargue.
+- **Si se filtra:** genera otra (`python tools/sign_release.py init` tras mover la anterior), cambia `RELEASE_PUBLIC_KEY` en `updater.py`, publica la versión nueva a mano y avisa a la comunidad. Quien tenga la clave vieja podría firmar releases falsos para las instalaciones antiguas.
+- **Ver la clave pública:** `python tools/sign_release.py pubkey`. Debe coincidir con `RELEASE_PUBLIC_KEY` en `updater.py`.

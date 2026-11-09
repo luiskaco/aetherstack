@@ -23,7 +23,9 @@ import zipfile
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import updater  # lista blanca de código compartida con el actualizador de la app
+import sign_release  # firma Ed25519 (clave privada fuera del repositorio)
 DIST_DIR = os.path.join(BASE_DIR, "dist")
 ROOT_NAME = "aetherstack"
 
@@ -151,7 +153,7 @@ def scan_for_leaks(zip_path):
 
 
 def build_code_zip(version):
-    """Zip liviano solo con código (lo usa la actualización con un clic) + su SHA256."""
+    """Zip liviano solo con código (lo usa la actualización con un clic), su SHA256 y su firma Ed25519."""
     out_zip = os.path.join(DIST_DIR, f"AetherStack-code-v{version}.zip")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for name in updater.CODE_ROOT_FILES:
@@ -173,7 +175,12 @@ def build_code_zip(version):
     sha_file = out_zip + ".sha256"
     with open(sha_file, "w", encoding="utf-8", newline="\n") as f:
         f.write(f"{h.hexdigest()}  {os.path.basename(out_zip)}\n")
-    print(f"OK: {out_zip}\n    {os.path.getsize(out_zip) // 1024} KB, SHA256 {h.hexdigest()}")
+    # La firma es obligatoria: sin ella la app no ofrece "Actualizar ahora"
+    sig_file = sign_release.sign_zip(out_zip, version)
+    if sign_release.public_key_from_seed(sign_release.load_seed()).hex() != updater.RELEASE_PUBLIC_KEY:
+        os.remove(sig_file)
+        sys.exit("La clave de firma no coincide con RELEASE_PUBLIC_KEY de updater.py.")
+    print(f"OK: {out_zip}\n    {os.path.getsize(out_zip) // 1024} KB, SHA256 {h.hexdigest()}\n    firma: {sig_file}")
 
 
 def main():

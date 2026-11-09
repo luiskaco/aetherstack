@@ -83,7 +83,7 @@ class AetherDribbbleApp(ctk.CTk):
         self.lbl_update = ctk.CTkLabel(banner, text=t("update_available", version=info["version"]),
                                        font=ctk.CTkFont(size=12, weight="bold"), text_color="#FFFFFF")
         self.lbl_update.pack(side="left", padx=(14, 8), pady=8)
-        self.one_click_update = bool(info.get("code_url") and info.get("sha_url"))
+        self.one_click_update = bool(info.get("code_url") and info.get("sig_url"))
         self.btn_update = ctk.CTkButton(banner, text=self._update_btn_text(), width=130, height=28, corner_radius=8,
                                         font=ctk.CTkFont(size=11, weight="bold"),
                                         fg_color=ACCENT_BLUE, hover_color="#3B82F6", text_color="#FFFFFF",
@@ -113,7 +113,7 @@ class AetherDribbbleApp(ctk.CTk):
 
         def worker():
             try:
-                updater.download_and_apply(info["code_url"], info["sha_url"])
+                updater.download_and_apply(info["code_url"], info["sig_url"], info["version"])
                 self.after(0, self._update_done)
             except Exception as exc:
                 msg = str(exc) if isinstance(exc, updater.UpdateError) else f"{exc}"

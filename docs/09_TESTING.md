@@ -22,7 +22,9 @@ python -m unittest discover -s tests -v
 
 | Requisito | Prueba | Resultado |
 |---|---|---|
-| **Actualizador** (`updater.py`) | `tests/test_updater.py`: aplica la actualización y conserva `data/`; rechaza hash incorrecto, rutas con `..`, código con errores de sintaxis y paquetes incompletos; vuelve atrás si falla la escritura; rechaza URLs ajenas al repositorio; lista blanca de rutas | ✅ 8 pruebas |
+| **Actualizador y firmas** (`updater.py`, `sigverify.py`) | `tests/test_updater.py`: vector oficial RFC 8032; aplica una actualización firmada y conserva `data/`; rechaza firma de otra clave, zip alterado tras firmar, zip viejo reutilizado con otra versión, firma ausente o basura, rutas con `..` y código con errores aunque estén firmados; vuelve atrás si falla la escritura; rechaza URLs ajenas; lista blanca de rutas | ✅ 14 pruebas |
+| **Verificador vs. referencia** | 25 rondas de claves y mensajes aleatorios contra la biblioteca `cryptography` (firmas idénticas, verificación cruzada, casos negativos) | ✅ |
+| **Firma real** | Zip firmado con la clave del autor aplicado sobre una copia de v1.2.1; misma firma con otra versión declarada | ✅ aceptado / ✅ rechazado |
 | **Actualización de punta a punta** | Zip de código real aplicado sobre una copia de v1.2.0 en una carpeta aparte | ✅ 23 archivos actualizados, dato de usuario intacto, copia de respaldo creada |
 | **Banner con un clic** | Release simulado con assets: botón "Actualizar ahora" / "Update now" y cambio de idioma | ✅ |
 | **Descarga real (v1.2.1)** | `check_for_update` + `download_and_apply` contra los assets publicados en GitHub, sobre una copia de v1.2.0 | ✅ 23 archivos actualizados, datos intactos, `core.py` pasó a 1.2.1 |

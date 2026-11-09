@@ -6,12 +6,15 @@ Descarga el zip "solo código" de un release de GitHub, verifica su SHA256 y ree
 
 Seguridad:
   * Solo se descargan URLs del propio repositorio (ALLOWED_URL_PREFIX).
-  * El SHA256 detecta descargas corruptas o incompletas. No protege contra un release
-    publicado por alguien con acceso al repositorio: para eso haría falta firmar los releases.
+  * Cada release va FIRMADO con Ed25519. La app solo trae la clave pública (RELEASE_PUBLIC_KEY);
+    la privada queda en el PC de quien publica. Aunque alguien lograra subir un release al
+    repositorio, sin la clave privada la firma no valida y no se instala nada.
+  * La firma cubre la versión y el SHA256 del zip: no sirve reutilizar un zip firmado antiguo.
   * Se rechazan rutas con '..' o absolutas (zip-slip) y se ignora todo lo que no esté en la lista blanca.
   * Los .py se compilan antes de reemplazar nada: un zip roto no deja la app inservible.
   * Antes de reemplazar se guarda una copia en .update-backup/ y, si falla algo, se restaura.
 """
+import base64
 import hashlib
 import os
 import re
@@ -22,20 +25,23 @@ import tempfile
 import urllib.request
 import zipfile
 
+import sigverify
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ALLOWED_URL_PREFIX = "https://github.com/luiskaco/aetherstack/releases/download/"
 MAX_ZIP_BYTES = 50 * 1024 * 1024
 
+# Clave pública Ed25519 de quien publica los releases (hex). La privada NO está en el repositorio.
+RELEASE_PUBLIC_KEY = "7142be68e0685297fdfe9be8598ed6a592ccfdba3cd439c3ac01339736468e60"
+
 # Lista blanca de lo que una actualización puede escribir
 CODE_ROOT_FILES = [
-    "app.py", "core.py", "i18n.py", "updater.py", "generate_icon.py", "icon.ico",
+    "app.py", "core.py", "i18n.py", "updater.py", "sigverify.py", "generate_icon.py", "icon.ico",
     "AetherStack.bat", "start.bat", "stop.bat", "switch-php.bat",
     "LICENSE", "README.md",
 ]
 CODE_TREES = ("docs", "ui")
-REQUIRED_FILES = ("app.py", "core.py", "updater.py")
-
-_SHA_RE = re.compile(r"\b([0-9a-fA-F]{64})\b")
+REQUIRED_FILES = ("app.py", "core.py", "updater.py", "sigverify.py")
 
 
 class UpdateError(Exception):
@@ -77,12 +83,21 @@ def _sha256_of(path):
     return h.hexdigest()
 
 
-def _read_expected_hash(sha_path):
-    with open(sha_path, "r", encoding="utf-8", errors="ignore") as f:
-        m = _SHA_RE.search(f.read(4096))
-    if not m:
-        raise UpdateError("El archivo de verificación SHA256 no es válido.")
-    return m.group(1).lower()
+def signing_message(version, sha256_hex):
+    """Debe coincidir con tools/sign_release.py: ata la firma a una versión y a un contenido."""
+    return f"aetherstack-code\nversion={version}\nsha256={sha256_hex}\n".encode("ascii")
+
+
+def verify_signature(zip_path, version, signature_b64):
+    """Lanza UpdateError salvo que el zip esté firmado por la clave pública del proyecto."""
+    try:
+        signature = base64.b64decode(signature_b64.strip(), validate=True)
+    except Exception:
+        raise UpdateError("El archivo de firma no es válido.")
+    message = signing_message(version, _sha256_of(zip_path))
+    if not sigverify.verify(bytes.fromhex(RELEASE_PUBLIC_KEY), message, signature):
+        raise UpdateError("La firma del paquete no es válida: no se instala. "
+                          "Puede estar corrupto o no haber sido publicado por el autor.")
 
 
 def _plan_members(zf):
@@ -114,13 +129,12 @@ def _dest_inside_base(rel):
     return dest
 
 
-def apply_update_from_files(zip_path, expected_hash):
+def apply_update_from_files(zip_path, version, signature_b64):
     """
-    Verifica y aplica un zip de código ya descargado. Devuelve la lista de archivos cambiados.
+    Verifica la firma y aplica un zip de código ya descargado. Devuelve la lista de archivos cambiados.
     Si algo falla, deja la instalación como estaba.
     """
-    if _sha256_of(zip_path) != expected_hash.lower():
-        raise UpdateError("La verificación SHA256 falló: la descarga está corrupta o fue alterada.")
+    verify_signature(zip_path, version, signature_b64)
 
     try:
         zf = zipfile.ZipFile(zip_path)
@@ -181,21 +195,22 @@ def apply_update_from_files(zip_path, expected_hash):
     return written
 
 
-def download_and_apply(code_url, sha_url):
-    """Descarga el zip de código y su hash, y aplica la actualización."""
+def download_and_apply(code_url, sig_url, version):
+    """Descarga el zip de código y su firma, y aplica la actualización si la firma es válida."""
     _check_url(code_url)
-    _check_url(sha_url)
+    _check_url(sig_url)
     with tempfile.TemporaryDirectory() as tmp:
         zip_path = os.path.join(tmp, "code.zip")
-        sha_path = os.path.join(tmp, "code.zip.sha256")
+        sig_path = os.path.join(tmp, "code.zip.sig")
         try:
-            _download(sha_url, sha_path, limit=4096)
+            _download(sig_url, sig_path, limit=4096)
             _download(code_url, zip_path)
         except UpdateError:
             raise
         except Exception as exc:
             raise UpdateError(f"No se pudo descargar la actualización: {exc}")
-        return apply_update_from_files(zip_path, _read_expected_hash(sha_path))
+        with open(sig_path, "r", encoding="ascii", errors="ignore") as f:
+            return apply_update_from_files(zip_path, version, f.read(4096))
 
 
 def restart_app():

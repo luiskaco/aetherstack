@@ -6,6 +6,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [Sin publicar]
+
+### Seguridad
+- **Releases firmados (Ed25519):** la app solo instala actualizaciones firmadas con la clave del autor. La clave privada vive fuera del repositorio; la app lleva solo la pública. La firma cubre la versión y el contenido, así que ni un release publicado por un tercero ni un zip antiguo reutilizado se instalan.
+- Verificador de firmas propio, sin dependencias nuevas (`sigverify.py`), validado con los vectores oficiales del RFC 8032 y contra la biblioteca `cryptography`.
+- Herramienta `tools/sign_release.py` para crear la clave y firmar; el build genera el `.sig` y se niega a terminar sin él.
+
+---
+
 ## [1.2.1] - 2026-11-09
 
 ### Añadido

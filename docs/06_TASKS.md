@@ -23,6 +23,7 @@
 ## Actualizaciones automáticas (roadmap)
 - [x] Paso 1: aviso dentro de la app cuando hay un release nuevo en GitHub.
 - [x] Paso 2: actualización con un clic (zip liviano "solo código" + SHA256 + reinicio + rollback). Probado con descarga real desde el release v1.2.1.
+- [x] Firma de releases con Ed25519 (clave privada fuera del repo, verificación en la app).
 - [ ] Paso 3 (opcional): manifiesto para Scoop / winget.
 
 ---
