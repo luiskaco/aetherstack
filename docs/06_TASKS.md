@@ -24,7 +24,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 - [x] `porunperuold` y `pupscold` (dañadas en Laragon: faltaban ~120 de 162 tablas) eliminadas de Laragon por decisión del usuario. Queda solo lo rescatado en `respaldo-laragon-2026-11-09\*.salvage.sql`, que puede borrarse a mano.
 - [ ] Decidir qué hacer con las 2 bases restantes sin proyecto: `observatorioweb` y `pluginglobal`.
 - [x] Archivo `hosts` gestionado por AetherStack (bloque propio, con copia de seguridad): los 16 dominios resuelven sin las líneas de Laragon.
-- [ ] Mover `C:\laragon\www` a `developOrange\web` (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final.
+- [ ] **PENDIENTE: mover `C:\laragon\www` a `developOrange\web`** (mismo disco, instantáneo), apuntar AetherStack ahí y desinstalar Laragon al final. Intento del 2026-11-09 bloqueado por "Acceso denegado": otra sesión de Claude tenía carpetas de `www` como directorios de trabajo, y Windows no renombra una carpeta con procesos dentro. Nada se movió ni se perdió. Para retomarlo: cerrar esa sesión y cualquier terminal o editor abierto dentro de `www`, y seguir los pasos de `10_RUNBOOK.md` § 7 (punto 8). Hasta entonces AetherStack sigue apuntando a `C:\laragon\www` y todo funciona.
 - [x] Versión de PHP: Laragon usaba un único PHP global (8.5.12, sin versiones por sitio). AetherStack queda en 8.5.12; los 16 sitios funcionan igual con 8.4 y 8.5, sin errores de PHP. Tras cambiar de versión, la primera pasada es lenta (la caché de código empieza vacía): normal.
 
 ---
