@@ -25,4 +25,4 @@ python -m unittest discover -s tests -v
 | **Actualizador** (`updater.py`) | `tests/test_updater.py`: aplica la actualización y conserva `data/`; rechaza hash incorrecto, rutas con `..`, código con errores de sintaxis y paquetes incompletos; vuelve atrás si falla la escritura; rechaza URLs ajenas al repositorio; lista blanca de rutas | ✅ 8 pruebas |
 | **Actualización de punta a punta** | Zip de código real aplicado sobre una copia de v1.2.0 en una carpeta aparte | ✅ 23 archivos actualizados, dato de usuario intacto, copia de respaldo creada |
 | **Banner con un clic** | Release simulado con assets: botón "Actualizar ahora" / "Update now" y cambio de idioma | ✅ |
-| **Pendiente** | Descarga real desde GitHub: solo se puede probar con un release publicado que traiga los assets de código | ⏳ |
+| **Descarga real (v1.2.1)** | `check_for_update` + `download_and_apply` contra los assets publicados en GitHub, sobre una copia de v1.2.0 | ✅ 23 archivos actualizados, datos intactos, `core.py` pasó a 1.2.1 |
