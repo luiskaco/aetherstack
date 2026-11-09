@@ -240,6 +240,13 @@ def main():
 
     size_mb = os.path.getsize(out_zip) // (1024 * 1024)
     print(f"OK: {out_zip}\n    {count} archivos, {size_mb} MB, {int(time.time() - start)} s, sin fugas detectadas")
+    # Hash del paquete completo, para quien lo descargue a mano y quiera comprobarlo
+    h = hashlib.sha256()
+    with open(out_zip, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    with open(out_zip + ".sha256", "w", encoding="utf-8", newline="\n") as f:
+        f.write(f"{h.hexdigest()}  {os.path.basename(out_zip)}\n")
     build_code_zip(version)
 
 

@@ -53,7 +53,7 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
    ```cmd
    python tools/build_release_zip.py 1.2.1
    ```
-   Genera cuatro archivos en `dist/`: el paquete portable completo, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código), su `.sha256` y su firma `.sig`. El zip de código y la firma alimentan el botón "Actualizar ahora" de la app. Si falta la firma, la app solo muestra "Ver novedades". El build se niega a terminar si no encuentra tu clave de firma.
+   Genera seis archivos en `dist/`: el paquete portable completo y su `.sha256`, el zip liviano `AetherStack-code-vX.Y.Z.zip` (solo código), su `.sha256` y su firma `.sig`. Publica también el `.sha256` del portable para que quien lo descargue a mano pueda comprobarlo. El zip de código y la firma alimentan el botón "Actualizar ahora" de la app. Si falta la firma, la app solo muestra "Ver novedades". El build se niega a terminar si no encuentra tu clave de firma.
    El build **aborta y borra el zip** si encuentra tu usuario de Windows, tu email de git, el nombre del equipo, `data/`, `logs/`, `state.json`, vhosts o archivos `.lnk`.
 3. Prueba el zip en una carpeta nueva: descomprime, arranca el stack y comprueba que Nginx, PHP y MariaDB quedan activos.
 4. Crea el tag y publica el asset:

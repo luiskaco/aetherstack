@@ -28,3 +28,6 @@ python -m unittest discover -s tests -v
 | **Actualización de punta a punta** | Zip de código real aplicado sobre una copia de v1.2.0 en una carpeta aparte | ✅ 23 archivos actualizados, dato de usuario intacto, copia de respaldo creada |
 | **Banner con un clic** | Release simulado con assets: botón "Actualizar ahora" / "Update now" y cambio de idioma | ✅ |
 | **Descarga real (v1.2.1)** | `check_for_update` + `download_and_apply` contra los assets publicados en GitHub, sobre una copia de v1.2.0 | ✅ 23 archivos actualizados, datos intactos, `core.py` pasó a 1.2.1 |
+| **Descargas verificadas** (`downloads.py`) | `tests/test_downloads.py`: descarga y verificación, hash distinto descartado sin dejar archivos, reutiliza caché, renueva si cambió el hash oficial, reemplaza una caché corrupta, sin red (con caché íntegra / sin caché / con caché corrupta), rechaza HTTP, límite de tamaño | ✅ 11 pruebas |
+| **WordPress real** | Descarga real de wordpress.org verificada (35 MB), segunda vez reutiliza la caché; proyecto WordPress creado de punta a punta con el stack real y borrado después | ✅ |
+| **Dependencias ausentes** | `app.py` sin `customtkinter`: aviso con el comando de instalación y salida limpia | ✅ |

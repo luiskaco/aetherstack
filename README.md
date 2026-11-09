@@ -132,6 +132,12 @@ aetherstack/
 ### 6. Quick Start Guide
 
 #### Desktop Shortcut
+Requires Python 3.12+ on Windows. Install the dependencies once:
+
+```cmd
+python -m pip install -r requirements.txt
+```
+
 Double-click `AetherStack.bat` to launch the GUI. To create a desktop shortcut with the custom icon (`icon.ico`), run once:
 ```cmd
 python generate_icon.py
@@ -334,6 +340,12 @@ aetherstack/
 ### 6. Guía de Inicio Rápido
 
 #### Acceso Directo de Escritorio
+Requiere Python 3.12+ en Windows. Instala las dependencias una sola vez:
+
+```cmd
+python -m pip install -r requirements.txt
+```
+
 Haz doble clic en `AetherStack.bat` para abrir la interfaz. Para crear un acceso directo en el Escritorio con el icono propio (`icon.ico`), ejecuta una vez:
 ```cmd
 python generate_icon.py

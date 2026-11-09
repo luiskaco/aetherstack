@@ -13,10 +13,12 @@ import stat
 import urllib.request
 import zipfile
 import re
+import downloads
 import html
 
 VERSION = "1.2.2"
 RELEASES_API = "https://api.github.com/repos/luiskaco/aetherstack/releases/latest"
+WORDPRESS_URL = "https://wordpress.org/latest.zip"
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 BIN_DIR = os.path.join(BASE_DIR, "bin")
@@ -803,10 +805,14 @@ def create_project_wordpress(project_name, progress_cb=None):
     if os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' ya existe en {proj_root}."
 
-    wp_zip = os.path.join(BASE_DIR, "downloads", "wordpress-latest.zip")
-    if not os.path.exists(wp_zip):
-        if progress_cb: progress_cb("Descargando WordPress oficial...")
-        urllib.request.urlretrieve("https://wordpress.org/latest.zip", wp_zip)
+    # Descarga verificada contra el hash oficial de wordpress.org (ver downloads.py)
+    try:
+        wp_zip = downloads.ensure_verified_zip(
+            WORDPRESS_URL, WORDPRESS_URL + ".sha1",
+            os.path.join(BASE_DIR, "downloads", "wordpress-latest.zip"),
+            algo="sha1", progress_cb=progress_cb)
+    except downloads.DownloadError as exc:
+        return False, f"No se pudo obtener WordPress: {exc}"
 
     if progress_cb: progress_cb("Descomprimiendo archivos de WordPress...")
     temp_extract = os.path.join(BASE_DIR, "downloads", "temp_wp")

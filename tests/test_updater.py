@@ -16,7 +16,7 @@ import updater
 
 VERSION = "9.9.9"
 GOOD = {"app.py": "V = 2\n", "core.py": "VERSION = '2'\n", "updater.py": "X = 1\n",
-        "sigverify.py": "Y = 1\n", "docs/a.md": "nuevo"}
+        "sigverify.py": "Y = 1\n", "downloads.py": "Z = 1\n", "docs/a.md": "nuevo"}
 
 
 def make_zip(path, files, root="aetherstack"):

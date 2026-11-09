@@ -7,7 +7,22 @@ import sys
 import subprocess
 import threading
 import webbrowser
-import customtkinter as ctk
+try:
+    import customtkinter as ctk
+except ImportError:
+    # Con pythonw.exe no hay consola: sin este aviso la app se cerraría sin explicación
+    import tkinter
+    from tkinter import messagebox
+    _root = tkinter.Tk()
+    _root.withdraw()
+    messagebox.showerror(
+        "AetherStack",
+        "Falta instalar las dependencias de Python.\n"
+        "Missing Python dependencies.\n\n"
+        "Abre una terminal en la carpeta de AetherStack y ejecuta / "
+        "Open a terminal in the AetherStack folder and run:\n\n"
+        "python -m pip install -r requirements.txt")
+    sys.exit(1)
 from tkinter import filedialog
 import core
 import updater

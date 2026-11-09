@@ -6,6 +6,24 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ---
 
+## [Sin publicar]
+
+### Seguridad
+- **Descarga de WordPress verificada:** se comprueba contra el hash que publica wordpress.org (`latest.zip.sha1`, por HTTPS) antes de usarla. Se descarta cualquier archivo que no coincida. Nginx, PHP, MariaDB y Composer no se descargan en ejecución: vienen dentro del paquete portable.
+- Límite de tamaño y de tiempo en las descargas, y solo HTTPS.
+- Cada release publica también el `.sha256` del paquete portable, para comprobarlo a mano.
+
+### Corregido
+- Si la descarga de WordPress se cortaba, el zip incompleto quedaba guardado y se reutilizaba siempre, rompiendo la creación de proyectos. Ahora se escribe en un archivo temporal y solo se guarda si es válido.
+- La copia en caché de WordPress ya no se queda para siempre en la primera versión descargada: se renueva cuando wordpress.org publica una nueva. Sin internet se usa la copia local si está íntegra.
+
+### Añadido
+- `requirements.txt` con las dependencias fijadas (`customtkinter`, `pillow`) y su instalación en el README.
+- Si faltan las dependencias, la app muestra un aviso con el comando a ejecutar en vez de cerrarse sin explicación.
+- Pruebas automáticas de las descargas verificadas (11 casos).
+
+---
+
 ## [1.2.2] - 2026-11-09
 
 ### Seguridad

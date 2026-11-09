@@ -10,8 +10,6 @@
 
 ## Pendiente (revisión de seguridad y buenas prácticas, 2026-11-08)
 - [ ] MariaDB `root` sin contraseña: crear un usuario por proyecto (`.env` de Laravel / `wp-config.php`) y avisar en la UI.
-- [ ] Verificar integridad (SHA256) de las descargas de Nginx, PHP, MariaDB, Composer y WordPress.
-- [ ] Crear `requirements.txt` con `customtkinter` fijado.
 - [ ] Reemplazar los `except Exception: pass` por registro en `logs/aetherstack.log`.
 - [ ] `core.py` reescribe configuraciones al importarse: moverlo a una función `init()` llamada desde `app.py`.
 - [ ] `start.bat` fija PHP 8.4 y `switch-php.bat` usa un enlace `current` que la app no usa: unificar con `state.json`.
@@ -29,6 +27,8 @@
 ---
 
 ## Tareas Completadas
+- [x] Descarga de WordPress verificada contra el hash oficial (`downloads.py`). Nginx, PHP, MariaDB y Composer no se descargan en ejecución: van dentro del paquete portable, cuyo `.sha256` se publica con cada release.
+- [x] `requirements.txt` con versiones fijadas y aviso amistoso si faltan las dependencias.
 - [x] Revisión de seguridad: Nginx solo en `127.0.0.1` y sin listado de carpetas, validación de nombres de proyecto, eliminación de `os.system`, validación de Ajustes.
 - [x] Release **v1.1.0** reproducible con `tools/build_release_zip.py` (lista blanca + base MariaDB vacía + escaneo de datos personales). Se retira el asset de v1.0.0, que incluía datos personales.
 - [x] Empaquetado y publicación del **Release Oficial v1.0.0** en GitHub con paquete portable descargable `AetherStack-v1.0.0-portable.zip` (359 MB) y notas de lanzamiento bilingües.
