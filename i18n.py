@@ -106,6 +106,7 @@ TRANSLATIONS = {
         "modal_delete_title": "Eliminar Proyecto",
         "modal_delete_msg": "¿Estás seguro de que deseas eliminar permanentemente '{name}'?\n\nEsta acción borrará la carpeta física y la base de datos asociada '{db_name}'.",
         "modal_delete_btn": "Eliminar Permanentemente",
+        "modal_delete_type": "Para confirmar, escribe el nombre del proyecto: {name}",
         
         # Modals: Settings
         "settings_title": "Configuración General",
@@ -226,6 +227,7 @@ TRANSLATIONS = {
         "modal_delete_title": "Delete Project",
         "modal_delete_msg": "Are you sure you want to permanently delete '{name}'?\n\nThis will remove the physical folder and the database '{db_name}'.",
         "modal_delete_btn": "Delete Permanently",
+        "modal_delete_type": "To confirm, type the project name: {name}",
         
         # Modals: Settings
         "settings_title": "General Settings",

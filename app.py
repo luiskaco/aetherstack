@@ -877,7 +877,7 @@ class AetherDribbbleApp(ctk.CTk):
         win.attributes("-topmost", True)
         win.transient(self)
 
-        self.center_modal(win, 440, 210)
+        self.center_modal(win, 440, 290 if require_text else 210)
 
         pad = ctk.CTkFrame(win, fg_color="transparent")
         pad.pack(fill="both", expand=True, padx=22, pady=18)
@@ -915,7 +915,7 @@ class AetherDribbbleApp(ctk.CTk):
         win.after(80, btn.focus)
         return win
 
-    def show_dark_confirm(self, title, message, confirm_text="Eliminar", on_confirm=None, danger=True):
+    def show_dark_confirm(self, title, message, confirm_text="Eliminar", on_confirm=None, danger=True, require_text=None):
         win = ctk.CTkToplevel(self)
         win.title("AetherStack")
         win.resizable(False, False)
@@ -940,7 +940,16 @@ class AetherDribbbleApp(ctk.CTk):
                      text_color=TEXT_DARK).pack(side="left", anchor="w")
 
         ctk.CTkLabel(pad, text=message, font=ctk.CTkFont(size=11), text_color=TEXT_MUTED,
-                     wraplength=380, justify="left").pack(anchor="w", pady=(0, 16))
+                     wraplength=380, justify="left").pack(anchor="w", pady=(0, 16 if not require_text else 8))
+
+        entry_confirm = None
+        if require_text:
+            ctk.CTkLabel(pad, text=t("modal_delete_type", name=require_text), font=ctk.CTkFont(size=11),
+                         text_color=TEXT_DARK, wraplength=380, justify="left").pack(anchor="w", pady=(0, 4))
+            entry_confirm = ctk.CTkEntry(pad, fg_color=BG_ROW, text_color=TEXT_DARK,
+                                         border_color=BORDER, corner_radius=10)
+            entry_confirm.pack(fill="x", pady=(0, 14))
+            entry_confirm.focus_set()
 
         btn_row = ctk.CTkFrame(pad, fg_color="transparent")
         btn_row.pack(fill="x")
@@ -949,6 +958,8 @@ class AetherDribbbleApp(ctk.CTk):
             win.destroy()
 
         def confirm():
+            if require_text and entry_confirm.get() != require_text:
+                return
             win.destroy()
             if on_confirm:
                 on_confirm()
@@ -963,6 +974,16 @@ class AetherDribbbleApp(ctk.CTk):
                                 hover_color="#B91C1C" if danger else "#1D4ED8", text_color="#FFFFFF",
                                 font=ctk.CTkFont(size=11, weight="bold"), command=confirm)
         btn_del.pack(side="right", fill="x", expand=True, padx=(6, 0))
+
+        if require_text:
+            btn_del.configure(state="disabled")
+
+            def check_text(_e=None):
+                ok = entry_confirm.get() == require_text
+                btn_del.configure(state="normal" if ok else "disabled")
+
+            entry_confirm.bind("<KeyRelease>", check_text)
+            entry_confirm.bind("<Return>", lambda e: confirm())
 
         win.bind("<Escape>", lambda e: close())
         win.grab_set()
@@ -1088,7 +1109,8 @@ class AetherDribbbleApp(ctk.CTk):
             t("modal_delete_title"),
             t("modal_delete_msg", name=name, db_name=db_name),
             confirm_text=t("modal_delete_btn"),
-            on_confirm=do_delete
+            on_confirm=do_delete,
+            require_text=name
         )
 
     def open_settings_modal(self):
