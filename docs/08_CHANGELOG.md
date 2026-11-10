@@ -9,6 +9,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Sin publicar]
 
 ### Añadido
+- **Proyectos nuevos con dominio `.test` listo.** Al crear un proyecto WordPress o Laravel, su dominio se registra también en `hosts` (Windows pide permiso una vez). Si se rechaza, el proyecto se crea igual y la app avisa de usar Ajustes > Importar proyectos y hosts.
 - **Gestión del archivo `hosts` de Windows (`hosts.py`).** AetherStack mantiene un único bloque propio, delimitado por marcas, con el dominio de cada proyecto (`nombre.test`); no toca ninguna otra línea del archivo y guarda una copia del original en `conf/hosts.backup`. Es idempotente y se escribe con el aviso de permisos de Windows (UAC). Así los dominios siguen funcionando sin Laragon.
 - **Ajustes:** campo "Dominio de desarrollo" y botón "Importar proyectos y hosts", que adopta los proyectos de la carpeta y actualiza `hosts` en un paso.
 - **Icono en la bandeja del sistema.** Muestra que AetherStack está en segundo plano y su estado por color: verde (todo activo), ámbar (parcial) y gris (detenido). Clic para abrir; menú con abrir, iniciar/detener el stack y salir. Necesita `pystray` (en `requirements.txt`); sin él la app funciona igual, sin icono.

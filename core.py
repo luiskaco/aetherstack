@@ -684,6 +684,14 @@ def sync_hosts():
     except Exception:
         return "error"
 
+def _hosts_note():
+    """Registra el dominio del proyecto nuevo en hosts; devuelve un aviso si no se pudo."""
+    result = sync_hosts()
+    if result in ("cancelled", "error"):
+        return (" Aviso: no se pudo registrar el dominio en el archivo hosts de Windows; "
+                "usa Ajustes > Importar proyectos y hosts para activarlo.")
+    return ""
+
 def list_projects():
     state = load_state()
     proj_root = get_projects_root()
@@ -815,7 +823,7 @@ def create_project_laravel(project_name, progress_cb=None):
             f.write(env_content)
 
     create_virtual_host(project_name, is_laravel=True)
-    return True, f"Proyecto Laravel '{project_name}' listo en {target_dir}."
+    return True, f"Proyecto Laravel '{project_name}' listo en {target_dir}." + _hosts_note()
 
 def create_project_wordpress(project_name, progress_cb=None):
     target_dir = get_safe_project_path(project_name)
@@ -864,7 +872,7 @@ def create_project_wordpress(project_name, progress_cb=None):
             f.write(cfg)
 
     create_virtual_host(project_name, is_laravel=False)
-    return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'."
+    return True, f"WordPress '{project_name}' listo con base de datos '{db_name}'." + _hosts_note()
 
 def open_db_manager(db_name=None):
     """Abre el gestor de base de datos HeidiSQL Portable conectado a MariaDB."""

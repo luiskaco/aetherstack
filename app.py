@@ -1045,6 +1045,10 @@ class AetherDribbbleApp(ctk.CTk):
                         t("alert_project_created_msg", type=ptype.capitalize(), name=name, port=db_p),
                         alert_type="success"
                     ))
+                    if "Aviso:" in msg:
+                        note = msg[msg.index("Aviso:"):]
+                        self.after(400, lambda: self.show_dark_alert(
+                            t("alert_project_created_title"), note, alert_type="warning"))
                 else:
                     self.after(50, lambda: self.show_dark_alert(t("alert_create_error_title"), msg, alert_type="error"))
 
