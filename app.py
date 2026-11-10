@@ -1196,7 +1196,7 @@ class AetherDribbbleApp(ctk.CTk):
                 self.show_dark_alert(t("settings_title"), t("alert_invalid_settings_msg"), alert_type="error")
                 return
             valid_ports = all(1 <= p_ <= 65535 for p_ in (nginx_port, db_port)) and nginx_port != db_port
-            if not valid_ports or not os.path.isdir(projects_dir):
+            if not valid_ports or not core.is_safe_projects_dir(projects_dir):
                 self.show_dark_alert(t("settings_title"), t("alert_invalid_settings_msg"), alert_type="error")
                 return
             new_conf = {

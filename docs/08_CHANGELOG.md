@@ -10,6 +10,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ### Seguridad
 - **Auditoría 2026-11-10, correcciones aplicadas.** Nginx corta (444) cualquier `Host` desconocido y bloquea `storage/`, `database/`, `vendor/`, `*.sql`, `*.log`, `*.sqlite` y `composer.*` en el acceso `/proyecto`; MariaDB arranca con `local_infile=0` y `secure_file_priv`; el PowerShell elevado de `hosts` comprueba el SHA256 del archivo temporal antes de copiarlo y se invoca con ruta absoluta; borrar un proyecto no elimina una base de datos que otro proyecto comparte (`mi-sitio` y `mi_sitio`).
+- **Menores de la auditoría:** la carpeta de proyectos no puede ser una raíz de unidad, el perfil ni AetherStack; `state.json` se revalida al cargar; borrar solo funciona en proyectos WordPress/Laravel; nombres y TLD con `fullmatch`; carpeta temporal única al descomprimir WordPress.
 - **Borrar un proyecto exige teclear su nombre.**
 - **El botón del planeta abre el dominio `.test`.**
 

@@ -9,6 +9,7 @@ import time
 import socket
 import json
 import shutil
+import tempfile
 import stat
 import urllib.request
 import zipfile
@@ -36,7 +37,7 @@ BASE_DIR_SLASH = BASE_DIR.replace("\\", "/")
 PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 
 def is_valid_project_name(name):
-    return isinstance(name, str) and bool(PROJECT_NAME_RE.match(name))
+    return isinstance(name, str) and bool(PROJECT_NAME_RE.fullmatch(name))
 
 def get_safe_project_path(project_name):
     """Devuelve la ruta del proyecto si el nombre es válido y queda dentro de la raíz; si no, None."""
@@ -58,10 +59,33 @@ def reload_nginx_if_running():
         subprocess.run([nginx_exe, "-s", "reload", "-p", nginx_dir], cwd=nginx_dir,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+def is_safe_projects_dir(path):
+    """
+    True si `path` puede ser la carpeta de proyectos: existe y no es una raíz de unidad, una carpeta
+    del sistema, el perfil del usuario, AetherStack ni una carpeta que lo contenga.
+    """
+    try:
+        real = os.path.normcase(os.path.realpath(path))
+    except (OSError, ValueError, TypeError):
+        return False
+    if not os.path.isdir(real):
+        return False
+    if os.path.dirname(real) == real:  # raíz de unidad
+        return False
+    forbidden = [os.environ.get(v) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)",
+                                             "ProgramData", "USERPROFILE")]
+    for f in forbidden:
+        if f and real == os.path.normcase(os.path.realpath(f)):
+            return False
+    base = os.path.normcase(os.path.realpath(BASE_DIR))
+    if base == real or base.startswith(real + os.sep):  # AetherStack o un ancestro suyo
+        return False
+    return True
+
 def get_projects_root():
     state = load_state()
     p_dir = state.get("projects_dir")
-    if p_dir and os.path.exists(p_dir):
+    if p_dir and is_safe_projects_dir(p_dir):
         return p_dir
     # Carpeta propia dentro de AetherStack (nunca la carpeta padre): es el valor seguro por defecto.
     local_proj = os.path.join(BASE_DIR, "projects")
@@ -91,6 +115,23 @@ def load_state():
                 conf.update(loaded)
         except Exception:
             pass
+    return _sanitize_state(conf)
+
+def _sanitize_state(conf):
+    """Descarta valores con tipo o rango inválido (state.json editado a mano): vuelve al valor por defecto."""
+    def port_ok(v):
+        return isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= 65535
+    for key in ("nginx_port", "mariadb_port", "php_port"):
+        if not port_ok(conf.get(key)):
+            conf[key] = DEFAULT_CONFIG[key]
+    if not isinstance(conf.get("projects_dir"), str):
+        conf["projects_dir"] = DEFAULT_CONFIG["projects_dir"]
+    conf["vhost_tld"] = vhosts.normalize_tld(conf.get("vhost_tld"))
+    workers = conf.get("php_workers")
+    if not (isinstance(workers, int) and not isinstance(workers, bool) and 1 <= workers <= 16):
+        conf["php_workers"] = DEFAULT_CONFIG["php_workers"]
+    if conf["php_port"] + conf["php_workers"] > 65535:
+        conf["php_port"] = DEFAULT_CONFIG["php_port"]
     return conf
 
 def save_state(state):
@@ -762,6 +803,15 @@ def delete_project(project_name, delete_db=True):
     if not os.path.exists(target_dir):
         return False, f"La carpeta '{project_name}' no existe."
 
+    base = os.path.normcase(os.path.realpath(BASE_DIR))
+    if os.path.normcase(target_dir) == base or base.startswith(os.path.normcase(target_dir) + os.sep):
+        return False, f"'{project_name}' contiene AetherStack: no se puede eliminar."
+    is_project = os.path.exists(os.path.join(target_dir, "artisan")) or any(
+        os.path.exists(os.path.join(target_dir, f))
+        for f in ("wp-config.php", "wp-config-sample.php", "wp-settings.php", "wp-load.php"))
+    if not is_project:
+        return False, f"'{project_name}' no es un proyecto WordPress ni Laravel: no se elimina."
+
     # 1. Eliminar base de datos si se solicitó
     db_note = ""
     if delete_db:
@@ -873,7 +923,8 @@ def create_project_wordpress(project_name, progress_cb=None):
         return False, f"No se pudo obtener WordPress: {exc}"
 
     if progress_cb: progress_cb("Descomprimiendo archivos de WordPress...")
-    temp_extract = os.path.join(BASE_DIR, "downloads", "temp_wp")
+    os.makedirs(os.path.join(BASE_DIR, "downloads"), exist_ok=True)
+    temp_extract = tempfile.mkdtemp(prefix="temp_wp_", dir=os.path.join(BASE_DIR, "downloads"))
     with zipfile.ZipFile(wp_zip, 'r') as zip_ref:
         zip_ref.extractall(temp_extract)
     

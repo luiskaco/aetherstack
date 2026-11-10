@@ -63,7 +63,7 @@ def render_upstream_servers(ports):
 def normalize_tld(value):
     """Devuelve el dominio válido (minúsculas, sin punto) o DEFAULT_TLD si el valor no sirve."""
     value = str(value or "").strip().lower().lstrip(".")
-    return value if _TLD_RE.match(value) else DEFAULT_TLD
+    return value if _TLD_RE.fullmatch(value) else DEFAULT_TLD
 
 
 def domain_for(project_name, tld):
