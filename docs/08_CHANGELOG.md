@@ -8,6 +8,11 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Sin publicar]
 
+### Seguridad
+- **Auditoría 2026-11-10, correcciones aplicadas.** Nginx corta (444) cualquier `Host` desconocido y bloquea `storage/`, `database/`, `vendor/`, `*.sql`, `*.log`, `*.sqlite` y `composer.*` en el acceso `/proyecto`; MariaDB arranca con `local_infile=0` y `secure_file_priv`; el PowerShell elevado de `hosts` comprueba el SHA256 del archivo temporal antes de copiarlo y se invoca con ruta absoluta; borrar un proyecto no elimina una base de datos que otro proyecto comparte (`mi-sitio` y `mi_sitio`).
+- **Borrar un proyecto exige teclear su nombre.**
+- **El botón del planeta abre el dominio `.test`.**
+
 ### Añadido
 - **Proyectos nuevos con dominio `.test` listo.** Al crear un proyecto WordPress o Laravel, su dominio se registra también en `hosts` (Windows pide permiso una vez). Si se rechaza, el proyecto se crea igual y la app avisa de usar Ajustes > Importar proyectos y hosts.
 - **Gestión del archivo `hosts` de Windows (`hosts.py`).** AetherStack mantiene un único bloque propio, delimitado por marcas, con el dominio de cada proyecto (`nombre.test`); no toca ninguna otra línea del archivo y guarda una copia del original en `conf/hosts.backup`. Es idempotente y se escribe con el aviso de permisos de Windows (UAC). Así los dominios siguen funcionando sin Laragon.

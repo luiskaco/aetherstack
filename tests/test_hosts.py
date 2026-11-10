@@ -106,6 +106,12 @@ class ElevatedScriptTests(unittest.TestCase):
         self.assertIn("ERROR: ", script)
         self.assertIn("$ErrorActionPreference='Stop'", script)
 
+    def test_script_verifies_the_hash_before_copying(self):
+        script = hosts.elevated_copy_script(r"C:	mp\h.txt", r"C:\h", r"C:	mp\h.log", "ABC123")
+        self.assertIn("Get-FileHash", script)
+        self.assertIn("'ABC123'", script)
+        self.assertLess(script.index("Get-FileHash"), script.index("Copy-Item"))
+
     def test_encoded_command_roundtrips(self):
         import base64
         script = "Write-Output 'a\"b' ; $x = 1"

@@ -261,7 +261,12 @@ max_connections = 100
 max_allowed_packet = 64M
 innodb_buffer_pool_size = 128M
 innodb_file_per_table = 1
+
+# Endurecimiento: sin LOAD DATA LOCAL y con INTO OUTFILE / LOAD_FILE limitados a una carpeta propia
+local_infile = 0
+secure_file_priv = "{BASE_DIR_SLASH}/data/mariadb-files"
 """
+    os.makedirs(os.path.join(DATA_DIR, "mariadb-files"), exist_ok=True)
     my_ini_file = os.path.join(CONF_DIR, "my.ini")
     with open(my_ini_file, "w", encoding="utf-8") as f:
         f.write(my_ini_content)
@@ -471,6 +476,13 @@ http {{
         keepalive 16;
     }}
 
+    # Servidor por defecto: cualquier Host desconocido (p. ej. DNS rebinding) se corta sin servir nada
+    server {{
+        listen       127.0.0.1:{state['nginx_port']} default_server;
+        server_name  _;
+        return 444;
+    }}
+
     server {{
         listen       127.0.0.1:{state['nginx_port']};
         server_name  localhost;
@@ -479,6 +491,11 @@ http {{
         index  index.php index.html index.htm;
 
         {protect_block}
+
+        # Archivos que no deben salir por HTTP en el acceso /proyecto (logs, volcados, bases, dependencias)
+        location ~* ^/[^/]+/(storage|database|vendor|bootstrap/cache)/ {{ deny all; }}
+        location ~* \\.(sql|log|sqlite|sqlite3|bak)$ {{ deny all; }}
+        location ~* /composer\\.(json|lock)$ {{ deny all; }}
 
         location / {{
             autoindex off;
@@ -746,8 +763,16 @@ def delete_project(project_name, delete_db=True):
         return False, f"La carpeta '{project_name}' no existe."
 
     # 1. Eliminar base de datos si se solicitó
+    db_note = ""
     if delete_db:
-        drop_database(db_name_for(project_name))
+        db_name = db_name_for(project_name)
+        # "mi-sitio" y "mi_sitio" comparten base: si otro proyecto usa la misma, no se borra
+        shared = [p["name"] for p in list_projects()
+                  if p["name"] != project_name and db_name_for(p["name"]) == db_name]
+        if shared:
+            db_note = f" La base '{db_name}' se conservó porque también la usa '{shared[0]}'."
+        else:
+            drop_database(db_name)
 
     # 2. Eliminar Virtual Host
     vhost_file = os.path.join(CONF_DIR, "vhosts", f"{project_name}.conf")
@@ -780,7 +805,7 @@ def delete_project(project_name, delete_db=True):
             pass
 
     if not os.path.exists(target_dir):
-        return True, f"Proyecto '{project_name}' eliminado completamente."
+        return True, f"Proyecto '{project_name}' eliminado completamente.{db_note}"
     return False, f"No se pudo eliminar completamente la carpeta '{project_name}' (bloqueo en Windows)."
 
 def create_project_laravel(project_name, progress_cb=None):

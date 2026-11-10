@@ -30,6 +30,7 @@ Origen: `C:\laragon\www` (18 proyectos, 16 WordPress, ~11 GB) y MySQL 8.4.3 (22 
 ---
 
 ## Pendiente (revisión de seguridad y buenas prácticas, 2026-11-08)
+- [ ] Auditoría 2026-11-10, menores sin corregir: `delete_project` solo debería borrar proyectos WordPress/Laravel; validar que `projects_dir` no sea una raíz de unidad ni el perfil; revalidar `state.json` al cargar; `taskkill /IM` mata procesos ajenos con el mismo nombre; `PROJECT_NAME_RE` con `fullmatch`; descargas de WordPress con carpeta temporal única.
 - [ ] MariaDB `root` sin contraseña: crear un usuario por proyecto (`.env` de Laravel / `wp-config.php`) y avisar en la UI.
 - [ ] Reemplazar los `except Exception: pass` por registro en `logs/aetherstack.log`.
 - [ ] `core.py` reescribe configuraciones al importarse: moverlo a una función `init()` llamada desde `app.py`.

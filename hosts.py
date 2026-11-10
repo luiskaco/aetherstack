@@ -6,11 +6,13 @@ porque están en `hosts`. AetherStack mantiene UN bloque delimitado por marcas y
 del archivo. Escribir `hosts` exige permisos de administrador: se pide con el aviso de Windows (UAC).
 """
 import base64
+import hashlib
 import os
 import re
 import subprocess
 import tempfile
 
+POWERSHELL_EXE = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
 HOSTS_PATH = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "drivers", "etc", "hosts")
 BEGIN = "# >>> AetherStack (bloque administrado automaticamente, no editar a mano) >>>"
 END = "# <<< AetherStack <<<"
@@ -98,11 +100,12 @@ def write_hosts(new_text, path=HOSTS_PATH, backup_dir=None):
             f.write(new_text)
         if "'" in tmp or "'" in path:
             return "error"
-        encoded = encode_script(elevated_copy_script(tmp, path, log))
-        outer = ("try { Start-Process -FilePath powershell.exe -Verb RunAs -Wait -WindowStyle Hidden "
+        sha = hashlib.sha256(new_text.encode("utf-8", errors="surrogateescape")).hexdigest()
+        encoded = encode_script(elevated_copy_script(tmp, path, log, sha))
+        outer = ("try { Start-Process -FilePath '" + POWERSHELL_EXE + "' -Verb RunAs -Wait -WindowStyle Hidden "
                  "-ArgumentList '-NoProfile','-EncodedCommand','" + encoded + "' -ErrorAction Stop; exit 0 } "
                  "catch { if ($_.Exception.Message -match 'cancel') { exit 2 } else { exit 1 } }")
-        res = subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", outer],
+        res = subprocess.run([POWERSHELL_EXE, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", outer],
                              capture_output=True, text=True, timeout=180)
         if res.returncode == 2:
             return "cancelled"
@@ -128,10 +131,17 @@ def write_hosts(new_text, path=HOSTS_PATH, backup_dir=None):
         return "error"
 
 
-def elevated_copy_script(tmp, path, log):
-    """Script que ejecuta el PowerShell elevado: copia `tmp` sobre `path` y deja OK o el error en `log`."""
+def elevated_copy_script(tmp, path, log, expected_sha256=None):
+    """
+    Script que ejecuta el PowerShell elevado: copia `tmp` sobre `path` y deja OK o el error en `log`.
+    Con `expected_sha256` comprueba antes que el temporal no fue cambiado por otro proceso.
+    """
+    check = ""
+    if expected_sha256:
+        check = (f"if ((Get-FileHash -LiteralPath '{tmp}' -Algorithm SHA256).Hash -ne '{expected_sha256}') "
+                 "{ throw 'El archivo temporal cambio antes de aplicarse' }; ")
     return ("$ErrorActionPreference='Stop'\n"
-            f"try {{ Copy-Item -LiteralPath '{tmp}' -Destination '{path}' -Force; "
+            f"try {{ {check}Copy-Item -LiteralPath '{tmp}' -Destination '{path}' -Force; "
             f"Set-Content -LiteralPath '{log}' -Value 'OK' -Encoding ASCII }}\n"
             f"catch {{ Set-Content -LiteralPath '{log}' -Value ('ERROR: ' + $_.Exception.Message) -Encoding UTF8 }}\n")
 
