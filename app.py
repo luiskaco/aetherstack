@@ -498,7 +498,7 @@ class AetherDribbbleApp(ctk.CTk):
             btn_web = ctk.CTkButton(row, text="🌐", width=28, height=28, corner_radius=8,
                                     fg_color=BTN_SEC_BG, hover_color=BTN_SEC_HOVER, text_color=BTN_SEC_TEXT,
                                     border_width=1, border_color=BORDER,
-                                    command=lambda url=p["url"]: webbrowser.open(url))
+                                    command=lambda url=p["vhost"]: webbrowser.open(url))
             btn_web.pack(side="right", padx=(2, 8), pady=6)
 
             db_target = core.db_name_for(p["name"])
