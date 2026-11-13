@@ -46,5 +46,55 @@ class ProjectNameTests(unittest.TestCase):
         self.assertTrue(core.is_valid_project_name("mi-sitio"))
 
 
+class DefaultIndexTests(unittest.TestCase):
+    def _run_in_temp_root(self, setup_fn):
+        orig = core.get_projects_root
+        with tempfile.TemporaryDirectory() as d:
+            core.get_projects_root = lambda: d
+            try:
+                setup_fn(d)
+                core.write_default_index()
+                out = {}
+                for name in os.listdir(d):
+                    path = os.path.join(d, name)
+                    if os.path.isfile(path):
+                        with open(path, encoding="utf-8") as f:
+                            out[name] = f.read()
+                return out
+            finally:
+                core.get_projects_root = orig
+
+    def _write_file(self, path, content):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+    def test_writes_default_index_php_in_empty_dir(self):
+        files = self._run_in_temp_root(lambda d: None)
+        self.assertIn("index.php", files)
+        self.assertIn(core.DEFAULT_INDEX_MARKER, files["index.php"])
+
+    def test_preserves_custom_index_php_and_html(self):
+        files_php = self._run_in_temp_root(
+            lambda d: self._write_file(os.path.join(d, "index.php"), "<?php echo 'custom';")
+        )
+        self.assertEqual(files_php["index.php"], "<?php echo 'custom';")
+
+        files_html = self._run_in_temp_root(
+            lambda d: self._write_file(os.path.join(d, "index.html"), "<h1>custom</h1>")
+        )
+        self.assertNotIn("index.php", files_html)
+        self.assertEqual(files_html["index.html"], "<h1>custom</h1>")
+
+    def test_migrates_old_marked_index_html_to_index_php(self):
+        files = self._run_in_temp_root(
+            lambda d: self._write_file(
+                os.path.join(d, "index.html"),
+                f"<!-- {core.DEFAULT_INDEX_MARKER} -->\n<html></html>",
+            )
+        )
+        self.assertNotIn("index.html", files)
+        self.assertIn("index.php", files)
+
+
 if __name__ == "__main__":
     unittest.main()

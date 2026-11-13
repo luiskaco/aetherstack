@@ -40,7 +40,7 @@ EMPTY_DIRS = ["logs", "downloads", "conf/vhosts", "projects"]
 SKIP_DIR_NAMES = {"__pycache__", ".git"}
 SKIP_EXTS = {".pyc", ".tmp", ".pid", ".log", ".err", ".pdb"}
 # Estado propio de cada instalación: se regenera al primer arranque
-SKIP_REL_PREFIXES = ("bin/heidisql/Backups/",)
+SKIP_REL_PREFIXES = ("bin/heidisql/Backups/", "bin/heidisql/tabs.ini")
 # Configs que la app reescribe con rutas absolutas del equipo en cada arranque (core.py).
 # Se empaquetan con una ruta neutra; se regeneran solas al primer inicio.
 REWRITTEN_CONFIGS = ("bin/nginx/conf/nginx.conf",)
