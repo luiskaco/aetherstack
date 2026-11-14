@@ -1,10 +1,15 @@
-# 08 - Changelog: AetherStack
+# Changelog: AetherStack
 
 Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a [Semantic Versioning](https://semver.org/).
 
 ---
+
+## [Sin publicar]
+
+### Cambiado
+- **Documentos de `docs/` migrados a la estructura nueva:** `01_PRD`, `02_TASKS` (solo lo abierto), `03_DECISIONS` (con índice y las 3 decisiones que estaban en la arquitectura), `04_CHANGELOG`, `ARCHITECTURE` (une diseño y especificaciones), `DATA_MODEL`, `TESTING` y `RUNBOOK`. Se agrega `AGENTS.md`. Sin cambios de código: el actualizador acepta todo `docs/`.
 
 ## [1.2.6] - 2026-11-13
 

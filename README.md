@@ -212,16 +212,14 @@ The project includes formal specifications and architecture records under [`docs
 
 | Document | Title | Description |
 | :--- | :--- | :--- |
-| [`01_PROJECT_PRD.md`](docs/01_PROJECT_PRD.md) | Product Requirements | Functional and non-functional requirements specification. |
-| [`02_SDD.md`](docs/02_SDD.md) | System Design | Component architecture, port topology, and lifecycle. |
-| [`03_SYSTEM_SPEC.md`](docs/03_SYSTEM_SPEC.md) | Technical Specifications | Runtime flags, binary parameters, and config directives. |
-| [`04_DATA_MODEL.md`](docs/04_DATA_MODEL.md) | Data Model | Internal state schema (`state.json`, vhosts, system tables). |
-| [`05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md) | Architecture Decisions | Foundational design choices (FastCGI, port 3307, native UI). |
-| [`06_TASKS.md`](docs/06_TASKS.md) | Active Backlog | Task milestones and project handover status. |
-| [`07_DECISIONS.md`](docs/07_DECISIONS.md) | Architecture Records | Historical record of technical decisions and trade-offs. |
-| [`08_CHANGELOG.md`](docs/08_CHANGELOG.md) | Changelog | Version history adhering to the Keep a Changelog standard. |
-| [`09_TESTING.md`](docs/09_TESTING.md) | Testing Strategy | Verification suite for ports, processes, FastCGI, and scaffolders. |
-| [`10_RUNBOOK.md`](docs/10_RUNBOOK.md) | Operations Runbook | Maintenance, troubleshooting, and backup procedures. |
+| [`01_PRD.md`](docs/01_PRD.md) | Product Requirements | Functional and non-functional requirements specification. |
+| [`02_TASKS.md`](docs/02_TASKS.md) | Open Tasks | Open work and where the project was left. |
+| [`03_DECISIONS.md`](docs/03_DECISIONS.md) | Architecture Records | Index and record of technical decisions and trade-offs. |
+| [`04_CHANGELOG.md`](docs/04_CHANGELOG.md) | Changelog | Version history adhering to the Keep a Changelog standard. |
+| [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture | Component design, port topology, runtimes, and config directives. |
+| [`DATA_MODEL.md`](docs/DATA_MODEL.md) | Data Model | Internal state schema (`state.json`, vhosts, system tables). |
+| [`TESTING.md`](docs/TESTING.md) | Testing Strategy | Verification suite for ports, processes, FastCGI, and scaffolders. |
+| [`RUNBOOK.md`](docs/RUNBOOK.md) | Operations Runbook | Maintenance, troubleshooting, release, and backup procedures. |
 
 ---
 
@@ -422,16 +420,14 @@ El proyecto cuenta con especificaciones técnicas completas dentro de [`docs/`](
 
 | Documento | Título | Descripción |
 | :--- | :--- | :--- |
-| [`01_PROJECT_PRD.md`](docs/01_PROJECT_PRD.md) | Requisitos del Producto | Especificación de requisitos funcionales y no funcionales. |
-| [`02_SDD.md`](docs/02_SDD.md) | Diseño del Sistema | Arquitectura de componentes, topología de puertos y ciclo de vida. |
-| [`03_SYSTEM_SPEC.md`](docs/03_SYSTEM_SPEC.md) | Especificaciones Técnicas | Parámetros de runtime, binarios, flags y directivas de configuración. |
-| [`04_DATA_MODEL.md`](docs/04_DATA_MODEL.md) | Modelo de Datos | Esquema de persistencia interna (`state.json`, vhosts, tablas del sistema). |
-| [`05_ARCHITECTURE.md`](docs/05_ARCHITECTURE.md) | Decisiones de Arquitectura | Fundamentos arquitectónicos (FastCGI, puerto 3307, UI nativa). |
-| [`06_TASKS.md`](docs/06_TASKS.md) | Backlog Activo | Registro de hitos completados y estado de traspaso del proyecto. |
-| [`07_DECISIONS.md`](docs/07_DECISIONS.md) | ADRs (Architecture Records) | Registro histórico de decisiones técnicas y trade-offs evaluados. |
-| [`08_CHANGELOG.md`](docs/08_CHANGELOG.md) | Registro de Cambios | Historial de versiones bajo el estándar Keep a Changelog. |
-| [`09_TESTING.md`](docs/09_TESTING.md) | Estrategia de Pruebas | Suite de verificación de puertos, procesos, FastCGI y scaffolders. |
-| [`10_RUNBOOK.md`](docs/10_RUNBOOK.md) | Manual de Operaciones | Procedimientos de mantenimiento, solución de problemas y respaldos. |
+| [`01_PRD.md`](docs/01_PRD.md) | Requisitos del Producto | Especificación de requisitos funcionales y no funcionales. |
+| [`02_TASKS.md`](docs/02_TASKS.md) | Tareas Abiertas | Trabajo abierto y dónde quedó el proyecto. |
+| [`03_DECISIONS.md`](docs/03_DECISIONS.md) | ADRs (Architecture Records) | Índice y registro de decisiones técnicas y sus alternativas. |
+| [`04_CHANGELOG.md`](docs/04_CHANGELOG.md) | Registro de Cambios | Historial de versiones bajo el estándar Keep a Changelog. |
+| [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura | Diseño de componentes, topología de puertos, runtimes y configuración. |
+| [`DATA_MODEL.md`](docs/DATA_MODEL.md) | Modelo de Datos | Esquema de persistencia interna (`state.json`, vhosts, tablas del sistema). |
+| [`TESTING.md`](docs/TESTING.md) | Estrategia de Pruebas | Suite de verificación de puertos, procesos, FastCGI y generadores. |
+| [`RUNBOOK.md`](docs/RUNBOOK.md) | Manual de Operaciones | Procedimientos de mantenimiento, release, solución de problemas y respaldo. |
 
 ---
 

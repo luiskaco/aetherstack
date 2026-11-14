@@ -1,4 +1,4 @@
-# 01 - Product Requirements Document (PRD): AetherStack
+# Requisitos (PRD): AetherStack
 
 ## 1. Visión del Producto
 AetherStack es un entorno de desarrollo local ultraligero, 100% libre y portable para Windows, diseñado para desarrolladores PHP que buscan reemplazar herramientas lentas o con modelos de licencia invasivos (como Laragon o XAMPP).
