@@ -1,4 +1,4 @@
-# 04 - Data Model & Persistence: AetherStack
+# Modelo de datos y persistencia: AetherStack
 
 ## 1. Persistencia de Configuración
 La configuración de usuario y estado del entorno se guarda en `conf/state.json`:

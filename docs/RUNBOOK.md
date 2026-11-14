@@ -1,4 +1,4 @@
-# 10 - Runbook & Operations: AetherStack
+# Runbook y operación: AetherStack
 
 ## 1. Operación Diaria
 
@@ -49,7 +49,7 @@ Las tres líneas deben mostrar `127.0.0.1:<puerto>`. Si aparece `0.0.0.0` o `[::
 
 ## 5. Publicar un Release
 0. **Regla de compatibilidad (obligatoria).** El actualizador de cada versión instala solo los archivos que conoce. Si el release trae un archivo nuevo en la raíz que las versiones anteriores no aceptan, quien actualice con un clic quedará con la app rota. Antes de publicar corre `python -m unittest discover -s tests`: `test_compat.py` lo comprueba contra el `updater.py` real de las versiones de `SUPPORTED_ONE_CLICK_FROM`. Tras publicar, añade la versión nueva a esa lista y, para las que ya no sean compatibles, retira los assets de actualización (`AetherStack-update-*`) de su release con `gh release delete-asset`. Si un cambio es incompatible con las versiones instaladas (archivos nuevos, otro formato de firma), **cambia el prefijo de los assets** (`AetherStack-update-` → otro) en `core.py` y en el build: las versiones antiguas buscan el prefijo viejo y dejan de ver el paquete, así que no pueden romperse. Nunca publiques un paquete de actualización que alguna versión instalada no sepa instalar entero.
-1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/08_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
+1. Verifica que el árbol esté limpio (`git status`), actualiza `docs/04_CHANGELOG.md` y sube `VERSION` en `core.py` al número del release. Sin esto, los usuarios verían el aviso de actualización aunque ya estén al día.
 2. Genera el paquete con lista blanca y escaneo de datos personales:
    ```cmd
    python tools/build_release_zip.py 1.2.1

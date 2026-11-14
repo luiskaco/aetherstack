@@ -1,4 +1,4 @@
-# 09 - Testing & Verification: AetherStack
+# Testing y verificación: AetherStack
 
 ## 1. Estrategia de Pruebas
 
