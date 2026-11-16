@@ -877,7 +877,7 @@ class AetherDribbbleApp(ctk.CTk):
         win.attributes("-topmost", True)
         win.transient(self)
 
-        self.center_modal(win, 440, 290 if require_text else 210)
+        self.center_modal(win, 440, 210)
 
         pad = ctk.CTkFrame(win, fg_color="transparent")
         pad.pack(fill="both", expand=True, padx=22, pady=18)
@@ -885,7 +885,7 @@ class AetherDribbbleApp(ctk.CTk):
         head = ctk.CTkFrame(pad, fg_color="transparent")
         head.pack(fill="x", pady=(0, 8))
 
-        icon_char = "✓" if alert_type == "success" else ("✕" if alert_type == "error" else ("⚠" if alert_type == "warning" else "ℹ"))
+        icon_char ="✓" if alert_type == "success" else ("✕" if alert_type == "error" else ("⚠" if alert_type == "warning" else "ℹ"))
         icon_bg = "#064E3B" if alert_type == "success" else ("#451A1A" if alert_type == "error" else ("#453210" if alert_type == "warning" else "#1E293B"))
         icon_fg = "#10B981" if alert_type == "success" else ("#EF4444" if alert_type == "error" else ("#F59E0B" if alert_type == "warning" else "#38BDF8"))
 
